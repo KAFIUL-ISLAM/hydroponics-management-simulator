@@ -1,0 +1,406 @@
+[gd_scene format=3 uid="uid://lm4cvp2hfxau"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_header"]
+content_margin_left = 20.0
+content_margin_top = 14.0
+content_margin_right = 20.0
+content_margin_bottom = 14.0
+bg_color = Color(0.105882, 0.164706, 0.219608, 1)
+border_width_bottom = 1
+border_color = Color(0.18, 0.31, 0.4, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 16.0
+bg_color = Color(0.0901961, 0.145098, 0.196078, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.16, 0.27, 0.35, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_inner"]
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+bg_color = Color(0.12, 0.19, 0.25, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0.12, 0.31, 0.36, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="Main" type="Control" unique_id=87705194]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="." unique_id=755199987]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.0627451, 0.0980392, 0.137255, 1)
+
+[node name="SafeArea" type="MarginContainer" parent="." unique_id=809283513]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 22
+
+[node name="MainLayout" type="VBoxContainer" parent="SafeArea" unique_id=726795333]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="PanelContainer" parent="SafeArea/MainLayout" unique_id=1066632498]
+custom_minimum_size = Vector2(0, 86)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_header")
+
+[node name="HeaderContent" type="HBoxContainer" parent="SafeArea/MainLayout/Header" unique_id=637531027]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleGroup" type="VBoxContainer" parent="SafeArea/MainLayout/Header/HeaderContent" unique_id=1189437844]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="GameTitle" type="Label" parent="SafeArea/MainLayout/Header/HeaderContent/TitleGroup" unique_id=943917475]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.917647, 0.94902, 0.972549, 1)
+theme_override_font_sizes/font_size = 24
+text = "水培管理系统"
+
+[node name="GameSubtitle" type="Label" parent="SafeArea/MainLayout/Header/HeaderContent/TitleGroup" unique_id=951603663]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.560784, 0.643137, 0.709804, 1)
+theme_override_font_sizes/font_size = 10
+text = "HYDROPONICS MANAGEMENT SYSTEM"
+
+[node name="HeaderSpacer" type="Control" parent="SafeArea/MainLayout/Header/HeaderContent" unique_id=113971985]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HeaderInfo" type="VBoxContainer" parent="SafeArea/MainLayout/Header/HeaderContent" unique_id=610539699]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="DayLabel" type="Label" parent="SafeArea/MainLayout/Header/HeaderContent/HeaderInfo" unique_id=788364268]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.917647, 0.94902, 0.972549, 1)
+theme_override_font_sizes/font_size = 17
+text = "第 1 天"
+horizontal_alignment = 2
+
+[node name="StatusLabel" type="Label" parent="SafeArea/MainLayout/Header/HeaderContent/HeaderInfo" unique_id=1911251082]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.396078, 0.839216, 0.627451, 1)
+theme_override_font_sizes/font_size = 11
+text = "● 运行正常"
+horizontal_alignment = 2
+
+[node name="ResourceRow" type="HBoxContainer" parent="SafeArea/MainLayout" unique_id=1564857730]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="WaterCard" type="PanelContainer" parent="SafeArea/MainLayout/ResourceRow" unique_id=164903423]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="WaterContent" type="VBoxContainer" parent="SafeArea/MainLayout/ResourceRow/WaterCard" unique_id=1250043055]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="WaterCaption" type="Label" parent="SafeArea/MainLayout/ResourceRow/WaterCard/WaterContent" unique_id=1489691657]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.34, 0.73, 0.93, 1)
+theme_override_font_sizes/font_size = 12
+text = "◉  纯净水  /  PURE WATER"
+
+[node name="WaterValue" type="Label" parent="SafeArea/MainLayout/ResourceRow/WaterCard/WaterContent" unique_id=1968988932]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.917647, 0.94902, 0.972549, 1)
+theme_override_font_sizes/font_size = 25
+text = "1,000 ml"
+
+[node name="WaterNote" type="Label" parent="SafeArea/MainLayout/ResourceRow/WaterCard/WaterContent" unique_id=1710153439]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.64, 0.71, 1)
+theme_override_font_sizes/font_size = 10
+text = "储备量 / STORAGE"
+
+[node name="MineralCard" type="PanelContainer" parent="SafeArea/MainLayout/ResourceRow" unique_id=1490486512]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="MineralContent" type="VBoxContainer" parent="SafeArea/MainLayout/ResourceRow/MineralCard" unique_id=1850230501]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="MineralCaption" type="Label" parent="SafeArea/MainLayout/ResourceRow/MineralCard/MineralContent" unique_id=636571329]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.396, 0.839, 0.627, 1)
+theme_override_font_sizes/font_size = 12
+text = "◈  矿物质  /  MINERALS"
+
+[node name="MineralValue" type="Label" parent="SafeArea/MainLayout/ResourceRow/MineralCard/MineralContent" unique_id=1161962013]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.917647, 0.94902, 0.972549, 1)
+theme_override_font_sizes/font_size = 25
+text = "50 ml"
+
+[node name="MineralNote" type="Label" parent="SafeArea/MainLayout/ResourceRow/MineralCard/MineralContent" unique_id=1062206875]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.64, 0.71, 1)
+theme_override_font_sizes/font_size = 10
+text = "储备量 / STORAGE"
+
+[node name="PowerCard" type="PanelContainer" parent="SafeArea/MainLayout/ResourceRow" unique_id=744120798]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="PowerContent" type="VBoxContainer" parent="SafeArea/MainLayout/ResourceRow/PowerCard" unique_id=1571151878]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="PowerCaption" type="Label" parent="SafeArea/MainLayout/ResourceRow/PowerCard/PowerContent" unique_id=1805848117]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.78, 0.42, 1)
+theme_override_font_sizes/font_size = 12
+text = "ϟ  电力  /  ELECTRICITY"
+
+[node name="PowerValue" type="Label" parent="SafeArea/MainLayout/ResourceRow/PowerCard/PowerContent" unique_id=1221275142]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.917647, 0.94902, 0.972549, 1)
+theme_override_font_sizes/font_size = 25
+text = "100 kWh"
+
+[node name="PowerNote" type="Label" parent="SafeArea/MainLayout/ResourceRow/PowerCard/PowerContent" unique_id=672537363]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.64, 0.71, 1)
+theme_override_font_sizes/font_size = 10
+text = "储备量 / STORAGE"
+
+[node name="MainPanels" type="HBoxContainer" parent="SafeArea/MainLayout" unique_id=18355449]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="MachinePanel" type="PanelContainer" parent="SafeArea/MainLayout/MainPanels" unique_id=213685513]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="MachineContent" type="VBoxContainer" parent="SafeArea/MainLayout/MainPanels/MachinePanel" unique_id=62339821]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="MachineHeading" type="Label" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent" unique_id=976366914]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.917647, 0.94902, 0.972549, 1)
+theme_override_font_sizes/font_size = 17
+text = "水培设备  /  HYDROPONIC UNIT"
+
+[node name="MachineStatus" type="PanelContainer" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent" unique_id=39662793]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_inner")
+
+[node name="MachineStatusContent" type="VBoxContainer" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent/MachineStatus" unique_id=806785825]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MachineIcon" type="Label" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent/MachineStatus/MachineStatusContent" unique_id=476543566]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.396078, 0.839216, 0.627451, 1)
+theme_override_font_sizes/font_size = 34
+text = "▦"
+horizontal_alignment = 1
+
+[node name="MachineName" type="Label" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent/MachineStatus/MachineStatusContent" unique_id=2053641761]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.917647, 0.94902, 0.972549, 1)
+theme_override_font_sizes/font_size = 16
+text = "基础水培舱"
+horizontal_alignment = 1
+
+[node name="MachineDescription" type="Label" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent/MachineStatus/MachineStatusContent" unique_id=1822853554]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.64, 0.71, 1)
+theme_override_font_sizes/font_size = 10
+text = "设备待机 · 等待种植任务"
+horizontal_alignment = 1
+
+[node name="MachineStats" type="GridContainer" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent" unique_id=851408661]
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 6
+columns = 3
+
+[node name="PerformanceStat" type="VBoxContainer" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent/MachineStats" unique_id=1800910274]
+layout_mode = 2
+
+[node name="PerformanceValue" type="Label" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent/MachineStats/PerformanceStat" unique_id=1018741748]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.34, 0.73, 0.93, 1)
+theme_override_font_sizes/font_size = 16
+text = "50%"
+
+[node name="PerformanceLabel" type="Label" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent/MachineStats/PerformanceStat" unique_id=268133917]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.64, 0.71, 1)
+theme_override_font_sizes/font_size = 9
+text = "性能"
+
+[node name="EfficiencyStat" type="VBoxContainer" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent/MachineStats" unique_id=406785412]
+layout_mode = 2
+
+[node name="EfficiencyValue" type="Label" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent/MachineStats/EfficiencyStat" unique_id=305728770]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.396, 0.839, 0.627, 1)
+theme_override_font_sizes/font_size = 16
+text = "50%"
+
+[node name="EfficiencyLabel" type="Label" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent/MachineStats/EfficiencyStat" unique_id=1135981315]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.64, 0.71, 1)
+theme_override_font_sizes/font_size = 9
+text = "效率"
+
+[node name="QualityStat" type="VBoxContainer" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent/MachineStats" unique_id=1635125751]
+layout_mode = 2
+
+[node name="QualityValue" type="Label" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent/MachineStats/QualityStat" unique_id=1929037351]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.78, 0.42, 1)
+theme_override_font_sizes/font_size = 16
+text = "50%"
+
+[node name="QualityLabel" type="Label" parent="SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent/MachineStats/QualityStat" unique_id=1282327702]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.64, 0.71, 1)
+theme_override_font_sizes/font_size = 9
+text = "品质"
+
+[node name="CropPanel" type="PanelContainer" parent="SafeArea/MainLayout/MainPanels" unique_id=902351270]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="CropContent" type="VBoxContainer" parent="SafeArea/MainLayout/MainPanels/CropPanel" unique_id=1559560506]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CropHeading" type="Label" parent="SafeArea/MainLayout/MainPanels/CropPanel/CropContent" unique_id=1569472620]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.917647, 0.94902, 0.972549, 1)
+theme_override_font_sizes/font_size = 17
+text = "作物状态  /  CROP STATUS"
+
+[node name="CropEmptyState" type="PanelContainer" parent="SafeArea/MainLayout/MainPanels/CropPanel/CropContent" unique_id=1312696941]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_inner")
+
+[node name="CropEmptyContent" type="VBoxContainer" parent="SafeArea/MainLayout/MainPanels/CropPanel/CropContent/CropEmptyState" unique_id=1788630633]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="CropIcon" type="Label" parent="SafeArea/MainLayout/MainPanels/CropPanel/CropContent/CropEmptyState/CropEmptyContent" unique_id=1748083314]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.396, 0.839, 0.627, 1)
+theme_override_font_sizes/font_size = 34
+text = "✧"
+horizontal_alignment = 1
+
+[node name="CropEmptyTitle" type="Label" parent="SafeArea/MainLayout/MainPanels/CropPanel/CropContent/CropEmptyState/CropEmptyContent" unique_id=2011736205]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.917647, 0.94902, 0.972549, 1)
+theme_override_font_sizes/font_size = 16
+text = "尚未种植作物"
+horizontal_alignment = 1
+
+[node name="CropEmptyDescription" type="Label" parent="SafeArea/MainLayout/MainPanels/CropPanel/CropContent/CropEmptyState/CropEmptyContent" unique_id=1231897039]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.64, 0.71, 1)
+theme_override_font_sizes/font_size = 11
+text = "请选择种子并启动水培设备"
+horizontal_alignment = 1
+
+[node name="ControlBar" type="PanelContainer" parent="SafeArea/MainLayout" unique_id=727059122]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="ControlContent" type="HBoxContainer" parent="SafeArea/MainLayout/ControlBar" unique_id=867970353]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ControlHint" type="Label" parent="SafeArea/MainLayout/ControlBar/ControlContent" unique_id=1437205043]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.56, 0.64, 0.71, 1)
+theme_override_font_sizes/font_size = 11
+text = "系统就绪  /  请选择种子以开始生产"
+
+[node name="ManageButton" type="Button" parent="SafeArea/MainLayout/ControlBar/ControlContent" unique_id=1089762904]
+custom_minimum_size = Vector2(130, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.89, 0.93, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_inner")
+text = "资源管理"
+
+[node name="EquipmentButton" type="Button" parent="SafeArea/MainLayout/ControlBar/ControlContent" unique_id=2119714963]
+custom_minimum_size = Vector2(130, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.89, 0.93, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_inner")
+text = "设备配置"
+
+[node name="NextNightButton" type="Button" parent="SafeArea/MainLayout/ControlBar/ControlContent" unique_id=155526172]
+custom_minimum_size = Vector2(150, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.98, 0.96, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+text = "开始夜间结算"
+
+[node name="FooterLabel" type="Label" parent="SafeArea/MainLayout" unique_id=1219486277]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.45, 0.53, 1)
+theme_override_font_sizes/font_size = 9
+text = "HYDROPONICS MANAGEMENT SIMULATOR  •  PROTOTYPE BUILD"
+horizontal_alignment = 2
