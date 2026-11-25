@@ -1,5 +1,11 @@
 [gd_scene format=3 uid="uid://lm4cvp2hfxau"]
 
+[ext_resource type="Script" uid="uid://c22lky58asr3" path="res://scripts/main.gd" id="1_0wfyh"]
+[ext_resource type="Script" uid="uid://c6p28ul742ayw" path="res://scripts/resource_manager.gd" id="1_o5qli"]
+[ext_resource type="Script" uid="uid://b2nw4n8g1pysg" path="res://scripts/game_state.gd" id="3_sugp2"]
+[ext_resource type="Resource" uid="uid://b0c50nueu0sel" path="res://resources/lettuce_prototype.tres" id="4_jyhfs"]
+[ext_resource type="Script" uid="uid://tixdqqc02si8" path="res://scripts/hydroponics_simulator.gd" id="5_tbgi4"]
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_header"]
 content_margin_left = 20.0
 content_margin_top = 14.0
@@ -54,6 +60,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_0wfyh")
 
 [node name="Background" type="ColorRect" parent="." unique_id=755199987]
 layout_mode = 1
@@ -362,6 +369,10 @@ theme_override_font_sizes/font_size = 11
 text = "请选择种子并启动水培设备"
 horizontal_alignment = 1
 
+[node name="CropGrowthLabel" type="Label" parent="SafeArea/MainLayout/MainPanels/CropPanel/CropContent/CropEmptyState/CropEmptyContent" unique_id=1662269451]
+layout_mode = 2
+text = "生长进度 / Growth: 0"
+
 [node name="ControlBar" type="PanelContainer" parent="SafeArea/MainLayout" unique_id=727059122]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
@@ -404,3 +415,17 @@ theme_override_colors/font_color = Color(0.35, 0.45, 0.53, 1)
 theme_override_font_sizes/font_size = 9
 text = "HYDROPONICS MANAGEMENT SIMULATOR  •  PROTOTYPE BUILD"
 horizontal_alignment = 2
+
+[node name="ResourceManager" type="Node" parent="." unique_id=1216927401]
+script = ExtResource("1_o5qli")
+
+[node name="GameState" type="Node" parent="." unique_id=432034356]
+script = ExtResource("3_sugp2")
+starting_crop = ExtResource("4_jyhfs")
+
+[node name="HydroponicsSimulator" type="Node" parent="." unique_id=1054643479 node_paths=PackedStringArray("game_state", "resource_manager")]
+script = ExtResource("5_tbgi4")
+game_state = NodePath("../GameState")
+resource_manager = NodePath("../ResourceManager")
+
+[connection signal="pressed" from="SafeArea/MainLayout/ControlBar/ControlContent/NextNightButton" to="." method="_on_next_night_button_pressed"]

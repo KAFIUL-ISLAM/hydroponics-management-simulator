@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://d23t1ya7p3fa"]
+
+[ext_resource type="Script" uid="uid://crksy0vk3gn36" path="res://tetst/test_crop_resource.gd" id="1_5oovk"]
+
+[node name="CropResourceTest" type="Node" unique_id=926568893]
+script = ExtResource("1_5oovk")
