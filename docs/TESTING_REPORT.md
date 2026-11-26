@@ -1,10 +1,30 @@
 # 测试报告
 
+## M08 final acceptance · 2026-11-26
+
+Fresh isolated Godot 4.7.2 regression passed all 17 suites, 1,142 explicit checks and four original assertion groups, with zero failures. Default launch and the archived Lettuce probe passed. Separately, the owner reported ten M08-D desktop passes at the milestone review. Renderer captures remain a third evidence source. [Final test and desktop records](M08_FINAL_REPORT.md#verification)
+
+## M08 Package D · 2026-11-26
+
+Fresh isolated Godot 4.7.2 import passed all 17 suites with 1,142 explicit checks, four original crop assertion groups and zero failures. The new suite passed 38 checks across 1280 × 720 and 1920 × 1080. Default launch and the archived Lettuce probe passed. Separately, the owner reported all 11 M08-C desktop checks passed, including all three crop artworks and both resolutions. M08-D has renderer captures and automated modal checks. Its owner desktop acceptance remains pending. [M08-D evidence](M08_PACKAGE_D_REPORT.md)
+
+## M08 Package C · 2026-11-26
+
+Fresh isolated Godot 4.7.2 import and all 16 suites passed with 1,104 explicit checks and four original crop assertion groups. The new environment suite passed 68 checks at 1280 × 720 and 1920 × 1080. The existing overlap assertion now compares dashboard widgets in their shared coordinate space, and the new suite checks the moved cultivation controls inside their own visible dialog. Default launch and the archived Lettuce probe passed. Renderer captures and manual owner acceptance are separate evidence. [M08-C results](M08_PACKAGE_C_REPORT.md)
+
 ## Inventory discard hotfix · 2026-11-26
 
 Direct equality between seed objects and product strings failed during selection restoration. Type-safe identity/value comparison now preserves valid selection, selects the first remaining item after removal, and clears selection when empty. The owner reported that all nine manual regression checks passed. The isolated M08 working tree passed 15 suites, 1,036 explicit checks and four original crop assertion groups, including nine presentation checks for cancellation, mixed inventory, depletion and replenishment.
 
 The isolated v0.3.0 hotfix build passed its 13 existing suites, 932 explicit checks, four original assertion groups and a separate nine-check inventory probe. Fresh import and default launch passed on Godot 4.7.2. The existing Windows certificate-store diagnostic remained present.
+
+## M08 Package B · 2026-11-26
+
+Fresh Godot 4.7.2 isolated import passed 15 suites, 1,027 explicit checks and four original crop assertion groups, with no failures. The artwork suite passed 46 checks. All 14 earlier suites, the default launch and archived Lettuce probe passed. Godot renderer captures are distinct from the pending manual M08-B desktop walkthrough. [M08-B report](M08_PACKAGE_B_REPORT.md)
+
+## M08 Package A · 2026-11-26
+
+Fresh Godot 4.7.2 isolated import passed 14 suites, 981 explicit checks and four original assertion groups. All 13 existing suites and their numerical fixtures passed unchanged. The presentation suite passed 49 checks. The essential dashboard control set fit without overlap at 1280 × 720 and 1920 × 1080. The 1024 × 576 probe overflowed. Default launch and the legacy Lettuce probe passed. Desktop typography, keyboard traversal and visual acceptance remain pending. [M08-A report](M08_PACKAGE_A_REPORT.md)
 
 ## M07 checkpoint · 2026-11-26
 

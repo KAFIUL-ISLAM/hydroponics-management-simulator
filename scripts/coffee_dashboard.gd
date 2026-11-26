@@ -6,6 +6,9 @@ const Pollution = preload("res://scripts/pollution_analysis.gd")
 const Genetics = preload("res://scripts/crop_genetics.gd")
 const Equipment = preload("res://scripts/hydroponic_equipment.gd")
 const DNA = preload("res://scripts/dna_editor.gd")
+const Art = preload("res://scripts/orbital_art.gd")
+const ChamberArt = preload("res://scripts/cultivation_art.gd")
+const Workstation = preload("res://scripts/workstation_view.gd")
 const POLLUTANT_NAMES := ["重金属 / Heavy metals", "化学污染物 / Chemicals", "微生物 / Microbes",
 	"有机废物 / Organic waste", "酸 / Acid", "碱 / Alkali"]
 
@@ -33,6 +36,35 @@ var dna_seed: OptionButton
 var dna_trait: OptionButton
 var dna_readout: Label
 var dna_start: Button
+var machine_name_label: Label
+var machine_state_label: Label
+var dna_status_label: Label
+var growth_meter: ProgressBar
+var contextual_action: Button
+var contextual_action_key: String
+var art: Art
+var cultivation_art: ChamberArt
+var cultivation_dialog: AcceptDialog
+var inventory_tiles: ItemList
+var inventory_caption: Label
+var inventory_seed_choice: Farm.Seed
+var seed_aliases: Dictionary[int, int] = {}
+var health_meter: ProgressBar
+var solution_meter: ProgressBar
+var crop_icon: TextureRect
+var hotspots: Dictionary[String, Button] = {}
+var workstation_dialogs: Array[AcceptDialog] = []
+var return_focus: Control
+var workstation_shade: ColorRect
+var liquid_summary: Label
+var liquid_capacity: ProgressBar
+var liquid_range: ProgressBar
+var liquid_band: Label
+var optimal_segment: ColorRect
+var equipment_slots: Label
+var genes_readout: Label
+var genes_portrait: TextureRect
+var dna_progress: ProgressBar
 
 func _enter_tree() -> void:
 	$GameState.starting_crop = null
@@ -46,7 +78,9 @@ func _ready() -> void:
 	game_state.night_processing_finished.connect(_on_coffee_finished)
 	_on_day_changed(game_state.current_day)
 	_on_status_changed(game_state.status)
+	art = Art.new()
 	_build_actions()
+	_prepare_workstations()
 	_render()
 	control_hint.text = "播种后启动机器 / Plant a seed and start the machine"
 
@@ -59,10 +93,10 @@ func _build_actions() -> void:
 	bar.get_node("EquipmentButton").hide()
 	supplies = Label.new()
 	supplies.add_theme_font_size_override("font_size", 13)
-	var supply_row := HBoxContainer.new()
+	var supply_row := GridContainer.new()
+	supply_row.columns = 2
+	machine.add_child(supplies)
 	machine.add_child(supply_row)
-	supplies.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	supply_row.add_child(supplies)
 	var analysis := Button.new()
 	analysis.add_theme_font_size_override("font_size", 13)
 	supply_row.add_child(analysis)
@@ -75,9 +109,11 @@ func _build_actions() -> void:
 	actions["equipment"] = equipment_button
 	equipment_button.pressed.connect(func() -> void:
 		_refresh_equipment()
-		equipment_dialog.popup_centered()
+		_present(equipment_dialog)
 	)
 	crop_menu = OptionButton.new()
+	crop_menu.fit_to_longest_item = false
+	crop_menu.clip_text = true
 	crop_menu.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	for definition in farm.catalog:
 		crop_menu.add_item("%s / %s" % [definition.name_zh, definition.name_en] if definition != null else "无效 / Invalid")
@@ -87,12 +123,17 @@ func _build_actions() -> void:
 	var genes := Button.new()
 	genes.text = "基因 / Genes"
 	genes.add_theme_font_size_override("font_size", 13)
-	crop_row.add_child(genes)
+	supply_row.add_child(genes)
 	actions["genetics"] = genes
 	genes.pressed.connect(_show_genetics)
 	genetics_dialog = AcceptDialog.new()
 	genetics_dialog.title = "种子分析 / Seed analysis"
 	add_child(genetics_dialog)
+	var genes_body := Workstation.body(genetics_dialog, "标本图谱 / Seed profile", art.texture("seed"), Color("#AE91ED"))
+	genes_portrait = Art.decoration(null)
+	genes_portrait.custom_minimum_size.y = 62
+	genes_body.add_child(genes_portrait)
+	genes_readout = Workstation.readout(Workstation.row(genes_body))
 	next_seed_button = genetics_dialog.add_button("下一个种子 / Next seed", true)
 	next_seed_button.pressed.connect(_next_seed)
 	demo_genes_button = genetics_dialog.add_button("演示 / Demo Coffee", false)
@@ -113,15 +154,40 @@ func _build_actions() -> void:
 	_action(grid, "plant", "播种 / Plant", farm.plant_bean)
 	_action(grid, "run", "启动 / Start", farm.toggle_running)
 	_action(grid, "water", "加水 / Add water", farm.add_water)
-	_action(grid, "tablet", "加营养片 / Add tablet", farm.add_tablet)
+	_action(grid, "tablet", "营养片 / Tablet", farm.add_tablet)
 	_action(grid, "energy", "充电 / Add energy", farm.add_energy)
 	_action(grid, "harvest", "收获 / Collect", farm.collect)
 	_action(grid, "seed_supply", "演示补种 / Demo seed", farm.supply_demo_seed)
-	_action(grid, "drain", "排液 / Drain solution", _confirm_drain)
+	_action(grid, "drain", "排液 / Drain", _confirm_drain)
+	cultivation_dialog = AcceptDialog.new()
+	cultivation_dialog.title = "培育操作 / Cultivation controls"
+	add_child(cultivation_dialog)
+	var cultivation_row := HBoxContainer.new()
+	cultivation_dialog.add_child(cultivation_row)
+	for key: String in ["plant", "run", "harvest"]:
+		actions[key].reparent(cultivation_row, false)
+		actions[key].pressed.connect(cultivation_dialog.hide)
+	var cultivation := Button.new()
+	cultivation.text = "培育 / Grow"
+	supply_row.add_child(cultivation)
+	supply_row.move_child(cultivation, 0)
+	cultivation.pressed.connect(_open_cultivation)
+	var demo_caption := _section("演示 / Demo")
+	machine.add_child(demo_caption)
+	actions["seed_supply"].reparent(machine, false)
 	var inventory_row := HBoxContainer.new()
-	machine.add_child(inventory_row)
+	var layout := $SafeArea/MainLayout as VBoxContainer
+	var inventory_panel := PanelContainer.new()
+	layout.add_child(inventory_panel)
+	layout.move_child(inventory_panel, next_night_button.get_parent().get_parent().get_index())
+	var inventory_content := VBoxContainer.new()
+	inventory_panel.add_child(inventory_content)
+	inventory_content.add_child(inventory_row)
+	inventory_caption = _section("库存 / Inventory")
+	inventory_row.add_child(inventory_caption)
 	stored_items = OptionButton.new()
 	stored_items.fit_to_longest_item = false
+	stored_items.clip_text = true
 	stored_items.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inventory_row.add_child(stored_items)
 	var discard := Button.new()
@@ -129,6 +195,18 @@ func _build_actions() -> void:
 	inventory_row.add_child(discard)
 	actions["discard"] = discard
 	discard.pressed.connect(_confirm_discard)
+	inventory_tiles = ItemList.new()
+	inventory_tiles.custom_minimum_size.y = 74
+	inventory_tiles.icon_mode = ItemList.ICON_MODE_TOP
+	inventory_tiles.fixed_icon_size = Vector2i(29, 29)
+	inventory_tiles.fixed_column_width = 101
+	inventory_tiles.max_text_lines = 2
+	inventory_tiles.max_columns = 0
+	inventory_tiles.same_column_width = true
+	inventory_tiles.add_theme_font_size_override("font_size", 12)
+	inventory_tiles.tooltip_text = "滚动查看更多 / Scroll for more items"
+	inventory_content.add_child(inventory_tiles)
+	inventory_tiles.item_selected.connect(_select_inventory_item)
 	confirm_action = ConfirmationDialog.new()
 	add_child(confirm_action)
 	confirm_action.canceled.connect(func() -> void: pending_action = Callable())
@@ -144,6 +222,233 @@ func _build_actions() -> void:
 	_build_analysis()
 	_build_equipment()
 	_build_dna()
+	var editor_shortcut := Button.new()
+	editor_shortcut.text = "DNA 编辑 / DNA"
+	editor_shortcut.add_theme_font_size_override("font_size", 13)
+	_set_icon(editor_shortcut, "station")
+	supply_row.add_child(editor_shortcut)
+	editor_shortcut.pressed.connect(_open_dna)
+
+func _open_cultivation() -> void:
+	_present(cultivation_dialog)
+
+func _present(dialog: AcceptDialog) -> void:
+	var current := get_viewport().gui_get_focus_owner()
+	if current != null and current.get_window() == get_window():
+		return_focus = current
+	dialog.popup_centered()
+	if dialog == confirm_action:
+		confirm_action.get_cancel_button().grab_focus.call_deferred()
+
+func _restore_workstation_focus() -> void:
+	for dialog: AcceptDialog in workstation_dialogs:
+		if dialog.visible:
+			return
+	if is_instance_valid(return_focus) and return_focus.is_visible_in_tree():
+		return_focus.grab_focus()
+	return_focus = null
+
+func _sync_workstation_layer() -> void:
+	for dialog: AcceptDialog in workstation_dialogs:
+		if dialog.visible:
+			workstation_shade.show()
+			return
+	workstation_shade.hide()
+	_restore_workstation_focus.call_deferred()
+
+func _select_inventory_item(index: int) -> void:
+	stored_items.select(index)
+	var item: Variant = stored_items.get_item_metadata(index)
+	inventory_seed_choice = item as Farm.Seed
+	if item is Farm.Seed and farm.plant == null and farm.can_act():
+		if farm.crop == item.definition or farm.select_species(farm.catalog.find(item.definition)):
+			farm.select_seed(item.get_instance_id())
+	_render()
+
+func _inventory_tile_label(item: Variant) -> String:
+	if item is Farm.Seed:
+		var id: int = item.get_instance_id()
+		if not seed_aliases.has(id):
+			seed_aliases[id] = seed_aliases.size() + 1
+		return "%s #%02d\n种子 / Seed" % [item.definition.name_zh, seed_aliases[id]]
+	var product: String = item
+	return "%s ×%d\n收获物 / Harvest" % [product.get_slice(" / ", 0), farm.products[product]]
+
+func _section(caption: String) -> Label:
+	var label := Label.new()
+	label.text = caption
+	label.add_theme_font_size_override("font_size", 15)
+	return label
+
+func _prepare_workstations() -> void:
+	var layout := $SafeArea/MainLayout
+	var panels := layout.get_node("MainPanels") as HBoxContainer
+	var machine := panels.get_node("MachinePanel/MachineContent") as VBoxContainer
+	var chamber := machine.get_node("MachineStatus") as PanelContainer
+	var chamber_content := chamber.get_node("MachineStatusContent") as VBoxContainer
+	machine_name_label = chamber_content.get_node("MachineName")
+	machine_state_label = chamber_content.get_node("MachineDescription")
+	chamber.reparent(panels)
+	panels.move_child(chamber, 1)
+	chamber.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	chamber.size_flags_stretch_ratio = 2.9
+	(machine.get_parent() as Control).size_flags_stretch_ratio = 0.75
+	(panels.get_node("CropPanel") as Control).size_flags_stretch_ratio = 1.1
+	chamber_content.get_node("MachineIcon").hide()
+	var heading := _section("培育舱 / Cultivation chamber")
+	var chamber_header := HBoxContainer.new()
+	chamber_content.add_child(chamber_header)
+	chamber_content.move_child(chamber_header, 0)
+	chamber_header.add_child(heading)
+	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	machine_name_label.reparent(chamber_header, false)
+	machine_state_label.hide()
+	var artwork := Control.new()
+	artwork.name = "ArtworkLayers"
+	artwork.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	artwork.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	chamber_content.add_child(artwork)
+	cultivation_art = ChamberArt.new(artwork, art)
+	hotspots["cultivation"] = cultivation_art.add_hotspot("培育 / Grow", "培育操作 / Open cultivation controls",
+		Rect2(0.36, 0.08, 0.29, 0.095), _open_cultivation)
+	hotspots["analysis"] = cultivation_art.add_hotspot("液 / Tank", "液体分析 / Open liquid analysis",
+		Rect2(0.08, 0.56, 0.24, 0.095), actions["analysis"].pressed.emit)
+	hotspots["equipment"] = cultivation_art.add_hotspot("机 / Gear", "设备管理 / Open equipment management",
+		Rect2(0.78, 0.63, 0.22, 0.095), actions["equipment"].pressed.emit)
+	var chamber_footer := HBoxContainer.new()
+	chamber_content.add_child(chamber_footer)
+	cultivation_art.stage_label.reparent(chamber_footer, false)
+	cultivation_art.stage_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dna_status_label = _section("")
+	dna_status_label.add_theme_font_size_override("font_size", 12)
+	dna_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	dna_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	chamber_footer.add_child(dna_status_label)
+	var crop_content := panels.get_node("CropPanel/CropContent") as VBoxContainer
+	var crop_readout := crop_content.get_node("CropEmptyState/CropEmptyContent") as VBoxContainer
+	crop_readout.get_node("CropIcon").hide()
+	crop_readout.alignment = BoxContainer.ALIGNMENT_BEGIN
+	crop_readout.add_theme_constant_override("separation", 4)
+	crop_growth_label.add_theme_font_size_override("font_size", 14)
+	crop_icon = Art.decoration(null)
+	crop_icon.custom_minimum_size.y = 30
+	crop_readout.add_child(crop_icon)
+	crop_readout.move_child(crop_icon, 1)
+	growth_meter = _meter(crop_readout, "生长 / Growth")
+	health_meter = _meter(crop_readout, "健康 / Health")
+	solution_meter = _meter(crop_readout, "溶液 / Solution")
+	layout.get_node("Header/HeaderContent/TitleGroup/GameTitle").text = "轨道水培实验室"
+	layout.get_node("Header/HeaderContent/TitleGroup/GameSubtitle").text = "ORBITAL HYDROPONICS"
+	layout.get_node("FooterLabel").hide()
+	(layout.get_node("Header") as Control).custom_minimum_size.y = 54
+	layout.add_theme_constant_override("separation", 8)
+	panels.add_theme_constant_override("separation", 8)
+	$Background.color = Color("#101820")
+	for panel: PanelContainer in [layout.get_node("Header"), layout.get_node("ControlBar"), panels.get_node("MachinePanel"), panels.get_node("CropPanel"), chamber]:
+		panel.remove_theme_stylebox_override("panel")
+	for card: PanelContainer in layout.get_node("ResourceRow").get_children():
+		card.remove_theme_stylebox_override("panel")
+		var content := card.get_child(0) as VBoxContainer
+		content.add_theme_constant_override("separation", 2)
+		content.get_child(2).hide()
+	water_value_label.add_theme_color_override("font_color", Color("#58BCEB"))
+	electricity_value_label.add_theme_color_override("font_color", Color("#E9B65A"))
+	_add_resource_icon(water_value_label, "water")
+	_add_resource_icon(electricity_value_label, "energy")
+	_set_icon(actions["analysis"], "tank")
+	actions["analysis"].add_theme_constant_override("icon_max_width", 13)
+	_set_icon(actions["equipment"], "terminal")
+	_set_icon(actions["genetics"], "dna")
+	_set_icon(actions["install_module"], "module")
+	_set_icon(actions["seed_supply"], "seed")
+	stored_items.item_selected.connect(_select_inventory_item)
+	machine.get_node("MachineHeading").text = "操作台 / Workstations"
+	next_night_button.text = "下一夜 / Next Night"
+	next_night_button.remove_theme_stylebox_override("normal")
+	next_night_button.theme_type_variation = &"PrimaryAction"
+	contextual_action = Button.new()
+	contextual_action.add_theme_font_size_override("font_size", 13)
+	contextual_action.theme_type_variation = &"PrimaryAction"
+	var controls := next_night_button.get_parent()
+	controls.add_child(contextual_action)
+	controls.move_child(contextual_action, next_night_button.get_index())
+	contextual_action.pressed.connect(func() -> void:
+		var action := actions[contextual_action_key]
+		if not action.disabled:
+			action.pressed.emit()
+	)
+	actions["seed_supply"].modulate = Color("#AE91ED")
+	control_hint.add_theme_font_size_override("font_size", 14)
+	control_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	control_hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	workstation_dialogs.assign([genetics_dialog, dna_dialog, liquid_dialog, equipment_dialog, confirm_action, cultivation_dialog])
+	workstation_shade = ColorRect.new()
+	workstation_shade.color = Color("#081017a8")
+	workstation_shade.mouse_filter = Control.MOUSE_FILTER_STOP
+	workstation_shade.hide()
+	add_child(workstation_shade)
+	workstation_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for modal: AcceptDialog in workstation_dialogs:
+		modal.theme = theme
+		modal.transient = true
+		modal.exclusive = true
+		modal.ok_button_text = "关闭 / Close"
+		modal.visibility_changed.connect(_sync_workstation_layer)
+		Workstation.bind_escape(modal, func() -> void:
+			if modal == confirm_action:
+				pending_action = Callable()
+			modal.hide()
+		)
+	confirm_action.title = "确认操作 / Confirm action"
+	confirm_action.ok_button_text = "确认 / Confirm"
+	confirm_action.cancel_button_text = "取消 / Cancel"
+
+func _meter(parent: VBoxContainer, caption: String) -> ProgressBar:
+	var row := HBoxContainer.new()
+	parent.add_child(row)
+	var label := _section(caption)
+	label.add_theme_font_size_override("font_size", 11)
+	label.custom_minimum_size.x = 90
+	row.add_child(label)
+	var bar := ProgressBar.new()
+	bar.show_percentage = false
+	bar.custom_minimum_size.y = 7
+	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(bar)
+	return bar
+
+func _set_icon(button: Button, key: String) -> void:
+	button.icon = art.texture(key)
+	button.add_theme_constant_override("icon_max_width", 17)
+	button.expand_icon = false
+
+func _add_resource_icon(label: Label, key: String) -> void:
+	var sprite := Art.decoration(art.texture(key))
+	label.add_child(sprite)
+	sprite.set_anchors_and_offsets_preset(Control.PRESET_CENTER_RIGHT)
+	sprite.offset_left = -42
+	sprite.offset_right = -3
+	sprite.offset_top = -18
+	sprite.offset_bottom = 18
+
+func inventory_icon_key(item: Variant) -> String:
+	if item is Farm.Seed:
+		return "seed"
+	if item is String:
+		for definition: ReferenceCrop in farm.catalog:
+			if definition != null and item.begins_with(definition.product_name + " · "):
+				return Art.species_key(definition.species)
+	return ""
+
+func _update_inventory_icon() -> void:
+	var item: Variant = stored_items.get_selected_metadata() if stored_items.selected >= 0 else null
+	_set_icon(actions["discard"], inventory_icon_key(item))
+	actions["discard"].disabled = not farm.configured or not (item is Farm.Seed or item is String)
+
+func _on_status_changed(status: GameState.SimulationStatus) -> void:
+	super._on_status_changed(status)
+	status_label.text = "全局 / System · " + status_label.text
 
 func _build_dna() -> void:
 	var open := genetics_dialog.add_button("DNA 编辑 / DNA edit", true)
@@ -152,24 +457,28 @@ func _build_dna() -> void:
 	dna_dialog = AcceptDialog.new()
 	dna_dialog.title = "DNA 编辑器 / DNA editor"
 	add_child(dna_dialog)
-	var content := VBoxContainer.new()
-	dna_dialog.add_child(content)
+	var content := Workstation.body(dna_dialog, "DNA 操作台 / Genetic workstation", art.texture("station"), Color("#AE91ED"))
+	var selectors := Workstation.row(content)
+	Workstation.section(selectors, "选定种子 / Selected seed")
 	dna_seed = OptionButton.new()
-	content.add_child(dna_seed)
+	selectors.add_child(dna_seed)
+	Workstation.section(selectors, "性状数据盘 / Trait disc")
 	dna_trait = OptionButton.new()
-	content.add_child(dna_trait)
+	selectors.add_child(dna_trait)
 	for id: String in DNA.SUPPORTED:
 		var entry := Genetics.definition(id)
 		dna_trait.add_item("%s / %s" % [entry.name_zh, id])
 	dna_seed.item_selected.connect(func(_index: int) -> void: _refresh_dna())
 	dna_trait.item_selected.connect(func(_index: int) -> void: _refresh_dna())
-	dna_readout = Label.new()
-	content.add_child(dna_readout)
-	dna_start = Button.new()
-	dna_start.text = "确认应用 / Confirm application"
-	content.add_child(dna_start)
+	var operation := Workstation.row(content)
+	Workstation.section(operation, "操作状态与结果 / Operation status and result")
+	dna_progress = Workstation.meter(operation)
+	dna_readout = Workstation.readout(operation)
+	dna_start = dna_dialog.add_button("确认应用 / Confirm application", false)
+	dna_start.theme_type_variation = &"PrimaryAction"
 	dna_start.pressed.connect(func() -> void:
-		if dna_seed.selected >= 0:
+		if not dna_start.disabled and dna_seed.selected >= 0:
+			dna_start.disabled = true
 			farm.begin_edit(dna_seed.get_selected_metadata(), DNA.SUPPORTED[dna_trait.selected])
 			_render()
 			_refresh_dna()
@@ -179,20 +488,24 @@ func _open_dna() -> void:
 	genetics_dialog.hide()
 	dna_seed.clear()
 	var chosen := farm.selected_seed()
+	if inventory_seed_choice != null and is_same(stored_items.get_selected_metadata(), inventory_seed_choice):
+		chosen = inventory_seed_choice
 	for definition: ReferenceCrop in farm.catalog:
 		for item: Farm.Seed in farm.seed_stock(definition):
-			dna_seed.add_item("%s / %s · #%d" % [definition.name_zh, definition.name_en, item.get_instance_id()])
+			dna_seed.add_item("%s / %s" % [_inventory_tile_label(item).get_slice("\n", 0), definition.name_en])
 			dna_seed.set_item_metadata(dna_seed.item_count - 1, item)
 			if item == chosen:
 				dna_seed.select(dna_seed.item_count - 1)
 	_refresh_dna()
-	dna_dialog.popup_centered()
+	_present(dna_dialog)
 
 func _refresh_dna() -> void:
 	var editor := farm.dna_editor
 	dna_start.disabled = true
 	dna_seed.disabled = editor.stage == DNA.Stage.RUNNING
 	dna_trait.disabled = dna_seed.disabled
+	dna_progress.max_value = editor.operation.required_points if editor.operation != null else 1
+	dna_progress.value = editor.progress
 	dna_readout.text = "演示数据盘 / Demo trait discs · 提取未开放 / Extraction unavailable\n"
 	if editor.stage != DNA.Stage.IDLE:
 		var state_text := "进行中或缺电暂停 / Running or waiting for energy"
@@ -214,6 +527,10 @@ func _refresh_dna() -> void:
 	var id: String = DNA.SUPPORTED[dna_trait.selected]
 	var item: Farm.Seed = dna_seed.get_selected_metadata()
 	var plan := farm.preview_edit(item, id)
+	dna_readout.text += "\n技术标识 / Seed ID: #%d · 可用次数 / Disc uses: %d\n" % [item.get_instance_id(), farm.disc_uses[id]]
+	if plan.valid():
+		dna_readout.text += "成功率 / Chance: %d%% · %d 夜 / nights · %d kJ (%d/night)\n" % [
+			plan.success_pct, plan.nights, plan.total_energy_kj, DNA.ENERGY_PER_NIGHT_KJ]
 	var names := PackedStringArray()
 	for trait_id: String in item.traits:
 		var entry := Genetics.definition(trait_id)
@@ -222,9 +539,10 @@ func _refresh_dna() -> void:
 	for index: int in range(0, names.size(), 3):
 		dna_readout.text += ", ".join(names.slice(index, index + 3)) + "\n"
 	if not plan.valid():
-		dna_readout.text += plan.error
+		dna_readout.text += "\n不可用 / Unavailable · " + plan.error
 		return
 	dna_start.disabled = false
+	dna_readout.text += "\n应用预览 / Proposed application\n"
 	dna_readout.text += "等级 / Rank: %d → %d · 可用次数 / Disc uses: %d\n" % [
 		plan.before.traits.get(id, 0), plan.after.traits[id], farm.disc_uses[id]]
 	dna_readout.text += "复杂度 / Complexity: %d → %d · 热度 / Heat: %d → %d\n" % [
@@ -233,17 +551,16 @@ func _refresh_dna() -> void:
 		plan.before.crop.target, plan.after.crop.target, plan.before.crop.healthy_output, plan.after.crop.healthy_output]
 	dna_readout.text += "耗液 / Draw: %d → %d µL · 敏感度 / Sensitivity: %.3f → %.3f\n" % [
 		plan.before.crop.draw_ul, plan.after.crop.draw_ul, plan.before.crop.native_pollution_sensitivity, plan.after.crop.native_pollution_sensitivity]
-	dna_readout.text += "成功率 / Chance: %d%% · %d 夜 / nights · %d kJ (%d/night)" % [
-		plan.success_pct, plan.nights, plan.total_energy_kj, DNA.ENERGY_PER_NIGHT_KJ]
 
 func _build_equipment() -> void:
 	equipment_dialog = AcceptDialog.new()
 	equipment_dialog.title = "设备管理 / Equipment"
 	add_child(equipment_dialog)
-	var content := VBoxContainer.new()
-	equipment_dialog.add_child(content)
-	equipment_readout = Label.new()
-	content.add_child(equipment_readout)
+	var content := Workstation.body(equipment_dialog, "设备与耗能 / Equipment and power", art.texture("terminal"), Color("#E9B65A"))
+	var readout := Workstation.row(content)
+	Workstation.section(readout, "当前配置 / Current configuration")
+	equipment_readout = Workstation.readout(readout)
+	Workstation.section(content, "设备与容器 / Machine and vessel")
 	machine_choice = OptionButton.new()
 	for id: int in farm.demo_machines:
 		var entry := Equipment.machine_definition(id)
@@ -256,6 +573,13 @@ func _build_equipment() -> void:
 	vessel_choice.add_item("水罐 / 3 L water can", Equipment.Vessel.CAN)
 	_equipment_row(content, vessel_choice, "换容器 / Switch vessel", "switch_vessel", func() -> bool:
 		return farm.select_vessel(vessel_choice.get_selected_id()))
+	var module_header := HBoxContainer.new()
+	content.add_child(module_header)
+	var module_icon := Art.decoration(art.texture("module"))
+	module_icon.custom_minimum_size = Vector2(25, 25)
+	module_header.add_child(module_icon)
+	Workstation.section(module_header, "模组插槽与库存 / Module slots and stock")
+	equipment_slots = Workstation.readout(content)
 	module_choice = OptionButton.new()
 	var module_row := _equipment_row(content, module_choice, "安装 / Install", "install_module", func() -> bool:
 		return farm.install_module(module_choice.get_selected_id()))
@@ -284,9 +608,9 @@ func _equipment_control(row: HBoxContainer, label: String, key: String, operatio
 
 func _refresh_equipment() -> void:
 	var effective := farm.effective_equipment()
-	equipment_readout.text = "演示库存 / Demo equipment supply\n"
-	equipment_readout.text += "%s · 插槽 / Slots: %d/%d\n" % [
-		effective.machine.label, farm.installed_modules.size(), farm.demo_module_slots if effective.machine.supports_modules else 0]
+	var slot_count: int = farm.demo_module_slots if effective.machine.supports_modules else 0
+	equipment_readout.text = "%s · %s\n" % [effective.machine.label,
+		"水罐 / 3 L water can" if farm.vessel_id == Equipment.Vessel.CAN else "演示容器 / Demo vessel"]
 	equipment_readout.text += "基础 → 生效 / Base → effective: %d → %d pts/night · %d → %d kJ/night\n" % [
 		effective.machine.growth, effective.growth, effective.machine.energy_kj, effective.energy_kj]
 	equipment_readout.text += "容积 / Capacity: %.0f mL · 性能 / P: %+d · 效率 / E: %+d\n" % [
@@ -295,6 +619,11 @@ func _refresh_equipment() -> void:
 		effective.adjusted_quality, effective.reproduction_multiplier, effective.extra_output]
 	if not effective.replacement.is_empty():
 		equipment_readout.text += effective.replacement + "\n"
+	equipment_slots.text = "%s   %d/%d · 演示库存 / Demo stock\n" % [
+		"■ ".repeat(mini(16, farm.installed_modules.size())) + "□ ".repeat(clampi(slot_count - farm.installed_modules.size(), 0, 16)),
+		farm.installed_modules.size(), slot_count]
+	for id: int in farm.installed_modules:
+		equipment_slots.text += Equipment.module_definition(id).label + "\n"
 	var module_id := module_choice.get_selected_id()
 	module_choice.clear()
 	for id: int in Equipment.Module.values():
@@ -309,17 +638,28 @@ func _refresh_equipment() -> void:
 	if selected_module != null and module_choice.item_count > 0:
 		equipment_readout.text += "模组 / Module: P %+d · E %+d · Q %+d\n%s\n" % [
 			selected_module.performance, selected_module.efficiency, selected_module.quality, selected_module.description]
-	equipment_readout.text += farm.equipment_error
+	if not farm.equipment_error.is_empty():
+		equipment_readout.text += "\n未应用 / Rejected · " + farm.equipment_error
 
 func _build_analysis() -> void:
 	liquid_dialog = AcceptDialog.new()
 	liquid_dialog.title = "液体分析 / Liquid analysis"
 	add_child(liquid_dialog)
-	var content := VBoxContainer.new()
-	liquid_dialog.add_child(content)
-	analysis_text = Label.new()
-	analysis_text.add_theme_font_size_override("font_size", 14)
-	content.add_child(analysis_text)
+	var content := Workstation.body(liquid_dialog, "溶液诊断 / Solution diagnostics", art.texture("tank"), Color("#58BCEB"))
+	var summary := Workstation.row(content)
+	Workstation.section(summary, "容器与矿物 / Vessel and minerals")
+	liquid_summary = Workstation.readout(summary)
+	liquid_capacity = Workstation.meter(summary)
+	liquid_band = Workstation.readout(summary)
+	liquid_range = Workstation.meter(summary)
+	optimal_segment = ColorRect.new()
+	optimal_segment.color = Color("#E9B65A")
+	optimal_segment.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	liquid_range.add_child(optimal_segment)
+	optimal_segment.offset_bottom = 3
+	Workstation.section(content, "污染检测 / Pollutant readings")
+	analysis_text = Workstation.readout(Workstation.row(content))
+	Workstation.section(content, "演示溶液 / Demo solution replacement")
 	var scenario_row := HBoxContainer.new()
 	content.add_child(scenario_row)
 	scenario_menu = OptionButton.new()
@@ -338,16 +678,34 @@ func _confirm_scenario() -> void:
 	pending_action = farm.load_demo_solution.bind(scenario_menu.selected)
 	confirm_action.dialog_text = "替换当前溶液，无退款？ / Replace current solution without refund?\n"
 	confirm_action.dialog_text += "演示补给不计入储备 / Demo solution is supplied separately."
-	confirm_action.popup_centered()
+	_present(confirm_action)
 
 func _show_analysis() -> void:
 	var snapshot := farm.vessel.snapshot_ul()
 	var result := farm.pollution_analysis(snapshot)
 	var mineral_pct: Variant = farm.vessel.mineral_concentration_pct()
 	var mineral_label := "未定义 / undefined" if mineral_pct == null else "%.3f%%" % mineral_pct
-	analysis_text.text = "纯水 / Water: %d µL   矿物 / Minerals: %d µL (%s)\n" % [
+	liquid_summary.text = "纯水 / Water: %d µL   矿物 / Minerals: %d µL (%s)\n" % [
 		result.water_ul, snapshot.get(LIQ.Component.MINERALS, 0), mineral_label]
-	analysis_text.text += "溶液 / Solution: %d / %d µL\n" % [farm.vessel.total_ul(), farm.vessel.capacity_ul()]
+	liquid_summary.text += "溶液 / Solution: %d / %d µL" % [farm.vessel.total_ul(), farm.vessel.capacity_ul()]
+	liquid_capacity.max_value = maxi(1, farm.vessel.capacity_ul())
+	liquid_capacity.value = farm.vessel.total_ul()
+	var definition := farm.plant.genetics.crop if farm.plant != null else farm.crop
+	liquid_band.text = "危急 · 无法判断 / Critical · Mineral band unavailable"
+	liquid_range.visible = mineral_pct != null and definition != null
+	if definition != null:
+		var band := LIQ.classify_mineral_band(mineral_pct, definition.mineral_low_pct, definition.mineral_high_pct)
+		match band:
+			LIQ.Band.IN_RANGE: liquid_band.text = "适宜 / Healthy"
+			LIQ.Band.BELOW: liquid_band.text = "偏低 / Warning · Low"
+			LIQ.Band.ABOVE: liquid_band.text = "偏高 / Warning · High"
+		liquid_band.text += " · 适宜区间 / Optimal: %.2f–%.2f%%" % [definition.mineral_low_pct, definition.mineral_high_pct]
+		liquid_range.max_value = maxf(1.0, definition.mineral_high_pct * 1.25)
+		liquid_range.value = 0.0 if mineral_pct == null else float(mineral_pct)
+		optimal_segment.anchor_left = definition.mineral_low_pct / liquid_range.max_value
+		optimal_segment.anchor_right = definition.mineral_high_pct / liquid_range.max_value
+	analysis_text.text = "预测每夜污染损伤 / Predicted nightly pollution damage: %s\n\n" % (
+		str(result.rounded_damage()) if result.defined else "未定义 / undefined")
 	analysis_text.text += "物理 / Physical: %d µL   惰性 / Inert: %d µL\n" % [result.physical_ul, result.inert_ul]
 	analysis_text.text += "有害污染 / Harmful: %d µL · 敏感度 / Sensitivity: %.5f · 系数 / Factor: %.2f\n" % [
 		result.harmful_ul, result.sensitivity, result.damage_factor]
@@ -356,19 +714,17 @@ func _show_analysis() -> void:
 		var part := result.components[index]
 		var exposure := "%.4f → %.4f" % [part.concentration, part.exposure] if part.exposure != null else "未定义 / undefined"
 		analysis_text.text += "%s: %d µL · %s\n" % [POLLUTANT_NAMES[index], part.volume_ul, exposure]
-	analysis_text.text += "预测每夜污染损伤 / Predicted nightly pollution damage: %s" % (
-		str(result.rounded_damage()) if result.defined else "未定义 / undefined")
 	if last_night != null:
-		analysis_text.text += "\n上次运行夜损伤 / Last running night damage (health units)"
+		analysis_text.text += "\n\n上次运行夜损伤 / Last running night damage (health units) · %d" % last_night.pollution_damage
 		for index: int in last_night.pollution.components.size():
 			analysis_text.text += "\n%s: %.2f" % [POLLUTANT_NAMES[index], last_night.pollution.components[index].nightly_damage]
-	liquid_dialog.popup_centered()
+	_present(liquid_dialog)
 
 func _confirm_drain() -> bool:
 	pending_action = farm.drain_solution
 	confirm_action.dialog_text = "排出 %.3f ml，无退款。补液消耗储备。\nDiscard %.3f ml without refund. Refilling uses supply." % [
 		farm.vessel.total_ul() / 1000.0, farm.vessel.total_ul() / 1000.0]
-	confirm_action.popup_centered()
+	_present(confirm_action)
 	return true
 
 func _show_genetics() -> void:
@@ -382,18 +738,18 @@ func _show_genetics() -> void:
 	else:
 		inspected_seed = farm.selected_seed()
 		if inspected_seed == null:
-			genetics_dialog.dialog_text = "无可用种子 / No seed available"
-			genetics_dialog.popup_centered()
+			genes_portrait.texture = null
+			_present_genetics("无可用种子 / No seed available")
 			return
 		result = inspected_seed.analyze()
-	var text := "种子 / Seed #%d\n" % inspected_seed.get_instance_id()
+	genes_portrait.texture = art.texture(Art.species_key(inspected_seed.definition.species), "seed")
+	var text := "%s / Seed profile\n" % _inventory_tile_label(inspected_seed).get_slice("\n", 0)
 	if farm.plant != null and farm.plant.reproduction != null and farm.plant.reproduction.eligible:
 		var returned := farm.plant.reproduction
 		text += "待领取种子 / Pending offspring: %d · 尝试 / Attempts: %d\n" % [returned.offspring_count, returned.attempts]
 		text += "返种倍率 / Return: ×%.8f · 额外 / Extra: %.5f%%\n" % [returned.multiplier, returned.extra_copy_probability * 100.0]
 	if not result.valid():
-		genetics_dialog.dialog_text = text + "配置无效 / Invalid configuration\n" + result.error
-		genetics_dialog.popup_centered()
+		_present_genetics(text + "配置无效 / Invalid configuration\n" + result.error)
 		return
 	var effective := result.crop
 	text += "%s / %s · %s\n" % [effective.name_zh, effective.name_en,
@@ -412,6 +768,7 @@ func _show_genetics() -> void:
 	if result.caffeine_ul >= 0:
 		text += "成分 / Per item: %d µL 咖啡因 / caffeine · %d µL 咖啡豆糊 / paste\n" % [
 			result.caffeine_ul, result.coffee_paste_ul]
+	text += "\n性状 / Traits\n"
 	for id: String in result.traits:
 		var entry := Genetics.definition(id)
 		var effect := "仅资料 / Metadata" if not result.modifiers.has(id) else "×%.5f" % result.modifiers[id]
@@ -420,8 +777,14 @@ func _show_genetics() -> void:
 		elif id in ["Sterile", "Fertile"]:
 			effect = "返种 / Seed return"
 		text += "%s / %s %d · %s\n" % [entry.name_zh, id, result.traits[id], effect]
+	text += "\n技术详情 / Technical details · Seed #%d" % inspected_seed.get_instance_id()
+	_present_genetics(text)
+
+func _present_genetics(text: String) -> void:
+	genes_readout.text = text
 	genetics_dialog.dialog_text = text
-	genetics_dialog.popup_centered()
+	genetics_dialog.get_label().hide()
+	_present(genetics_dialog)
 
 func _next_seed() -> void:
 	var stock := farm.seed_stock(farm.crop)
@@ -442,7 +805,7 @@ func _confirm_discard() -> void:
 	else:
 		return
 	confirm_action.dialog_text = "永久丢弃一件？ / Permanently discard one?\n" + stored_items.get_item_text(stored_items.selected)
-	confirm_action.popup_centered()
+	_present(confirm_action)
 
 func _action(grid: GridContainer, key: String, caption: String, command: Callable) -> void:
 	var button := Button.new()
@@ -456,8 +819,19 @@ func _action(grid: GridContainer, key: String, caption: String, command: Callabl
 		if key == "drain":
 			return
 		_render()
-		control_hint.text = "操作完成 / Action complete" if accepted else _rejection(key)
+		control_hint.text = _success_feedback(key) if accepted else _rejection(key)
 	)
+
+func _success_feedback(key: String) -> String:
+	match key:
+		"plant": return "已播种，启动设备以培育 / Seed planted. Start the machine to grow."
+		"run": return "设备已启动 / Machine started" if farm.running else "设备已停止 / Machine stopped"
+		"water": return "已补水 / Water added · %.3f ml" % (farm.refill_water_ul / 1000.0)
+		"tablet": return "已加入营养片 / Nutrient tablet added"
+		"energy": return "已充电 / Energy added · %d kJ" % farm.refill_energy_kj
+		"harvest": return "已收获 / Harvest collected"
+		"seed_supply": return "已补充演示种子 / Demo seed added"
+	return "操作完成 / Action complete"
 
 func _rejection(key: String) -> String:
 	match key:
@@ -465,32 +839,45 @@ func _rejection(key: String) -> String:
 		"tablet": return "营养片或容器空间不足 / No tablet or insufficient vessel space"
 		"energy": return "电力补给不足或超限 / Insufficient energy supply or capacity"
 		"harvest": return "尚未成熟或库存空间不足 / Crop immature or inventory full"
-		"plant": return "缺少种子或种植槽已占用 / No seed or slot occupied"
+		"plant":
+			if farm.seed_edit_locked(farm.selected_seed()):
+				return "种子正在编辑 / Seed locked by DNA editor"
+			return "缺少种子或种植槽已占用 / No seed or slot occupied"
 	return "机器不能启动或停止 / Machine cannot start or stop"
 
 func _render() -> void:
 	var amounts := farm.vessel.snapshot_ul()
 	var pollution := farm.pollution_analysis(amounts)
-	actions["analysis"].text = "分析 / Analysis%s" % (" •" if pollution.harmful_ul > 0 or pollution.physical_ul > 0 else "")
+	actions["analysis"].text = "液体 / Liquid%s" % (" •" if pollution.harmful_ul > 0 or pollution.physical_ul > 0 else "")
 	actions["analysis"].tooltip_text = "有害污染 / Harmful pollution: %d µL" % pollution.harmful_ul
 	water_value_label.text = "%.3f ml" % (float(amounts.get(LIQ.Component.WATER, 0)) / 1000.0)
 	mineral_value_label.text = "%.3f ml" % (float(amounts.get(LIQ.Component.MINERALS, 0)) / 1000.0)
 	electricity_value_label.text = "%d kJ" % farm.energy_kj
-	var description: Label = $SafeArea/MainLayout/MainPanels/MachinePanel/MachineContent/MachineStatus/MachineStatusContent/MachineDescription
-	description.text = "运行中 / Running" if farm.running else "已停止 / Stopped"
+	machine_name_label.text = farm.effective_equipment().machine.label
+	machine_state_label.text = "设备运行中 / Machine running" if farm.running else "设备已停止 / Machine stopped"
+	var editor := farm.dna_editor
+	match editor.stage:
+		DNA.Stage.IDLE: dna_status_label.text = "DNA 编辑器待机 / DNA editor idle"
+		DNA.Stage.RUNNING:
+			var mode := "进行中 / Running" if farm.energy_kj >= DNA.ENERGY_PER_NIGHT_KJ else "等待电力 / Waiting for power"
+			dna_status_label.text = "DNA · %s · %d/%d" % [mode, editor.progress, editor.operation.required_points]
+		DNA.Stage.SUCCEEDED: dna_status_label.text = "DNA 应用成功 / DNA application succeeded"
+		DNA.Stage.FAILED: dna_status_label.text = "DNA 应用失败 / DNA application failed"
 	supplies.text = (
-		"库存 / Items: %d / %d    营养片 / Tablets: %d\n" % [farm.occupied_slots(), farm.inventory_capacity, farm.tablets]
-		+ "补给 / Supply: %.0f ml · %d kJ" % [farm.water_supply_ul / 1000.0, farm.energy_supply_kj]
+		"补给 / Supply: %.0f ml · %d kJ · %d 片\n" % [farm.water_supply_ul / 1000.0, farm.energy_supply_kj, farm.tablets]
+		+ "每次 / Refill: %.3f ml · %d kJ" % [farm.refill_water_ul / 1000.0, farm.refill_energy_kj]
 	)
 	actions["water"].tooltip_text = "每次 / Per refill: %.3f ml" % (farm.refill_water_ul / 1000.0)
 	actions["energy"].tooltip_text = "每次 / Per refill: %d kJ" % farm.refill_energy_kj
 	crop_menu.disabled = not farm.configured or farm.plant != null
 	crop_menu.select(farm.catalog.find(farm.crop))
 	var selected_item: Variant = stored_items.get_selected_metadata() if stored_items.selected >= 0 else null
+	if inventory_seed_choice != null and not farm.seed_stock(inventory_seed_choice.definition).has(inventory_seed_choice):
+		inventory_seed_choice = null
 	stored_items.clear()
 	for definition in farm.catalog:
 		for item: Farm.Seed in farm.seed_stock(definition):
-			stored_items.add_item("%s / %s · #%d" % [definition.name_zh, definition.name_en, item.get_instance_id()])
+			stored_items.add_item("%s / %s" % [_inventory_tile_label(item).get_slice("\n", 0), definition.name_en])
 			stored_items.set_item_metadata(stored_items.item_count - 1, item)
 	for key: String in farm.products:
 		stored_items.add_item("%s × %d" % [key, farm.products[key]])
@@ -501,35 +888,74 @@ func _render() -> void:
 			restored_index = index
 			break
 	stored_items.select(restored_index)
-	actions["discard"].disabled = not farm.configured or stored_items.selected < 0
+	inventory_caption.text = "库存 / Inventory · %d / %d" % [farm.occupied_slots(), farm.inventory_capacity]
+	inventory_tiles.clear()
+	for index in stored_items.item_count:
+		var item: Variant = stored_items.get_item_metadata(index)
+		inventory_tiles.add_item(_inventory_tile_label(item), art.texture(inventory_icon_key(item)))
+		inventory_tiles.set_item_tooltip(index, stored_items.get_item_text(index))
+	if restored_index >= 0:
+		inventory_tiles.select(restored_index)
+	_update_inventory_icon()
 	actions["seed_supply"].disabled = not farm.configured or farm.occupied_slots() >= farm.inventory_capacity
 	actions["drain"].disabled = not farm.configured or farm.vessel.total_ul() == 0
 	var mature := farm.plant != null and farm.plant.stage == Farm.Plant.Stage.MATURE
+	var plant := farm.plant
+	cultivation_art.render(plant != null, plant.genetics.crop.species if plant != null else ReferenceCrop.Species.UNKNOWN,
+		plant.growth if plant != null else 0, plant.target if plant != null else 0, mature, farm.running)
+	growth_meter.max_value = farm.plant.target if farm.plant != null else 1
+	growth_meter.value = farm.plant.growth if farm.plant != null else 0
+	health_meter.max_value = 10000
+	health_meter.value = plant.health if plant != null else 0
+	solution_meter.max_value = maxi(1, farm.vessel.capacity_ul())
+	solution_meter.value = farm.vessel.total_ul()
 	actions["plant"].disabled = not farm.configured or farm.plant != null or farm.seed_count(farm.crop) == 0
 	actions["plant"].disabled = actions["plant"].disabled or farm.seed_edit_locked(farm.selected_seed())
 	actions["genetics"].disabled = not farm.configured
 	actions["run"].disabled = not farm.configured or farm.plant == null or mature
 	actions["run"].text = "停止 / Stop" if farm.running else "启动 / Start"
 	actions["harvest"].disabled = not mature
+	contextual_action_key = "harvest" if mature else ("plant" if farm.plant == null else "run")
+	var primary := actions[contextual_action_key]
+	contextual_action.text = primary.text
+	contextual_action.disabled = primary.disabled
+	contextual_action.tooltip_text = _rejection(contextual_action_key) if primary.disabled else ""
 	for action in ["water", "tablet", "energy"]:
 		actions[action].disabled = not farm.configured
 	if farm.crop == null:
 		crop_empty_title.text = "配置无效 / Invalid configuration"
 		return
 	var displayed_crop := farm.plant.genetics.crop if farm.plant != null else farm.crop
+	crop_menu.tooltip_text = "%s / %s" % [displayed_crop.name_zh, displayed_crop.name_en]
+	crop_icon.texture = art.texture(Art.species_key(displayed_crop.species))
 	crop_empty_title.text = "%s / %s" % [displayed_crop.name_zh, displayed_crop.name_en]
 	var concentration: Variant = farm.vessel.mineral_concentration_pct()
 	var concentration_text := "未定义 / undefined" if concentration == null else ("%.3f%%" % concentration)
+	var band := LIQ.classify_mineral_band(concentration, displayed_crop.mineral_low_pct, displayed_crop.mineral_high_pct)
+	var condition := "无法计算 / Critical: undefined"
+	var condition_color := Color("#E16D6D")
+	match band:
+		LIQ.Band.IN_RANGE:
+			condition = "适宜 / Healthy band"
+			condition_color = Color("#E4EDF2")
+		LIQ.Band.BELOW:
+			condition = "偏低 / Warning: low minerals"
+			condition_color = Color("#E9B65A")
+		LIQ.Band.ABOVE:
+			condition = "偏高 / Warning: high minerals"
+			condition_color = Color("#E9B65A")
+	crop_empty_description.add_theme_color_override("font_color", condition_color)
 	crop_empty_description.text = (
-		"混合液 / Solution: %.3f / %.3f ml\n" % [farm.vessel.total_ul() / 1000.0, farm.vessel.capacity_ul() / 1000.0]
-		+ "矿物浓度 / Minerals: %s (%.2f–%.2f%%)\n" % [concentration_text, displayed_crop.mineral_low_pct, displayed_crop.mineral_high_pct]
+		"混合液 / Solution: %.1f / %.0f ml\n" % [farm.vessel.total_ul() / 1000.0, farm.vessel.capacity_ul() / 1000.0]
+		+ "矿物 / Minerals: %s (%.2f–%.2f%%)\n" % [concentration_text, displayed_crop.mineral_low_pct, displayed_crop.mineral_high_pct]
+		+ condition + "\n" + machine_state_label.text
 	)
 	if farm.plant == null:
 		crop_growth_label.text = "尚未播种 / No plant · 种源 / Seeds: %d" % farm.seed_count(farm.crop)
 		return
 	crop_growth_label.text = (
 		"生长 / Growth: %d / %d\n" % [farm.plant.growth, farm.plant.target]
-		+ "健康 / Health: %d    评分 / Score: %.2f%%\n" % [farm.plant.health, farm.plant.score()]
+		+ "健康 / Health: %.2f%%\n" % farm.plant.score()
 		+ ("待收获 / Pending: %d" % farm.plant.pending if mature else "生长中 / Cultivating")
 	)
 	if mature:
@@ -549,8 +975,8 @@ func _on_coffee_finished(_day: int, _next_day: int, outcome: GameState.NightOutc
 		return
 	last_night = completed
 	control_hint.text = (
-		"生长 / Growth: +%d · 矿物损伤 / Mineral dmg: %d · 污染 / Pollution: %d\n" % [
-			completed.growth_gained, completed.mineral_damage, completed.pollution_damage]
-		+ "健康损失 / Health loss: %d · 健康 / Health: %d · 评分 / Score: %.2f%%" % [
-			completed.health_loss, completed.resulting_health, completed.resulting_health / 100.0]
+		"生长 / Growth +%d · 健康损失 / Health loss: %d · 评分 / Score %.2f%%\n" % [
+			completed.growth_gained, completed.health_loss, completed.resulting_health / 100.0]
+		+ "伤害 / Damage · 矿物 / Minerals %d · 污染 / Pollution %d" % [
+			completed.mineral_damage, completed.pollution_damage]
 	)

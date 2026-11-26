@@ -1,5 +1,25 @@
 # Project status
 
+## M08 complete · v0.4.0 Visual Transformation
+
+The owner accepted M08-A through M08-D and authorized publication of v0.4.0. The final fresh regression passed 17 suites, 1,142 explicit checks and four original assertion groups. Default launch and the legacy Lettuce probe passed. The simulation remains frozen at v0.3.0. M09 remains pending. The owner reports 59% weekly Codex allowance remaining, and the delivery target remains December 1, 2026. [M08 final report](M08_FINAL_REPORT.md)
+
+## M08 Package D · Specialized workstations
+
+The owner accepted M08-D after ten desktop checks. The shared dark workstation treatment preserves the frozen simulation. [M08-D report](M08_PACKAGE_D_REPORT.md) · [Owner acceptance record](M08_FINAL_REPORT.md#verification)
+
+## M08 Package C · Environment-centered interface
+
+The laboratory composition carries clickable cultivation, tank and terminal access with workstation alternatives and a visual inventory strip. The owner reported all 11 M08-C desktop checks passed, including all three crop artworks and both resolutions. [M08-C report](M08_PACKAGE_C_REPORT.md)
+
+## M08 Package B · Laboratory artwork
+
+The owner accepted the M08-B artwork integration. The supplied laboratory and crop artwork were inspected in captures at both supported sizes. The later M08-C desktop review included all three crop artworks. [M08-B report](M08_PACKAGE_B_REPORT.md)
+
+## M08 Package A · Orbital Hydroponics visual foundation
+
+The owner accepted the shared metallic theme, three-column workstation foundation and live presentation bindings. [M08-A report](M08_PACKAGE_A_REPORT.md)
+
 ## M07 milestone acceptance
 
 M05–M07 passed the fresh checkpoint regression with 13 suites, 932 explicit checks and four original crop assertion groups. The user confirmed M07-A equipment and M07-B editor desktop acceptance. [Checkpoint report](M07_FINAL_REPORT.md)

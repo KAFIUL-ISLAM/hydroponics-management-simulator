@@ -65,6 +65,18 @@ try {
         @{ Name = 'Dashboard startup'; Scene = 'test_main_dashboard'; Markers = @(
             '(?m)^DASHBOARD_STARTUP_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
         ) },
+        @{ Name = 'Workstations'; Scene = 'test_workstations'; Markers = @(
+            '(?m)^WORKSTATIONS_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
+        ) },
+        @{ Name = 'Environment interface'; Scene = 'test_environment_ui'; Markers = @(
+            '(?m)^ENVIRONMENT_UI_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
+        ) },
+        @{ Name = 'Orbital artwork'; Scene = 'test_orbital_art'; Markers = @(
+            '(?m)^ORBITAL_ART_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
+        ) },
+        @{ Name = 'Presentation'; Scene = 'test_presentation'; Markers = @(
+            '(?m)^PRESENTATION_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
+        ) },
         @{ Name = 'DNA editor'; Scene = 'test_dna_editor'; Markers = @(
             '(?m)^DNA_EDITOR_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
         ) },

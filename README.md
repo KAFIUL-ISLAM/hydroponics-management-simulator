@@ -1,6 +1,8 @@
-# 水培农业模拟系统 | Hydroponics Management Simulator
+# 轨道水培实验室 | Orbital Hydroponics
 
 **基于 Godot 4 开发的水培农业管理模拟项目**
+
+**v0.4.0 · M08 视觉改造。** 支持 1280 × 720 和 1920 × 1080。使用 Godot 4.7.2 打开 `project.godot`，按 **F5** 启动。 [里程碑报告](docs/M08_FINAL_REPORT.md)
 
 [简体中文](#简体中文) | [English](#english)
 
@@ -30,7 +32,7 @@
 
 ## 3. 核心功能
 
-以下为项目计划实现的主要功能，具体完成情况以实际开发进度为准。
+当前演示可种植营养果、咖啡豆和韧棉。实验室热点、可视库存和专用工作台连接到现有的水培模拟。
 
 | 功能模块 | 功能说明 |
 | --- | --- |
@@ -41,8 +43,13 @@
 | 健康度系统 | 根据环境条件计算作物健康状态 |
 | 污染系统 | 模拟污染物对作物的影响 |
 | 遗传系统 | 通过种子特性影响作物表现 |
-| 设备系统 | 管理水培设备性能、效率和品质 |
+| 设备系统 | 更换设备及容器，安装已支持的模组并查看生长速度、耗电和修正值 |
 | 收获系统 | 根据作物状态计算收获结果 |
+| DNA 编辑 | 预览兼容性状、确认应用并通过夜间结算推进 |
+
+![1280 × 720 实验室演示](screenshots/m08c-environment-1280.png)
+
+[1920 × 1080 实验室](screenshots/m08c-environment-1920.png) · [液体分析](screenshots/m08d-liquid-1280.png) · [DNA 工作台](screenshots/m08d-dna-1280.png) · [素材来源](docs/ASSET_MANIFEST.md)
 
 ## 4. 初始作物范围
 
@@ -90,7 +97,6 @@ hydroponics-management-simulator/
 ├── scripts/              # 游戏逻辑代码
 ├── resources/            # 作物、种子及设备数据
 ├── assets/               # 图片、字体及其他资源
-├── ui/                   # 用户界面组件
 ├── tests/                # 测试代码
 ├── screenshots/          # 开发过程截图与演示证据
 │
@@ -109,22 +115,7 @@ powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\tests\run-tests.
 
 ## 7. 开发计划
 
-M01 基础稳定化已完成。五组自动化测试共通过 453 项显式检查及原有四组作物断言。默认启动和生菜单夜结算基线已验证，用户报告最终桌面冒烟测试通过。下一里程碑将实现首个可玩作物的完整生产循环。 [M01 验收报告](docs/M01_FINAL_REPORT.md)
-
-项目采用分阶段开发方式，优先保证核心模拟机制的正确性，再逐步完善界面和扩展功能。
-
-- [x] 创建 Godot 项目
-- [x] 初始化 Git 与 GitHub 仓库
-- [x] 建立项目文档结构
-- [ ] 完成核心机制研究与公式整理
-- [x] 搭建主游戏场景
-- [x] 实现基础资源管理
-- [ ] 实现作物生长与矿物质消耗
-- [ ] 实现健康度与污染损伤
-- [ ] 实现种子特性与设备模块
-- [ ] 实现收获系统
-- [ ] 完成测试与问题修复
-- [ ] 完成可运行原型与演示
+M01–M07 实现了可玩的三作物种植循环和进阶系统。M08 已完成视觉改造，17 组自动化测试通过 1,142 项显式检查及四组原始断言。M09 尚未开始。 [验收与剩余范围](docs/M08_FINAL_REPORT.md)
 
 ## 8. 研究与参考资料
 
@@ -172,7 +163,7 @@ The goal is not only to build a playable simulation but also to demonstrate game
 
 ## 3. Core Features
 
-The following features are planned for implementation. Their completion status will be updated throughout development.
+The playable build includes three crops, state-driven artwork, a visual inventory, laboratory hotspots and specialized workstations.
 
 | Feature | Description |
 | --- | --- |
@@ -183,8 +174,9 @@ The following features are planned for implementation. Their completion status w
 | Health System | Calculate crop health based on environmental conditions |
 | Pollution System | Simulate the effects of pollutants on crops |
 | Genetics System | Apply seed traits to crop behavior |
-| Equipment System | Manage machine performance, efficiency, and quality |
+| Equipment System | Switch machines and vessels, install supported modules and inspect speed, power and modifiers |
 | Harvest System | Calculate harvest results based on crop conditions |
+| DNA Editor | Preview and apply supported traits through nightly settlement |
 
 ## 4. Initial Crop Selection
 
@@ -196,7 +188,7 @@ The initial prototype will prioritize three crops:
 | Coffee Beans | Growth and harvesting mechanics |
 | Kotton | Longer growth cycles and resource consumption |
 
-Additional crops may be introduced depending on development time and system complexity.
+The current simulation scope is frozen to these three crops. The legacy Lettuce scene remains available as a separate test fixture.
 
 ## 5. Technology Stack
 
@@ -224,7 +216,6 @@ hydroponics-management-simulator/
 ├── scripts/              # Gameplay scripts
 ├── resources/            # Crop, seed, and equipment data
 ├── assets/               # Visual and audio assets
-├── ui/                   # User interface components
 ├── tests/                # Test scripts
 ├── screenshots/          # Development screenshots and evidence
 │
@@ -235,9 +226,7 @@ hydroponics-management-simulator/
 
 ### Play the three-crop farming loop
 
-Open `project.godot` in Godot 4.7 and press **F5** to launch the current farming dashboard. The advanced farming milestone adds solution analysis and pollution, inherited seed traits, machine and module management, and nightly DNA trait applications. [M07 checkpoint and scope](docs/M07_FINAL_REPORT.md)
-
-The core farming checkpoint covers M02 research reconciliation, the M03 liquid and Coffee Beans loop, and the M04 three-crop dashboard. [Milestone evidence and open work](docs/M04_FINAL_REPORT.md)
+Open `project.godot` in **Godot 4.7.2** and press **F5** to launch Orbital Hydroponics. The v0.4.0 build supports **1280 × 720** and **1920 × 1080**. Use the workstation buttons or chamber hotspots to inspect cultivation, liquid and equipment. Select individual seeds or stored products from the inventory strip. [M08 release notes](docs/M08_FINAL_REPORT.md) · [Laboratory at 1920 × 1080](screenshots/m08c-environment-1920.png) · [Gear](screenshots/m08d-equipment-1280.png) · [DNA](screenshots/m08d-dna-1920.png)
 
 Run the project with **F5**. Select Nutrition Fruit, Coffee Beans, or Kotton, plant a seed, start the machine, and use **Next Night** until the harvest is ready. Healthy cycles take two, three, and six running nights respectively. The initial 3% solution is suitable for Coffee Beans and Kotton. For Nutrition Fruit on a fresh run, confirm **Drain solution**, add water ten times, and add four tablets to reach 5,000 mL pure water and 60 mL minerals. Draining discards the solution. Refills use finite supplies.
 
@@ -251,7 +240,7 @@ From the repository root, replace `<Godot executable path>` with the path to the
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\tests\run-tests.ps1 -GodotPath "<Godot executable path>" -Import
 ```
 
-The runner checks all thirteen suites for completion markers, exit codes, and unexpected errors. It prints a summary and the temporary log directory. Use `-Import` on the first run or after moving project files. A missing Godot cache also triggers an import automatically. The execution policy applies to that PowerShell process. [Current testing evidence](docs/M07_FINAL_REPORT.md)
+The runner checks all 17 suites for completion markers, exit codes and unexpected errors. Use `-Import` on the first run or after moving project files. A missing Godot cache triggers import automatically. [Current testing evidence](docs/M08_FINAL_REPORT.md#verification)
 
 Open **DNA edit** from **Genes** to preview a trait application for an available seed. Confirm the application, close the dialog and settle nights to advance it. Applications use shared power and finite project demo disc charges. Reopen the dialog to inspect progress or the result.
 
@@ -259,26 +248,11 @@ Open **Gear** while the machine is stopped to inspect demo equipment, switch mac
 
 Open **Genes** to inspect the selected seed or the planted crop. Use **Next seed** to cycle the selected crop’s stock. **Demo Coffee** supplies a validated modified seed when Coffee Beans is selected and inventory has room. For Nutrition Fruit and Kotton, the Genes dialog shows pending offspring at maturity. **Collect** transfers the harvest and offspring together when inventory has room.
 
-Open **Analysis** on the farming dashboard to inspect raw pollutant indices, crop exposures and predicted nightly damage. Choose a demonstration solution and confirm replacement to try clean, single-pollutant, mixed, physical-only or high-pollution scenarios. Replacing a solution discards the current mixture. The demo uses its own supply.
+Open **Liquid** or click the tank to inspect raw pollutant indices, crop exposure, predicted damage and actual prior-night damage. The demo section offers clean, single-pollutant, mixed, physical-only and high-pollution solutions. Confirming replacement discards the current mixture and uses the separate demo supply.
 
 ## 7. Development Roadmap
 
-M01 foundation stabilization is complete. The five automated suites passed 453 explicit checks and the four original crop assertion groups. Default launch and the one-night Lettuce baseline passed, and the user reported a successful final desktop smoke check. The next milestone is a complete production loop for the first playable crop. [M01 acceptance report](docs/M01_FINAL_REPORT.md)
-
-Development follows an incremental approach, prioritizing the correctness of core simulation mechanics before expanding the interface and additional features.
-
-- [x] Create Godot project
-- [x] Initialize Git and GitHub repository
-- [x] Establish documentation structure
-- [ ] Complete mechanics research and formula documentation
-- [x] Build the main game scene
-- [x] Implement basic resource management
-- [ ] Implement crop growth and mineral consumption
-- [ ] Implement health and pollution damage
-- [ ] Implement seed traits and equipment modules
-- [ ] Implement harvesting mechanics
-- [ ] Complete testing and bug fixing
-- [ ] Deliver a playable prototype and demonstration
+M01–M07 delivered the three-crop farming loop and advanced mechanics. M08 completed the visual transformation in v0.4.0. M09 remains pending. [Current project status](docs/PROJECT_STATUS.md) · [Visual plan](docs/VISUAL_DEVELOPMENT_PLAN.md)
 
 ## 8. Research References
 

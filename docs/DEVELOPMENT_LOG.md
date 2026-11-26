@@ -1,8 +1,32 @@
 # 开发日志 | Development Log
 
+## 2026-11-26 · v0.4.0 Visual Transformation
+
+The owner authorized publication of the accepted M08 visual milestone. The release includes the orbital laboratory, state-driven artwork, environment hotspots, individual inventory tiles and specialized workstations. M09 remains pending. [Release report](M08_FINAL_REPORT.md)
+
+## 2026-11-26 · M08 final acceptance
+
+Reviewed all four M08 packages and recorded the owner's ten M08-D desktop passes. A fresh 17-suite run and both launch paths passed. The frozen domain files match v0.3.0. The artwork and metadata inventory is ready for the proposed v0.4.0 checkpoint. M09 remains pending. [M08 final report](M08_FINAL_REPORT.md)
+
+## 2026-11-26 · M08 Package D
+
+Unified specialized workstation styling, added authoritative capacity, range and operation readouts, and verified modal isolation, Escape cancellation and focus restoration. The owner confirmed all 11 M08-C desktop checks before authorizing this package. [M08-D report](M08_PACKAGE_D_REPORT.md)
+
+## 2026-11-26 · M08 Package C
+
+Rebalanced the dashboard around the laboratory, aligned hotspots to the artwork canvas, and added a selectable inventory strip and compact authoritative crop meters. Moved cultivation actions into a dedicated panel and retained the contextual shortcut and Next Night. All changes are presentation-layer work. [M08-C report](M08_PACKAGE_C_REPORT.md)
+
 ## 2026-11-26 · Inventory discard stabilization
 
 Fixed selection restoration after discard by comparing seed object identity and product string values safely. Removed items fall back to the first remaining row, and an empty inventory clears selection and disables discard. Cancelled confirmations cannot execute later. The owner confirmed all nine manual regression checks passed.
+
+## 2026-11-26 · M08 Package B
+
+Audited the owner-supplied artwork, prepared separate aligned transparent runtime crops, and integrated the laboratory chamber and workstation icons. Captured Godot renders at both supported resolutions and retained the frozen simulation baseline. [M08-B report](M08_PACKAGE_B_REPORT.md)
+
+## 2026-11-26 · M08 Package A
+
+Added the Orbital Hydroponics visual foundation, shared playable theme and three-column workspace. Bound installed-machine identity, seed/item selection, refill quantities and DNA operation progress to the current presentation. The legacy scene and simulation remain at the published technical baseline. [M08-A report](M08_PACKAGE_A_REPORT.md)
 
 ## 2026-11-26 · M05–M07 checkpoint acceptance
 
