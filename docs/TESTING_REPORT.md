@@ -1,5 +1,29 @@
 # 测试报告
 
+## M07 checkpoint · 2026-11-26
+
+Fresh isolated import, all 13 suites, default launch and the archived Lettuce probe passed. The user confirmed the M07-A equipment checklist and the M07-B DNA editor walkthrough, including preview cancellation, two-night editing, heat and disc accounting, and growing and harvesting an edited seed. The repository equipment screenshot is separate dialog evidence. [Checkpoint results](M07_FINAL_REPORT.md)
+
+## M07 Package B · 2026-11-26
+
+Fresh isolated Godot 4.7.2 import and all 13 suites passed with 932 explicit checks and four original assertion groups. The DNA editor suite passed 30 checks. Default launch, legacy Lettuce and all neutral cultivation, pollution, genetics, reproduction and equipment fixtures passed. The user confirmed the M06-B desktop checklist and supplied M07-A Equipment dialog evidence. M07-B desktop verification is pending. [M07-B evidence](M07_PACKAGE_B_REPORT.md)
+
+## M07 Package A · 2026-11-26
+
+Fresh isolated Godot 4.7.2 import and all 12 suites passed with 900 explicit checks and four original crop assertion groups. The equipment suite passed 27 checks. Native cultivation, pollution, modified Coffee genetics and reproduction, default launch and legacy Lettuce passed. User-confirmed desktop acceptance applies to M06-A. M06-B reproduction and M07-A equipment desktop walkthroughs remain pending. [M07-A evidence](M07_PACKAGE_A_REPORT.md)
+
+## M06 Package B · 2026-11-26
+
+Fresh isolated Godot 4.7.2 import and all eleven suites passed with 863 explicit checks and four original crop assertion groups. All three clean cultivation and pollution fixtures, normal launch and the archived Lettuce probe passed. The reproduction suite includes headless Genes dialog bindings and bounds. The user confirmed the M05 desktop checklist and supplied separate physical-pollution screenshot evidence. [M06-B verification](M06_PACKAGE_B_REPORT.md)
+
+## M06 Package A · 2026-11-26
+
+Fresh Godot 4.7.2 import and all ten suites passed with 837 explicit checks and four original crop assertion groups. All clean cultivation and pollution regression values matched. Default launch and the archived Lettuce probe passed. The genetics dialog and dashboard passed headless bounds checks at 1280 × 720. [M06-A verification](M06_PACKAGE_A_REPORT.md)
+
+## M05 verification · 2026-11-26
+
+Godot 4.7.2 passed a fresh isolated import, all nine suites (789 explicit checks and four original crop assertion groups), default launch, and the archived Lettuce probe. The three clean cultivation fixtures again matched mineral losses of 3,148, 9,430 and 46,639 µL. The new pollution suite passed 66 checks covering numerical and settlement behavior, all five demo solutions, and headless dashboard and dialog bounds. Desktop smoke testing remains pending. [M05 results and commands](M05_REPORT.md)
+
 ## M04 verification · 2026-11-26
 
 Tested the M04 workspace on Git base `2c56490` with Godot `4.7.2.stable.official.ed1daf0bf`. Fresh import, eight suites, normal launch, and the archived Lettuce probe passed. The runner verified 719 explicit checks and four original crop assertion groups. All three mineral-loss fixtures matched their exact targets. Dashboard layout and button signal bindings were checked headlessly at 1280 × 720. Three-crop desktop verification is pending. [Commands, totals and diagnostics](M04_REPORT.md#verification)

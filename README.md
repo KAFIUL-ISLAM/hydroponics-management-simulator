@@ -235,6 +235,8 @@ hydroponics-management-simulator/
 
 ### Play the three-crop farming loop
 
+Open `project.godot` in Godot 4.7 and press **F5** to launch the current farming dashboard. The advanced farming milestone adds solution analysis and pollution, inherited seed traits, machine and module management, and nightly DNA trait applications. [M07 checkpoint and scope](docs/M07_FINAL_REPORT.md)
+
 The core farming checkpoint covers M02 research reconciliation, the M03 liquid and Coffee Beans loop, and the M04 three-crop dashboard. [Milestone evidence and open work](docs/M04_FINAL_REPORT.md)
 
 Run the project with **F5**. Select Nutrition Fruit, Coffee Beans, or Kotton, plant a seed, start the machine, and use **Next Night** until the harvest is ready. Healthy cycles take two, three, and six running nights respectively. The initial 3% solution is suitable for Coffee Beans and Kotton. For Nutrition Fruit on a fresh run, confirm **Drain solution**, add water ten times, and add four tablets to reach 5,000 mL pure water and 60 mL minerals. Draining discards the solution. Refills use finite supplies.
@@ -249,7 +251,15 @@ From the repository root, replace `<Godot executable path>` with the path to the
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\tests\run-tests.ps1 -GodotPath "<Godot executable path>" -Import
 ```
 
-The runner checks all eight suites for completion markers, exit codes, and unexpected errors. It prints a summary and the temporary log directory. Use `-Import` on the first run or after moving project files. A missing Godot cache also triggers an import automatically. The execution policy applies to that PowerShell process. [Current testing evidence](docs/M04_REPORT.md#verification)
+The runner checks all thirteen suites for completion markers, exit codes, and unexpected errors. It prints a summary and the temporary log directory. Use `-Import` on the first run or after moving project files. A missing Godot cache also triggers an import automatically. The execution policy applies to that PowerShell process. [Current testing evidence](docs/M07_FINAL_REPORT.md)
+
+Open **DNA edit** from **Genes** to preview a trait application for an available seed. Confirm the application, close the dialog and settle nights to advance it. Applications use shared power and finite project demo disc charges. Reopen the dialog to inspect progress or the result.
+
+Open **Gear** while the machine is stopped to inspect demo equipment, switch machines and vessels, or install and remove modules. Running-night growth and power costs update with the configuration. The default machine and vessel remain available.
+
+Open **Genes** to inspect the selected seed or the planted crop. Use **Next seed** to cycle the selected crop’s stock. **Demo Coffee** supplies a validated modified seed when Coffee Beans is selected and inventory has room. For Nutrition Fruit and Kotton, the Genes dialog shows pending offspring at maturity. **Collect** transfers the harvest and offspring together when inventory has room.
+
+Open **Analysis** on the farming dashboard to inspect raw pollutant indices, crop exposures and predicted nightly damage. Choose a demonstration solution and confirm replacement to try clean, single-pollutant, mixed, physical-only or high-pollution scenarios. Replacing a solution discards the current mixture. The demo uses its own supply.
 
 ## 7. Development Roadmap
 

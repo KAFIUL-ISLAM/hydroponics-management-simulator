@@ -65,6 +65,21 @@ try {
         @{ Name = 'Dashboard startup'; Scene = 'test_main_dashboard'; Markers = @(
             '(?m)^DASHBOARD_STARTUP_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
         ) },
+        @{ Name = 'DNA editor'; Scene = 'test_dna_editor'; Markers = @(
+            '(?m)^DNA_EDITOR_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
+        ) },
+        @{ Name = 'Equipment'; Scene = 'test_equipment'; Markers = @(
+            '(?m)^EQUIPMENT_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
+        ) },
+        @{ Name = 'Seed reproduction'; Scene = 'test_seed_reproduction'; Markers = @(
+            '(?m)^REPRODUCTION_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
+        ) },
+        @{ Name = 'Genetics'; Scene = 'test_genetics'; Markers = @(
+            '(?m)^GENETICS_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
+        ) },
+        @{ Name = 'Pollution'; Scene = 'test_pollution'; Markers = @(
+            '(?m)^POLLUTION_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
+        ) },
         @{ Name = 'Three crop farming'; Scene = 'test_three_crops'; Markers = @(
             '(?m)^THREE_CROP_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
         ) },

@@ -4,6 +4,7 @@
 [resource]
 script = ExtResource("1")
 name_en = "Kotton"
+species = 2
 name_zh = "韧棉"
 raw_target = 32
 target = 43
@@ -19,5 +20,6 @@ product_name = "纤维 / Fiber"
 size_profile = 2
 health_yield_pct = Array[int]([50,65,80,90,100])
 annual = true
+reproduction_profile = 2
 native_traits = Dictionary[String, int]({"High Yield":3,"High Water Use":2,"Fragile":2,"Slow Growth":1})
 native_complexity = 0

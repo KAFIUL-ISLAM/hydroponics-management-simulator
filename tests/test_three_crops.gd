@@ -49,6 +49,7 @@ func _cycle(species: int, minerals: int, nights: int, final_growth: int, draw: i
 	var ui = UI.instantiate()
 	var farm: Farm = ui.get_node("CoffeeFarm")
 	farm.initial_minerals_ul = minerals
+	farm.reproduction_rng.seed = 42
 	add_child(ui)
 	_select(ui, species)
 	var definition := farm.crop
@@ -76,15 +77,16 @@ func _cycle(species: int, minerals: int, nights: int, final_growth: int, draw: i
 	_check(totals == [draw,uptake,loss,8*nights] and farm.energy_kj == 100-8*nights, "exact cycle totals")
 	print("CROP_FIXTURE %s nights=%d points=%d draw=%d uptake=%d mineral_loss=%d energy=%d output=%d" % [definition.name_en,nights,farm.plant.growth,totals[0],totals[1],totals[2],totals[3],farm.plant.pending])
 	var before := farm.vessel.snapshot_ul()
-	farm.inventory_capacity = farm.occupied_slots() + count - 1
+	var seed_returns := 2 if species == 2 else 0
+	farm.inventory_capacity = farm.occupied_slots() + count + seed_returns - 1
 	ui.actions["harvest"].pressed.emit()
 	_check(farm.plant != null and farm.products.is_empty(), "full harvest remains pending")
 	ui.actions["discard"].pressed.emit()
-	_check(farm.occupied_slots() == farm.inventory_capacity - count + 1, "discard waits for confirmation")
+	_check(farm.occupied_slots() == farm.inventory_capacity - count - seed_returns + 1, "discard waits for confirmation")
 	ui.confirm_action.confirmed.emit()
 	ui.actions["harvest"].pressed.emit()
 	_check(farm.plant == null and farm.products.get("%s · %s" % [definition.product_name,size]) == count, "confirmed discard unlocks collection")
-	_check(farm.seed_count(definition) == stock and not farm.collect(), "no duplicate seeds or output")
+	_check(farm.seed_count(definition) == stock + seed_returns and not farm.collect(), "separate offspring and no duplicate output")
 	_select(ui, 0)
 	_check(farm.crop != definition and farm.vessel.snapshot_ul() == before and farm.energy_kj == 100-8*nights, "switch preserves stores")
 	ui.free()

@@ -1,5 +1,13 @@
 # M02 calculation contract
 
+**M07-B application-only editor.** F-GEN-04/06 use pre-operation complexity plus heat. At no editor modules, a funded night commits 10 progress points (capped at the remaining requirement for display) and 12 kJ. Success adds one rank and uses one charge from its trait disc. Failure retains the seed, ranks and disc. Either outcome adds the sourced heat increment. Insufficient nightly energy pauses progress. The shared project battery funds cultivation first, then the editor on day-advancing nights. This prioritization and the finite demo discs are project policies. Extraction, cooling apart from offspring reset, module effects and beta cancellation remain deferred.
+
+**M07-A equipment scope.** F-EQP-01/02 sum installed performance and efficiency before truncating. F-EQP-03 resolves the adjustment points while positive and negative quality-to-yield mapping remains open, so supported installs all have neutral quality. Each Nutrition Fruit module adds one fruit under neutral quality. Automatic Weaving replaces Kotton fiber with equal-count textile regardless of installed copy count. Off-crop modules retain P/E changes. No supported module changes fixed per-night draw or reproduction. Vessel capacity comes from the installed container. The demo compartment uses three configurable abstract slots and a stopped-machine change policy. Used units model their documented locked configurations.
+
+**M06-B reproduction implementation (F-GEN-03/04).** Nutrition Fruit schedules three attempts. Kotton schedules one at score ≤50, one plus a 50% chance of another at >50 and ≤80, and two above 80. Classify post-settlement integer health at 5,000 and 8,000 with no display rounding. Per-attempt multiplier is the documented rank factor with the existing F-GEN-01 minimum. Copies are the integer part plus one if the injected uniform sample is below the fractional part. Coffee Beans use their plantable product path only. Offspring copy the planted ranks and clear heat. Capacity checks cover both staged output types, with all items kept pending on failure. Reference RNG precision, independent complexity effects and equipment interactions remain unverified or deferred.
+
+**M06-A genetics decision.** Keep native-effective values when ranks affecting a property are unchanged. Changed growth uses half-even rounding of raw target divided by its factor, with a minimum of one point. Changed output rounds the raw count multiplied by its factor, with ties away from zero, before the existing health stage. Changed water draw rounds to integer µL and rejects exact ties. The 100,000 µL raw draws for Coffee Beans and Nutrition Fruit follow from their reported native draws and absence of native water traits. Kotton's raw draw remains unresolved and its water-trait changes are rejected. F-GEN-05 Coffee composition is resolved for inspection only. The editable rank range I–XX is project scope based on the published table.
+
 **Review date** 2026-11-26 · **Status** Specification for review. No gameplay implementation is authorized by this document.
 
 ## Evidence and source keys
@@ -60,6 +68,8 @@ Pollutant tier lookups for the listed integer input bands, in health units/point
 | 26–30 | 40 | >200 | 640 |
 
 Apply F-POL-01–03 to heavy metals (重金属), chemical pollutants (化学污染物), microbes (微生物), organic waste (有机废物), acid (酸) and alkali (碱) separately. BW does not specify in this table which band gets a value such as 10.5.
+
+**M05 provisional numeric policy.** Classify the raw effective exposure using inclusive upper bounds at 10, 15, 20, 25, 30, 40, 60, 100 and 200. An exposure of 10.5 therefore takes the 15-damage tier. Scale each component by the crop damage factor and full running-night growth, retain the component fractions for analysis, then round the summed nightly pollution damage to the nearest health unit, with half units rounded up. Clamp combined mineral and pollution loss to the available health. These implementation choices preserve the published integer tiers and keep the full 201.6 intermediate in the Kotton example. Reference fractional classification and final rounding remain unresolved under F-OPEN-04.
 
 ## Harvest, genetics and advanced formulas
 

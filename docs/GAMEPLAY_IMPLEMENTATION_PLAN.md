@@ -1,5 +1,9 @@
 # M03–M10 gameplay implementation plan
 
+## Delivery planning update · 2026-11-26
+
+The delivery deadline is December 1, 2026. The user reports 73% of the weekly Codex allowance remaining. Plan reviewable work against the deadline and refresh this figure from user reports.
+
 **Status** Proposed after M02. M02 creates this plan only. The delivery goal is a playable core by **November 29, 2026 (Asia/Shanghai)**. Prioritize the mandatory loop, then the remaining mandatory crop data and accuracy, then researched extensions. The M01 checkpoint remains the known-good regression baseline.
 
 ## First playable slice

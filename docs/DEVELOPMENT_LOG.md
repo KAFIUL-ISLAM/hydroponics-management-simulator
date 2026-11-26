@@ -1,5 +1,29 @@
 # 开发日志 | Development Log
 
+## 2026-11-26 · M05–M07 checkpoint acceptance
+
+Fresh regression passed all 13 suites, 932 explicit checks and four original assertion groups. The user confirmed both M07 desktop walkthroughs and authorized the v0.3.0 checkpoint. [Milestone report](M07_FINAL_REPORT.md)
+
+## 2026-11-26 · M07 Package B
+
+Added a plain DNA editor with trait application previews, seed locking, atomic nightly progress, and deterministic outcome coverage. Preserved the farming and offspring regression fixtures. [M07-B report](M07_PACKAGE_B_REPORT.md)
+
+## 2026-11-26 · M07 Package A
+
+Added equipment definitions, a deterministic module resolver, atomic stopped-machine equipment changes, and a bilingual Equipment dialog. Full nightly debits now use resolved speed and energy while the neutral machine keeps its original fixtures. [M07-A report](M07_PACKAGE_A_REPORT.md)
+
+## 2026-11-26 · M06 Package B
+
+Added deterministic seed return calculation, independent inherited seeds, selection by identity, atomic capacity checks for combined harvests, and a modified Coffee Beans demo. [M06-B report](M06_PACKAGE_B_REPORT.md)
+
+## 2026-11-26 · M06 Package A
+
+Added a typed trait catalog and deterministic effective-property resolver. Integrated per-seed properties through a planting snapshot and added bilingual seed inspection. Confirmed native crop parity and preserved M05 behavior. [M06-A report](M06_PACKAGE_A_REPORT.md)
+
+## 2026-11-26 · M05 pollution and combined plant health
+
+Reconciled the published integer pollution tiers and documented provisional fractional classification and final nightly rounding. Added a typed per-component calculator, integrated combined health into the farm's atomic night, and exposed analysis and confirmed demo solutions in the existing dashboard. [M05 report](M05_REPORT.md)
+
 ## 2026-11-26 · M02–M04 checkpoint verification
 
 Fresh import and all eight suites passed with 719 explicit checks and four original crop assertion groups. All three numerical cultivation fixtures, the default dashboard launch and the archived Lettuce probe passed. The user confirmed the three-crop desktop walkthrough at 1280 × 720. [Final checkpoint evidence](M04_FINAL_REPORT.md)

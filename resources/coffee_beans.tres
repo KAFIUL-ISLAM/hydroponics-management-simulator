@@ -5,13 +5,17 @@
 [resource]
 script = ExtResource("1")
 name_en = "Coffee Beans"
+species = 3
 name_zh = "咖啡豆"
 raw_target = 21
 raw_base_output = 8
 product_name = "咖啡豆 / Coffee Beans"
+raw_caffeine_ul = 4400
+raw_coffee_paste_ul = 25840
 target = 21
 healthy_output = 8
 draw_ul = 100000
+raw_draw_ul = 100000
 uptake_ul_per_point = 30
 mineral_low_pct = 1.75
 mineral_high_pct = 3.25

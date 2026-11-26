@@ -1,5 +1,31 @@
 # Project status
 
+## M07 milestone acceptance
+
+M05–M07 passed the fresh checkpoint regression with 13 suites, 932 explicit checks and four original crop assertion groups. The user confirmed M07-A equipment and M07-B editor desktop acceptance. [Checkpoint report](M07_FINAL_REPORT.md)
+
+Delivery is due December 1, 2026. The user reported 73% weekly Codex allowance remaining on November 26. Track updated reports in the active plan.
+
+## M07 Package B · DNA trait application
+
+The DNA dialog previews an available seed, queues a compatible trait application, and shows nightly progress and the terminal result. The plain editor uses finite demo disc charges and shared power. [M07-B implementation report](M07_PACKAGE_B_REPORT.md)
+
+## M07 Package A · Hydroponic equipment
+
+The Equipment dialog manages configurable demo stock, standard and locked starter machines, five supported modules and a second vessel. Atomic settlement uses the resolved speed and power. Nutrition Fruit bonuses and Kotton textile conversion are implemented. General nonneutral quality and equipment-specific reproduction remain open. [M07-A implementation report](M07_PACKAGE_A_REPORT.md)
+
+## M06 Package B · Seed reproduction and inventory
+
+Nutrition Fruit and Kotton resolve seed returns at maturity. The harvest and offspring transfer together when capacity permits. The **Genes** dialog cycles individual seeds and offers a validated modified Coffee Beans demo. Coffee Beans keep their plantable output. The user confirmed the M06-B desktop walkthrough. [M06-B report](M06_PACKAGE_B_REPORT.md)
+
+## M06 Package A · Seed genetics
+
+The farming dashboard can inspect the next seed or the planted crop. Native-effective values and the three clean cultivation fixtures are preserved. Changed ranks resolve deterministic growth, yield, supported draw, pollution sensitivity and Coffee composition. The planted properties are detached from the seed and shared crop resource. The user confirmed M06-A desktop acceptance. [M06-A report](M06_PACKAGE_A_REPORT.md)
+
+## M05 · Pollution simulation
+
+The shared farm analyzes all six harmful components before the nightly draw, applies crop-specific pollution damage alongside mineral damage, and publishes the typed breakdown after settlement. The bilingual analysis dialog includes controlled demo solutions. Fractional tiers and final rounding remain provisional. The user confirmed the M05 desktop checklist and supplied a separate physical-pollution screenshot. [M05 report](M05_REPORT.md)
+
 **Published M01 · Reviewed M02 and M03 · M04 acceptance passed**
 
 Nutrition Fruit, Coffee Beans, and Kotton share the playable dashboard, settlement, and inventory. Verified healthy harvests are 7 giant fruit after two nights, 8 plantable Coffee Beans after three, and 13 large fiber after six. Full and mixed tablet displacement, confirmed draining, and capacity-blocked harvest recovery have automated coverage. The existing Lettuce scene remains runnable. [M04 report](M04_REPORT.md)
