@@ -1,5 +1,9 @@
 # 开发日志 | Development Log
 
+## 2026-11-26 · Inventory discard stabilization
+
+Fixed selection restoration after discard by comparing seed object identity and product string values safely. Removed items fall back to the first remaining row, and an empty inventory clears selection and disables discard. Cancelled confirmations cannot execute later. The owner confirmed all nine manual regression checks passed.
+
 ## 2026-11-26 · M05–M07 checkpoint acceptance
 
 Fresh regression passed all 13 suites, 932 explicit checks and four original assertion groups. The user confirmed both M07 desktop walkthroughs and authorized the v0.3.0 checkpoint. [Milestone report](M07_FINAL_REPORT.md)

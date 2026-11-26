@@ -74,8 +74,8 @@ func _integration() -> void:
 	farm = ui.farm
 	farm.select_species(1)
 	farm.load_demo_solution(0)
-	var seed = farm.selected_seed()
-	seed.traits["High Yield"] = 3
+	var selected_seed = farm.selected_seed()
+	selected_seed.traits["High Yield"] = 3
 	_check(farm.install_module(E.Module.NUTRITION) and farm.install_module(E.Module.NUTRITION), "stacked crop modules")
 	farm.plant_bean()
 	farm.toggle_running()

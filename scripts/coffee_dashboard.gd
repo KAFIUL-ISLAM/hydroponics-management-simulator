@@ -133,8 +133,11 @@ func _build_actions() -> void:
 	add_child(confirm_action)
 	confirm_action.canceled.connect(func() -> void: pending_action = Callable())
 	confirm_action.confirmed.connect(func() -> void:
-		var accepted: bool = pending_action.call()
+		var command := pending_action
 		pending_action = Callable()
+		if not command.is_valid():
+			return
+		var accepted: bool = command.call()
 		_render()
 		control_hint.text = "操作完成 / Action complete" if accepted else "操作被拒绝 / Action rejected"
 	)
@@ -369,21 +372,21 @@ func _confirm_drain() -> bool:
 	return true
 
 func _show_genetics() -> void:
-	var seed: Farm.Seed
+	var inspected_seed: Farm.Seed
 	var result: Genetics.Effective
 	next_seed_button.disabled = farm.plant != null or farm.seed_count(farm.crop) < 2
 	demo_genes_button.disabled = farm.plant != null or farm.crop != farm.catalog[0] or farm.occupied_slots() >= farm.inventory_capacity
 	if farm.plant != null:
-		seed = farm.plant.seed_item
+		inspected_seed = farm.plant.seed_item
 		result = farm.plant.genetics
 	else:
-		seed = farm.selected_seed()
-		if seed == null:
+		inspected_seed = farm.selected_seed()
+		if inspected_seed == null:
 			genetics_dialog.dialog_text = "无可用种子 / No seed available"
 			genetics_dialog.popup_centered()
 			return
-		result = seed.analyze()
-	var text := "种子 / Seed #%d\n" % seed.get_instance_id()
+		result = inspected_seed.analyze()
+	var text := "种子 / Seed #%d\n" % inspected_seed.get_instance_id()
 	if farm.plant != null and farm.plant.reproduction != null and farm.plant.reproduction.eligible:
 		var returned := farm.plant.reproduction
 		text += "待领取种子 / Pending offspring: %d · 尝试 / Attempts: %d\n" % [returned.offspring_count, returned.attempts]
@@ -432,7 +435,12 @@ func _confirm_discard() -> void:
 	if stored_items.selected < 0:
 		return
 	var item: Variant = stored_items.get_selected_metadata()
-	pending_action = farm.discard_seed_instance.bind(item) if item is Farm.Seed else farm.discard_product.bind(item)
+	if item is Farm.Seed:
+		pending_action = farm.discard_seed_instance.bind(item)
+	elif item is String:
+		pending_action = farm.discard_product.bind(item)
+	else:
+		return
 	confirm_action.dialog_text = "永久丢弃一件？ / Permanently discard one?\n" + stored_items.get_item_text(stored_items.selected)
 	confirm_action.popup_centered()
 
@@ -478,6 +486,7 @@ func _render() -> void:
 	actions["energy"].tooltip_text = "每次 / Per refill: %d kJ" % farm.refill_energy_kj
 	crop_menu.disabled = not farm.configured or farm.plant != null
 	crop_menu.select(farm.catalog.find(farm.crop))
+	var selected_item: Variant = stored_items.get_selected_metadata() if stored_items.selected >= 0 else null
 	stored_items.clear()
 	for definition in farm.catalog:
 		for item: Farm.Seed in farm.seed_stock(definition):
@@ -486,9 +495,13 @@ func _render() -> void:
 	for key: String in farm.products:
 		stored_items.add_item("%s × %d" % [key, farm.products[key]])
 		stored_items.set_item_metadata(stored_items.item_count - 1, key)
-	if stored_items.item_count > 0:
-		stored_items.select(0)
-	actions["discard"].disabled = not farm.configured or stored_items.item_count == 0
+	var restored_index := 0 if stored_items.item_count > 0 else -1
+	for index in stored_items.item_count:
+		if is_same(stored_items.get_item_metadata(index), selected_item):
+			restored_index = index
+			break
+	stored_items.select(restored_index)
+	actions["discard"].disabled = not farm.configured or stored_items.selected < 0
 	actions["seed_supply"].disabled = not farm.configured or farm.occupied_slots() >= farm.inventory_capacity
 	actions["drain"].disabled = not farm.configured or farm.vessel.total_ul() == 0
 	var mature := farm.plant != null and farm.plant.stage == Farm.Plant.Stage.MATURE

@@ -64,16 +64,16 @@ func _integration() -> void:
 	add_child(viewport)
 	var ui = UI.instantiate()
 	viewport.add_child(ui)
-	var seed = ui.farm.beans.back()
-	_check(seed.get_instance_id() != ui.farm.beans.front().get_instance_id(), "independent identity")
-	seed.traits["Fast Growth"] = 2
-	seed.traits["Drought Resistant"] = 1
+	var selected_seed = ui.farm.beans.back()
+	_check(selected_seed.get_instance_id() != ui.farm.beans.front().get_instance_id(), "independent identity")
+	selected_seed.traits["Fast Growth"] = 2
+	selected_seed.traits["Drought Resistant"] = 1
 	_check(not ui.farm.beans.front().traits.has("Fast Growth") and not COFFEE.native_traits.has("Fast Growth"), "independent traits")
 	ui.actions["genetics"].pressed.emit()
 	_check(ui.genetics_dialog.dialog_text.contains("Modified") and ui.genetics_dialog.dialog_text.contains("Fast Growth 2"), "stock dialog binding")
 	ui.genetics_dialog.hide()
 	ui.actions["plant"].pressed.emit()
-	seed.traits["Fast Growth"] = 1
+	selected_seed.traits["Fast Growth"] = 1
 	_check(ui.farm.plant.target == 15 and ui.farm.plant.genetics.traits["Fast Growth"] == 2, "plant freezes seed properties")
 	ui.actions["genetics"].pressed.emit()
 	_check(ui.genetics_dialog.dialog_text.contains("Fast Growth 2"), "planted dialog binding")

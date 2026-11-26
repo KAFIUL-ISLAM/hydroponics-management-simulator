@@ -1,5 +1,11 @@
 # 测试报告
 
+## Inventory discard hotfix · 2026-11-26
+
+Direct equality between seed objects and product strings failed during selection restoration. Type-safe identity/value comparison now preserves valid selection, selects the first remaining item after removal, and clears selection when empty. The owner reported that all nine manual regression checks passed. The isolated M08 working tree passed 15 suites, 1,036 explicit checks and four original crop assertion groups, including nine presentation checks for cancellation, mixed inventory, depletion and replenishment.
+
+The isolated v0.3.0 hotfix build passed its 13 existing suites, 932 explicit checks, four original assertion groups and a separate nine-check inventory probe. Fresh import and default launch passed on Godot 4.7.2. The existing Windows certificate-store diagnostic remained present.
+
 ## M07 checkpoint · 2026-11-26
 
 Fresh isolated import, all 13 suites, default launch and the archived Lettuce probe passed. The user confirmed the M07-A equipment checklist and the M07-B DNA editor walkthrough, including preview cancellation, two-night editing, heat and disc accounting, and growing and harvesting an edited seed. The repository equipment screenshot is separate dialog evidence. [Checkpoint results](M07_FINAL_REPORT.md)
