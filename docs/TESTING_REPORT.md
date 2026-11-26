@@ -1,5 +1,9 @@
 # 测试报告
 
+## M04 verification · 2026-11-26
+
+Tested the M04 workspace on Git base `2c56490` with Godot `4.7.2.stable.official.ed1daf0bf`. Fresh import, eight suites, normal launch, and the archived Lettuce probe passed. The runner verified 719 explicit checks and four original crop assertion groups. All three mineral-loss fixtures matched their exact targets. Dashboard layout and button signal bindings were checked headlessly at 1280 × 720. Three-crop desktop verification is pending. [Commands, totals and diagnostics](M04_REPORT.md#verification)
+
 ## 1. 测试概况
 
 **项目名称：** 水培管理模拟器（Hydroponics Management Simulator）  
@@ -182,3 +186,11 @@ The known Windows certificate-store and temporary import settings diagnostics re
 | Final desktop smoke check | PASS, user-reported | The user confirmed successful completion. Earlier baseline images are separately archived and do not depict the final dashboard. [Day 1](../screenshots/m01-t02-baseline-day1.png) · [Day 2](../screenshots/m01-t02-baseline-day2.png) |
 
 The existing Windows certificate-store and import settings diagnostics and expected fixture warnings did not affect the gate. [Final report and reproduction commands](M01_FINAL_REPORT.md)
+
+## M03 Package A — Liquid domain verification
+
+The consolidated runner passed all six suites. The new suite passed 77 checks with zero failures, including strict decimal precision, signed integer overflow, capacity, conservation, remainder ties, inclusive mineral bands and atomic rejection. Exact expected and actual mineral loss matched for Nutrition Fruit (3,148 µL), Coffee Beans (9,430 µL) and Kotton (46,639 µL). The isolated M01 dashboard probe returned `BASELINE_MATCH=true`. [Package A report](M03_PACKAGE_A_REPORT.md)
+
+## M03 Package B — Playable Coffee Beans verification
+
+Fresh import and all seven suites passed. The Coffee suite reported 88 checks and zero failures, for 618 explicit checks plus the four original crop groups. The healthy fixture drew 300,000 µL, took up 720 µL, lost 9,430 µL total mineral, used 24 kJ and produced eight pending beans. Default Coffee launch and the separate unchanged Lettuce probe passed. [Package B report](M03_PACKAGE_B_REPORT.md)

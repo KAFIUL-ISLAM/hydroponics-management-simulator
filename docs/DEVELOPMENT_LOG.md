@@ -1,5 +1,13 @@
 # 开发日志 | Development Log
 
+## 2026-11-26 · M02–M04 checkpoint verification
+
+Fresh import and all eight suites passed with 719 explicit checks and four original crop assertion groups. All three numerical cultivation fixtures, the default dashboard launch and the archived Lettuce probe passed. The user confirmed the three-crop desktop walkthrough at 1280 × 720. [Final checkpoint evidence](M04_FINAL_REPORT.md)
+
+## 2026-11-26 · M04 three-crop farming
+
+Extended the Coffee Beans simulation and dashboard to support Nutrition Fruit and Kotton. Added independent starter seeds, a capacity-limited demonstration seed action, crop-specific quantity and size rules, and inventory recovery through confirmed single-item discards. Added provisional proportional tablet displacement and confirmed draining. All eight suites and both launch paths passed, including the Lettuce one-night baseline. [M04 report](M04_REPORT.md)
+
 项目：水培农业模拟系统  
 Project: Hydroponics Management Simulator
 
@@ -266,3 +274,20 @@ Project: Hydroponics Management Simulator
 - The user completed the final desktop smoke check and approved Packages A, B, and C for the milestone checkpoint.
 - The publication candidate passed a fresh Godot import, all five automated suites, normal project launch, and the unchanged one-night Lettuce probe.
 - Reviewed the project files, UID sidecars, and baseline screenshots. Published command examples use portable paths while retaining the recorded arguments, results, and diagnostics. Local archives, cache, and a duplicate crop-test scene were excluded from the publication candidate. [Final M01 report](M01_FINAL_REPORT.md)
+
+## 2026-11-26 — M02 research reconciliation
+
+- Reconfirmed the published M01 revision and tag. Reviewed the original research and current implementation, then checked the Bilibili reference and GameWith guide.
+- Mapped 45 requirements and reconciled the three GDD crops, health and growth scales, mixed-liquid debits, equipment and harvest stages. Reproduced all three reported mineral-loss totals in a separate calculation check.
+- Recorded the proposed settlement sequence, unresolved boundaries, and a dependency-ordered M03–M10 plan. Recommend Coffee Beans for the first playable loop by November 29 once the blocking decisions are approved. [M02 handoff](M02_REPORT.md)
+
+## M03 Package A — Liquid domain
+
+- Recorded the approved provisional policies and added a standalone integer µL vessel for later settlement integration.
+- Verified supply validation, exact proportional allocation, and staged mineral uptake. All three reference fixtures matched and all six suites passed. The legacy Lettuce probe remained green. [Package A report](M03_PACKAGE_A_REPORT.md)
+
+## M03 Package B — First playable Coffee Beans loop
+
+- Added the native-effective Coffee Beans definition, independent seed and plant instances, and a one-slot farm with explicit controls, finite supplies and one-time collection.
+- Staged liquid, energy and plant changes before the guarded GameState publishes its settled result. Normal launch now opens the inherited Coffee Beans dashboard. Lettuce remains an explicitly runnable fixture.
+- Verified the full button-driven loop, numerical fixture and regressions after a fresh import. [Package B report](M03_PACKAGE_B_REPORT.md)

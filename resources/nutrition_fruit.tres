@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ReferenceCrop" format=3]
+[ext_resource type="Script" path="res://scripts/reference_crop.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+name_en = "Nutrition Fruit"
+name_zh = "营养果"
+raw_target = 23
+target = 16
+raw_base_output = 5
+healthy_output = 7
+draw_ul = 100000
+uptake_ul_per_point = 50
+mineral_low_pct = 0.50
+mineral_high_pct = 2.50
+pollution_damage_factor = 1.00
+native_pollution_sensitivity = 0.7
+product_name = "营养果 / Fruit"
+size_profile = 1
+health_yield_pct = Array[int]([100,100,100,100,100])
+annual = true
+native_traits = Dictionary[String, int]({"Complex Genome":2,"Fast Growth":2,"Nutritious":1,"High Yield":2,"Hardy":1,"Sterile":10})
+native_complexity = 8

@@ -233,6 +233,14 @@ hydroponics-management-simulator/
 └── .gitignore
 ```
 
+### Play the three-crop farming loop
+
+The core farming checkpoint covers M02 research reconciliation, the M03 liquid and Coffee Beans loop, and the M04 three-crop dashboard. [Milestone evidence and open work](docs/M04_FINAL_REPORT.md)
+
+Run the project with **F5**. Select Nutrition Fruit, Coffee Beans, or Kotton, plant a seed, start the machine, and use **Next Night** until the harvest is ready. Healthy cycles take two, three, and six running nights respectively. The initial 3% solution is suitable for Coffee Beans and Kotton. For Nutrition Fruit on a fresh run, confirm **Drain solution**, add water ten times, and add four tablets to reach 5,000 mL pure water and 60 mL minerals. Draining discards the solution. Refills use finite supplies.
+
+Collect the harvest before switching crops. Coffee Beans can be replanted directly. **Demo seed** adds one seed of the selected crop as a project testing aid. If collection exceeds capacity, select stored items and confirm **Discard one** until enough room is available. For the legacy Lettuce fixture, open `scenes/main.tscn` and press **F6**. [M04 verification and manual walkthrough](docs/M04_REPORT.md)
+
 ### Run the automated tests on Windows
 
 From the repository root, replace `<Godot executable path>` with the path to the Godot 4.7.2 executable.
@@ -241,7 +249,7 @@ From the repository root, replace `<Godot executable path>` with the path to the
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\tests\run-tests.ps1 -GodotPath "<Godot executable path>" -Import
 ```
 
-The runner checks all five suites for completion markers, exit codes, and unexpected errors. It prints a summary and the temporary log directory. Use `-Import` on the first run or after moving project files. A missing Godot cache also triggers an import automatically. The execution policy applies to that PowerShell process. [Current testing evidence](docs/TESTING_REPORT.md#12-2026-11-26--m01-package-c-dashboard-and-test-migration)
+The runner checks all eight suites for completion markers, exit codes, and unexpected errors. It prints a summary and the temporary log directory. Use `-Import` on the first run or after moving project files. A missing Godot cache also triggers an import automatically. The execution policy applies to that PowerShell process. [Current testing evidence](docs/M04_REPORT.md#verification)
 
 ## 7. Development Roadmap
 

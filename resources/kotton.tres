@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ReferenceCrop" format=3]
+[ext_resource type="Script" path="res://scripts/reference_crop.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+name_en = "Kotton"
+name_zh = "韧棉"
+raw_target = 32
+target = 43
+raw_base_output = 9
+healthy_output = 13
+draw_ul = 250000
+uptake_ul_per_point = 75
+mineral_low_pct = 2.00
+mineral_high_pct = 5.00
+pollution_damage_factor = 1.26
+native_pollution_sensitivity = 1.50454
+product_name = "纤维 / Fiber"
+size_profile = 2
+health_yield_pct = Array[int]([50,65,80,90,100])
+annual = true
+native_traits = Dictionary[String, int]({"High Yield":3,"High Water Use":2,"Fragile":2,"Slow Growth":1})
+native_complexity = 0

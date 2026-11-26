@@ -1,0 +1,164 @@
+# M02 calculation contract
+
+**Review date** 2026-11-26 · **Status** Specification for review. No gameplay implementation is authorized by this document.
+
+## Evidence and source keys
+
+| Key | Access and scope |
+|---|---|
+| BW | Hydroponic agriculture, community wiki revision **11463**. Read cultivation, crop table, health, liquid draw, replenishment, and seed return. [Pinned page](https://wiki.biligame.com/probablystolen/index.php?title=%E6%B0%B4%E5%9F%B9%E5%86%9C%E4%B8%9A&oldid=11463) |
+| EQ | Hydroponic equipment, community wiki revision **11302**. Read operating slots, normal and old equipment, module calculation, and power sources. [Pinned page](https://wiki.biligame.com/probablystolen/index.php?title=%E6%B0%B4%E5%9F%B9%E7%B3%BB%E7%BB%9F&oldid=11302) |
+| GN | Plant genetics. Read initial traits, compatibility, numerical tables and the source's stated comparison against game build 26525552. [Plant genetics](https://wiki.biligame.com/probablystolen/%E6%A4%8D%E7%89%A9%E5%9F%BA%E5%9B%A0) |
+| NF / CF / KT | Crop pages, revisions **10458 / 10718 / 10809**. [Nutrition Fruit](https://wiki.biligame.com/probablystolen/index.php?title=%E8%90%A5%E5%85%BB%E6%9E%9C&oldid=10458) · [Coffee Beans](https://wiki.biligame.com/probablystolen/index.php?title=%E5%92%96%E5%95%A1%E8%B1%86&oldid=10718) · [Kotton seeds](https://wiki.biligame.com/probablystolen/index.php?title=%E9%9F%A7%E6%A3%89%E7%A7%8D%E5%AD%90&oldid=10809) |
+| GW | Hydroponic Farmer guide. Cross-check of intended workflow and healthy harvest baselines. Its economy examples are outside core scope. [GameWith guide](https://gamewith.ai/probably-stolen/zh-hans/specializations/hydroponic-farmer) |
+| DN | DNA editor, revision **11303**, deferred research. [Pinned page](https://wiki.biligame.com/probablystolen/index.php?title=DNA%E7%BC%96%E8%BE%91%E5%99%A8&oldid=11303) |
+| PA / WA | Analysis tools as reference context. [Plant analyzer](https://wiki.biligame.com/probablystolen/%E6%A4%8D%E7%89%A9%E5%88%86%E6%9E%90%E4%BB%AA) · [Water-quality scanner](https://wiki.biligame.com/probablystolen/%E6%B0%B4%E8%B4%A8%E6%89%AB%E6%8F%8F%E4%BB%AA) |
+| F / RN / GDD | Preserved local records. [FORMULAS](FORMULAS.md) · [RESEARCH_NOTES](RESEARCH_NOTES.md) · [GDD](GDD.md) |
+
+**R** means verified against the cited reference page during M02, including directly specified arithmetic or lookups. The pages are community references. This review did not run the original game or inspect its binaries. **L** means local documentation with no independent confirmation of that specific claim. **D** means a mathematical consequence or numerical reconstruction, with assumptions stated. **P** means a project engineering proposal pending review. **U** means unresolved or conflicting. A formula may be R for its stated inputs while a distinct integration boundary remains U.
+
+## Notation and units
+
+- Liquid state is a vector of pure water `W` (纯水), minerals `M` (矿物质), six harmful pollutant components `V_i`, and any other supported liquid constituents `O_j`. `T` is total mixed liquid. Capacity and a night's draw refer to `T`. The two reference concentration indices use `W`.
+- **P** store liquid components and capacity as nonnegative integer µL, and render mL at the UI boundary. `1 mL = 1,000 µL`. Validate input conversion and integer products before committing. Do not silently truncate input with more than three mL decimals. Reserve `g` for actual points delivered by the night's machine, `p` for cumulative points, `G` for target points, and `n` for running nights.
+- Health `H` is hidden health units. `S` is a percentage number (100 at full health). `s` is a sensitivity multiplier (100% = 1). The so-called pollution resistance is named `damage_factor` in this contract because it multiplies damage. Equipment attributes `P_m,E_m,Q_m` are signed percentage points, not fractions.
+- Keep energy separate from liquid. BW labels the reference baseline as 8 kJ; EQ uses the same numeric value on a source/battery scale. M01 currently displays kWh and does not debit it. **P** for a new reference configuration, use explicitly labeled kJ or explicitly labeled reference energy units with a documented mapping. If the team adopts literal kJ, `8 kJ = 8,000 J = 8/3600 kWh`. Do not reinterpret the Lettuce fixture's 100 kWh as 100 kJ.
+- `floor`, `ceil`, and `trunc` are distinct. `even(x)` is nearest with half to even. `away(x)` is nearest with half away from zero. Rounding for text is presentation only.
+
+## Core formulas
+
+Each row gives inputs, output and units, domain/boundaries, ordering and rounding, and a worked example. Where a reference does not specify a rounding or boundary, the row identifies that gap rather than creating a game rule.
+
+| ID · name | Expression and domain | Order, rounding and worked example | Evidence |
+|---|---|---|---|
+| F-LIQ-01 · Mixed volume | `T=W+M+ΣV_i+ΣO_j` in µL. All components nonnegative, `0≤T≤capacity`. | Sum exact integer component values before gating or allocation. `1,000,000+15,000+1,000=1,016,000 µL`. | **D**, BW 耗水量 |
+| F-LIQ-02 · Proportional draw | For `0≤D≤T`, component quota `q_i=D×v_i/T`; debit `floor(q_i)`, then distribute residual µL by descending fractional remainder and descending original component volume. `D=0,T=0` yields zero; positive draw at `T=0` is unaffordable. | Compare exact integer remainders. Equal remainder and equal original volume have no source tie-break. Example `v=[5,3,2], D=3` → `[1,1,1]` µL. Complete draw leaves all zero. | **R**, BW 耗水量; zero-total convention is **D**, final tie in F-OPEN-02 |
+| F-LIQ-03 · Tablet and initial mixture | One tablet adds `15,000 µL` minerals. With fixed capacity `C`, displaced volume is `max(0,T+15,000−C)`. Applies to one tablet when `C≥15,000`. | If full, remove original liquid first, then add the full tablet. For a 1,000 mL full pure-water vessel, final mixture is 985 mL water + 15 mL mineral. With room, 1,000 + 15 mL. Container smaller than a tablet and exact mixed displacement ties are open. | **R**, BW 耗水量 / F §3; displacement volume **D** |
+| F-MIN-01 · Mineral concentration | `C_m=100M/W`, percentage number with matched units and `W>0`. A tank with `M=0,W>0` reads 0%. | Use pre-loss snapshot for the documented damage-before-consumption stage. At 15 mL mineral and 1,000 mL water, 1.5%; at 15 and 985, ≈1.52284%. Do not round for damage thresholds until F-OPEN-04 is decided. | **R**, BW 耗水量 / F §3; `W=0` F-OPEN-01 |
+| F-MIN-02 · Growth uptake | `A=g×r` in µL, with `g≥0` integer points and crop rate `r≥0` µL/point. Nutrition Fruit 50, Coffee Beans 30, Kotton 75. | Use full running-night points, including overshoot. 10 Nutrition Fruit points → 500 µL. No rounding needed at these rates. Behavior if `M<A` is open. | **R**, BW 矿物质 and full-night rule / F §4; F-OPEN-01 |
+| F-MIN-03 · Total mineral loss | `ΔM=A+L_m` where `L_m` is the mineral component from F-LIQ-02; output µL. Valid when both debits are funded. | For published normal fixtures, debiting `A` first and allocating the draw on the residual matches all three exact totals below. Example Coffee Beans: 720 µL uptake + 8,710 µL draw loss = 9,430 µL. | **R** split, BW 耗水量 and examples / F §7; ordering **D**, F-OPEN-01 |
+| F-GRW-01 · Trait-adjusted target | `G=max(1,even(G_base/m_growth))` points, `G_base>0,m_growth>0`. Perennial subsequent cycles use a separate base target. | Apply traits before estimating nights. Nutrition Fruit `23/(1+0.25×2^0.75)≈16.19` → 16 points. | **R**, GN 属性与取整 |
+| F-GRW-02 · Running duration | `n=ceil(G/g)` running nights for positive integer `G,g`. `g≤0` cannot produce maturity. | Exclude paused nights. Coffee Beans `ceil(21/8)=3`. | **R**, EQ 模组 |
+| F-GRW-03 · Progress and maturity | `p_next=p+g` on a running night; blocked nights keep `p`. Proposed threshold `p_next≥G`. Inputs in points. | Apply full `g` to costs and damage before checking maturity. If `p=16,G=21,g=8`, final progress is 24, and all eight points incur effects. The equality threshold follows F-GRW-02 and the Nutrition Fruit case; competing prose says strictly greater. | **R** full increment/effects, **D** equality, BW 种植流程 / EQ 使用; F-OPEN-03 |
+| F-HLT-01 · Health and score | `H_start=10,000`, `S=H/100` percent; proposed end-of-night clamp `H'=max(0,H−damage)`. | Initialize at planting; full health returns at perennial cycle rollover. `H=9,000 → S=90%`. In-cycle health does not recover. Zero health can still mature, so never use it as a death or growth blocker. Fractional internal damage and score lookup precision remain open. | **R** initial/score/no-death/reset, BW 生长评分 and 失败与暂停 / F §5; clamp **P** |
+| F-HLT-02 · Mineral imbalance damage | `D_m=g×d`; `d=100` for `C_m<lo`, zero for `lo≤C_m≤hi`, 50 for `C_m>hi`, in health units/point. | Conditions use the crop's band before consumption. At `g=10` below the band, loss 1,000 health and 100% → 90%. A single positive point above loses 50. | **R**, BW 矿物质 / F §5 |
+| F-POL-01 · Pollutant index | `I_i=10,000×V_i/W` with matching µL, `W>0,V_i≥0`. Output is a scaled index, not a percentage. | On pre-loss snapshot before applying sensitivity. 2,000 µL in 1,000,000 µL pure water → index 20. | **R**, BW 污染损害 / F §6.1 |
+| F-POL-02 · Sensitivity and lookup | `tier_i=I_i×s`, then the lookup below. Default `s=1`. Nonnegative sensitivity and index. | Apply genetic sensitivity before looking up health-unit loss per point. Tier 20 → 20; tier 10 → 0. Fractional values between listed integer bands are unresolved. | **R**, BW 污染损害 / F §6.2; F-OPEN-04 |
+| F-POL-03 · Applied pollution damage | `D_p=g×Σ_i(lookup(tier_i)×damage_factor)`. BW supplies one factor per crop for the six harmful types. | Combine with mineral damage prior to liquid loss. At tier 20, Kotton factor 1.26 and 8 points → 201.6 health units before any unresolved rounding. Physical contaminants and other constituents can occupy liquid volume without causing this damage. | **R**, BW 污染损害 / F §6.3–6.4 |
+| F-EQP-01 · Performance | `g=trunc(8+trunc(8×P_m/2)/100)` points/night. Signed summed module percentage points. | Sum first; then apply both truncations. `P_m=−50 → g=6`. Recompute after module change; nonpositive speed blocks. | **R**, EQ 模组 |
+| F-EQP-02 · Energy cost | `E_n=max(1,8−trunc(8×E_m/100))` reference energy units per running night for battery baseline. | Sum first; then truncate toward zero. `E_m=−100 → E_n=16`; exact available power passes. Non-battery sources have different rules. | **R**, EQ 模组 / 供电选择; unit integration F-OPEN-05 |
+| F-EQP-03 · Quality adjustment | `q=trunc(Q_m/2)` points; `Q_m` is the sum across modules. | Apply after seed-stage rounding. `Q_m=+15 → q=7`; `−15 → −7`. Exact harvest multiplier and the Nutrition Fruit quality branch need separate confirmation. | **R** adjustment, EQ 模组; F-OPEN-06 |
+
+Pollutant tier lookups for the listed integer input bands, in health units/point.
+
+| Tier input | Loss | Tier input | Loss |
+|---|---:|---|---:|
+| 0–10 | 0 | 31–40 | 60 |
+| 11–15 | 15 | 41–60 | 80 |
+| 16–20 | 20 | 61–100 | 160 |
+| 21–25 | 30 | 101–200 | 320 |
+| 26–30 | 40 | >200 | 640 |
+
+Apply F-POL-01–03 to heavy metals (重金属), chemical pollutants (化学污染物), microbes (微生物), organic waste (有机废物), acid (酸) and alkali (碱) separately. BW does not specify in this table which band gets a value such as 10.5.
+
+## Harvest, genetics and advanced formulas
+
+| ID · name | Expression and domain | Order, rounding and worked example | Evidence |
+|---|---|---|---|
+| F-HRV-01 · Pre-health count | `N_traits=away(N_base×m_yield)`, then `N_quality=away(N_traits×m_quality)` in items. Use a configured nonnegative base and multipliers. | Apply each rounding independently. Nutrition Fruit `away(5×(1+0.20×2^0.75))=7`; neutral quality preserves 7. Special flat bonuses and variants need their own placement tests. | **R** stage order, GN / EQ; exact general quality mapping F-OPEN-06 |
+| F-HRV-02 · Health-adjusted quantity | `N=even(N_quality×f_crop(S))` items. Coffee Beans thresholds `≤15,≤30,≤50,≤70,>70` use factors `0.50,0.60,0.70,0.80,1`. Kotton uses `0.50,0.65,0.80,0.90,1` for those bands. Nutrition Fruit count stays unchanged by health. | Round after count/quality stages. Kotton 13 at 15% → `even(6.5)=6`; Coffee Beans 8 at 30% → 5. Compare on a confirmed score representation at edge cases. | **R**, BW 咖啡豆 / 生长评分影响, KT and CF / F §8 |
+| F-HRV-03 · Size split | For `N≥0`, first bucket `floor(N×f)`, later bucket gets remainder. Use per-crop score brackets. | Apply after quantity rounding. Example Kotton score 45, `N=even(13×.80)=10`, 30% small → 3 small + 7 regular. Nutrition Fruit 100% → all giant. | **R**, BW 生长评分影响, NF 产量, KT 产量; F-OPEN-06 |
+| F-GEN-01 · Trait intensity and composition | For supported positive integer rank `r`, intensity `r^0.75`. Trait factor `1+a×r^0.75` from signed rank-I value `a`; same-attribute multipliers multiply. | Validate compatibility before calculation. Use source caps per effect, with negative display −100% distinct from the actual ≈0.0001000166 factor. Fast Growth II ≈×1.42045; High Yield III ≈×1.45590. | **R**, GN 特性效果 / 属性与取整 / 数值封顶 |
+| F-GEN-02 · Trait-adjusted draw | Apply water trait multiplier to raw draw and round to an integer before using it as nightly consumption. Input/output represent volume per running night. | The exact raw draw and rounding tie rule are not supplied for all crops. Worked non-tie: a 100 mL raw setup at ×0.75 returns 75 mL. Use the supplied effective draws for the default three crops until raw values are pinned. | **R** ordering; **U** general ties/raw draw, GN 属性与取整 |
+| F-GEN-03 · Seed copies | For a nonnegative reproduction factor `m`, each scheduled return uses `floor(m)` guaranteed copies and one additional copy with chance `m−floor(m)`. | Schedule crop-specific attempts first. At 1.25, returns 1 with 75% or 2 with 25%. Use an injected roll for tests. Offspring inherits current trait levels, heat becomes zero; perennial mother is the same instance. | **R**, BW 返种与留株, GN 培育与繁殖 |
+| F-GEN-04 · Complexity and heat | Proposed transcription of GN: unchanged native ranks add zero, added ranks use signed per-rank cost, lowered native ranks add absolute per-rank cost, locked genome offset is ±4/rank. Edit heat increment `2+abs(trait_cost)`. | Apply only to a compatible edit; DN says success or failure adds heat for application. Fast Growth costs +4/rank, so a single such edit adds 6 heat. Complexity and heat are not nutritional calories. | **R**, GN 复杂度与改造成本 / DN 进度与成功率, deferred |
+| F-GEN-05 · Gene-derived crop composition | For supported output trait, added volume `a×r^0.75`; active component after addition multiplied by potency factor from F-GEN-01 with coefficient ±0.25. | Round active volume to µL using half-even per item. Coffee Beans caffeine at default traits `(4.4+2)×1.25=8.0 mL`. Inactive components are separate. | **R**, CF 成分 and GN 属性与取整, deferred |
+| F-POL-04 · Purification | For positive purifier rank `r`, `f=min(.95,.10×r^0.75)`; target loss `max(1000,even(v_i×f))` µL; residual index `floor(I_base/r)`; residual floor `floor(W_start×index/10000)`. | After damage and liquid/uptake losses, apply at most `max(0,v_i−floor)` to each eligible component. Convert removed µL to pure water. Use the same starting `W_start` for all floors; minerals are retained. IV gives 28.2843%; 2,000 µL heavy metal at `W_start=1,000,000 µL` has floor 600 µL, removes 1,000 µL. | **R**, BW 水培芦苇 / 净化水质 and GN, deferred |
+| F-POL-05 · Fouling trait | Rank-I fouling transforms 0.1% of pure water to contaminants, split 50/35/15 among organic waste/microbes/physical pollution. Rank scaling from F-GEN-01. | At rank I and 1,000 mL water, transforms 1 mL nominally into 0.5/0.35/0.15 mL. Exact rounding/timestamp relative to other advanced effects needs a fixture. | **R** default/split; **U** edge order, GN 特性效果, deferred |
+| F-EQP-04 · Optional grid cost | `bill=ceil(Σ(cost_i×rate))` credits; EQ default 1.5 per energy unit, decreases 0.1 each upgrade up to five. | Sum before rounding. One standard connected machine `8×1.5=12`. Connected idle machines can incur billing. Non-battery provider mode is outside the core transaction slice. | **R**, EQ 供电选择, deferred |
+| F-HRV-04 · Perennial product-state distribution | Fluorescent Berry has score-tier probability tables for item state from BW; one draw per item. The default mother retains itself and resets health after a cycle. | A score above 85 uses 40% state +1 and 60% state +2. First/repeat timing under a plain unit is 3/2 nights. Store integer base regrowth target only once sourced. | **R** example and treatment, BW 荧光莓; **U** base repeat target, deferred |
+| F-GEN-06 · Editor operation | `E=complexity+heat`, demand `20+4×max(0,E)` points, probability `clamp(95−5×max(0,E)+trunc(Q_m/2),5,100)` percent. | Compute from pre-operation seed state and use editor's own speed/power; apply heat per result. At E=8,Q=0: 52 points and 55%. | **R**, DN 进度与成功率; full editor out of GDD scope |
+| F-M01-01 · Legacy fixture rules | `p_next=p+1` after valid batch, fixed per-night water/mineral costs, no energy debit. Reserve state uses floats in mL/kWh. | Reset to captured starting values; the starting Lettuce asset inherits zero costs. Day 1/growth 0 → Day 2/growth 1 at unchanged 1000 mL/50 mL/100 kWh. | **P** existing approved prototype, [M01 acceptance](M01_FINAL_REPORT.md) |
+| F-M01-02 · Legacy amount presentation | For finite UI quantities in mL or kWh, display the nearest integer if approximately integral, otherwise snap the displayed value to 0.01. Append the field's unit. | Presentation stage only; e.g. 50.0 → `50 ml`. Existing formatting must never feed threshold or debit arithmetic. | **P** existing project rule, [dashboard formatter](../scripts/main.gd) · [audit formulas](PROJECT_AUDIT.md#d-existing-formulas) |
+
+Size buckets transcribed as decision data for the proposed fixture tests. Nutrition Fruit and Kotton use all small at `S≤15`, 70% small at `15<S≤30`, 30% small at `30<S≤50`, all regular at `50<S≤70`, 80% regular at `70<S≤80`, and 30% regular at `80<S≤90`; the remainder in mixed buckets is the next larger size. Kotton is all large above 90. Nutrition Fruit is all large in the ordinary `90<S≤95` band, large/giant at the documented 96–99 band when adjusted quality is no higher than 50, and all giant at 100. The agriculture summary specifies all giant when `S>95` and adjusted quality is above 50. Do not fill the fractional 95–96 gap by assuming an undocumented rounding rule. [Nutrition Fruit crop rules](https://wiki.biligame.com/probablystolen/index.php?title=%E8%90%A5%E5%85%BB%E6%9E%9C&oldid=10458) · [Kotton crop rules](https://wiki.biligame.com/probablystolen/index.php?title=%E9%9F%A7%E6%A3%89%E7%A7%8D%E5%AD%90&oldid=10809)
+
+## Reference crop definitions
+
+Shared setup for the effective rows is a plain machine, native seed traits, adequate power/liquid, no modules, healthy first harvest. Raw base and native-adjusted values are separate configuration layers. Full source keys are above.
+
+| Field | Nutrition Fruit · 营养果 | Coffee Beans · 咖啡豆 | Kotton · 韧棉 |
+|---|---|---|---|
+| Raw base points / items (GN) | 23 / 5 | 21 / 8 | 32 / 9 |
+| Native target points (F-GRW-01, **D**) | 16 | 21 | 43 |
+| Plain speed and first running nights (BW/EQ) | 8 points/night; 2 | 8 points/night; 3 | 8 points/night; 6 |
+| Good-health output (BW/GW) | 7 fruit | 8 beans, each plantable | 13 fiber |
+| Effective mixed draw / running night (BW) | 100 mL | 100 mL | 250 mL |
+| Raw draw before native water traits | 100 mL inferred, native set has no water modifier | 100 mL inferred, native set has no water modifier | Unresolved; 250 already includes High Water Use II |
+| Mineral band and uptake (BW) | 0.50–2.50%; 50 µL/point | 1.75–3.25%; 30 µL/point | 2.00–5.00%; 75 µL/point |
+| Damage multiplier (BW), native sensitivity (GN, derived) | ×1.00; ×0.70 | ×1.01; ×1.00 | ×1.26; ≈×1.50454 |
+| Native traits / initial complexity (GN/DN) | Complex Genome II, Fast Growth II, Nutritious I, High Yield II, Hardy I, Sterile X; complexity +8 | Caffeine Output I, Coffee Paste Output I, Potent I; native complexity 0 | High Yield III, High Water Use II, Fragile II, Slow Growth I; native complexity 0 |
+| Health effect / lifetime | Count unchanged, sizes change; annual default | Count changes; annual default | Count and size change; annual default |
+| Seed/output policy (BW, NF/CF/KT) | Three scheduled seed attempts with rare native Sterile X success. Use a supply action for replay. | Bean is both product and seed. Avoid a second grant. Fertile/Sterile edits do not apply. | One attempt at score ≤50; one or two equally likely through 80; two above 80. Apply multiplier after scheduling. |
+| Research-only product value and optional modules | Size-dependent 8/12/18/32 credits. Fruit module adds one fruit each, with equipment deltas. | Guide lists 28 credits/item. Product chemistry deferred. | Fiber size-dependent 36/46/60. Weaving converts output, with modified speed/power. |
+
+The published concentration and cycle-loss cases use 5,000 mL pure water per separate crop, no pollution, plain equipment, and no mid-cycle top-up. They are source fixtures, not recommended starting stock. [Reference cases](https://wiki.biligame.com/probablystolen/index.php?title=%E6%B0%B4%E5%9F%B9%E5%86%9C%E4%B8%9A&oldid=11463)
+
+| Crop | Tablets / initial total mL | Full points run | Absorption µL | Total mineral loss µL, published and reconstructed | Draw-first counterexample µL |
+|---|---|---:|---:|---:|---:|
+| Nutrition Fruit | 4 / 5060 | 16 | 800 | 3,148 | 3,164 |
+| Coffee Beans | 10 / 5150 | 24 | 720 | 9,430 | 9,444 |
+| Kotton | 10 / 5150 | 48 | 3,600 | 46,639 | 46,808 |
+
+For the reconstruction, start with water and tablet minerals; each night subtract full uptake, allocate the fixed mixed draw by F-LIQ-02, and repeat. The source reports concentration ranges 1.18–1.20%, 2.98–3.00%, 2.91–3.00% respectively. Treat those as published display observations. The integer mass-loss fixtures do not prove at which sample points or with what rounding the displayed ranges were generated.
+
+**Lettuce · 生菜** remains the legacy test fixture, with no sourced crop balance, target, mineral band, output, or effective energy consumption. Keep existing asset/tests distinct from reference crop definitions. [Fixture asset](../resources/lettuce_prototype.tres#L5) · [M01 baseline](M01_FINAL_REPORT.md)
+
+## Coffee Beans implementation
+
+**M04 provisional decisions.** Neutral Nutrition Fruit uses all large for scores above 95 and below 96, large/giant from 96 up to but excluding 100, and all giant at 100. This deterministic extension uses full-precision scores. Tablet insertion in the playable vessel displaces the minimum required original solution using F-LIQ-02, then adds the whole tablet. A vessel under 15 mL rejects it. Confirmed drain discards all mixed liquid without refund; subsequent refills consume finite supply. Demo restocking grants one selected seed subject to shared item capacity; it is separate from reference reproduction.
+
+Package B stages an isolated liquid copy and the corresponding plant and energy changes. It swaps the vessel and installs the other changes before GameState emits its typed terminal outcome. Health thresholds compare integer health units directly, which is equivalent to the full-precision score calculation. Coffee yield uses integer tenths with explicit half-even rounding. The old Lettuce scene stays available as a compatibility fixture. [Package B report](M03_PACKAGE_B_REPORT.md)
+
+## Settlement sequence and transaction boundary
+
+1. **P — lifecycle.** Keep the one-use permit and synchronous lock in `GameState`. Take a read-only snapshot of machine, plant, seed traits, solution, power, and outputs. Validate combinations before any mutation. A configuration error leaves the day and state unchanged; an idle night or a resource shortage advances the global day according to M01.
+2. **R — gate and calculate.** A valid machine with an unpacked planted seed needs positive effective speed, enough current total mixed liquid, and the full nightly power requirement. Water/power shortage pauses crop progress without health damage. Aggregate equipment modifiers, resolve full nightly work, and read mineral and pollutant indices on the pre-loss mixture. Low concentration damages health and does not itself imply a shortage of total liquid. [BW](https://wiki.biligame.com/probablystolen/index.php?title=%E6%B0%B4%E5%9F%B9%E5%86%9C%E4%B8%9A&oldid=11463) · [EQ](https://wiki.biligame.com/probablystolen/index.php?title=%E6%B0%B4%E5%9F%B9%E7%B3%BB%E7%BB%9F&oldid=11302)
+3. **R + D — stage effects.** Stage full-point health effects first. Stage uptake and component draw next; uptake before draw matches the three source totals. Stage power independently. For later purifier/fouling traits apply confirmed post-damage ordering, and only after their own unresolved boundaries are reviewed. Never take a second pure-water debit for the same mixed draw.
+4. **P — stage lifecycle and harvest.** Stage new progress, health, maturity and a read-only harvest payload. The reference creates outputs at maturity and routes overflow to the store warehouse. The GDD asks for harvest eligibility and a harvest interaction. Proposed M03 uses a ready-to-collect payload, deposited once by a player action; uncollectible items remain pending and cannot be generated a second time. Mature annual plant clears only at the agreed commit; perennial reset is a later tested transition.
+5. **P — commit together.** Expand the current typed batch API to validate the relevant solution components and energy as one plan. Its immediate balance signal must not expose a snapshot before plant, progress, and pending output are installed. Prefer a validated plan plus one commit/publish seam, not sequential mutable calls or rollback signals. No RNG roll can be consumed by an aborted plan. Preserve existing Lettuce and rejected-batch tests.
+6. **P — publish.** Extend `NightOutcome` with stable reason/cost breakdown, growth delta and total, health change, readiness/output and shortage units as the feature needs them. Publish coherent snapshots after commit, update the day and ready lifecycle under the existing guard, and render the result without calculating in the UI. Keep legacy compatibility tests deliberately.
+
+## Open and provisional contracts
+
+### Reviewed Package A project decisions
+
+These policies are approved provisional engineering decisions. Reference ambiguities in the table below remain historical research findings.
+
+| Decision | Approved project behavior |
+|---|---|
+| F-OPEN-01 | A night with zero pure water is rejected. Cap uptake to mineral stock and require the complete draw from the post-uptake mixture. Any rejection leaves all components intact. |
+| F-OPEN-02 | Sort remainder ties by descending original volume, then ascending stable component ID. Tablet insertion requires 15,000 µL of free capacity. Mixed-vessel displacement is deferred to M04. |
+| F-OPEN-03 | Maturity occurs when cumulative points reach or exceed target. |
+| F-OPEN-04 | Clamp health at zero and use full-precision health-derived scores for thresholds. Fractional pollution tiers remain deferred. |
+| F-OPEN-05 | Reference-machine energy is explicitly labeled kJ. Legacy Lettuce retains its kWh fixture. |
+| F-OPEN-07/08 | Stage harvest once at maturity, require explicit collection and retain uncollectible pending output. |
+| EQP-01 | The playable slice uses explicit machine start and stop controls. |
+
+Package A implements the liquid subset. For bounded integer arithmetic, a partial draw whose quota product exceeds the signed 64-bit range is rejected atomically. A full draw does not require quota multiplication. Decimal mL input accepts up to three fractional digits and converts exactly to µL.
+
+Rows below are decision IDs linked from requirements. An unresolved row supplies a discriminating fixture instead of an invented expected value.
+
+| ID | Precise question and candidate test | Gate |
+|---|---|---|
+| F-OPEN-01 · Zero water, mineral underflow and draw affordability | Sources specify `W` denominator, pre-night `T` gate, and damaged growth in deficient solution. They do not settle `W=0,T>0`, `M<A`, or post-uptake `T<D` when pre-uptake `T=D`. Example: `W=99,900,M=100,D=100,000,A=240 µL`. Test zero water, zero mineral, partial uptake and exact total; approve behavior before enabling these states. Candidate P is reject undefined concentration, cap uptake to stock, and require the full post-uptake draw without partial mutation. Which night result should each produce? | Blocks M03 boundary release |
+| F-OPEN-02 · Final rounding tie and tablet overflow | F-LIQ-02 resolves unequal component volumes. In `[1,1]` with draw 1 µL, last tie is unresolved. A P stable component-ID order is deterministic. Confirm whether tablet displacement uses the same draw allocation for mixed vessels and what capacity below 15 mL means. | Stable tie decision M03; mixed tablet exceptions M04 |
+| F-OPEN-03 · Maturity equality | BW describes both reaching and exceeding target. F-GRW-01 yields 16 for Nutrition Fruit and EQ specifies ceiling; at 8/night the published two nights require equality to count. Candidate `p_next≥G`; test `G−1,G,G+1` and full last-night cost. | Accept derived equality for M03, or find a contrary observed game case |
+| F-OPEN-04 · Numeric health thresholds | Fractional pollution tier boundaries, rounding at each multiplier, exact score normalization into harvest bands, and negative health handling are not fully stated. Compare 10, 10.5, 11 and scores 95, 95.5, 96. Propose comparing integer-health based scores at full precision until evidence supports display rounding. | Pollution and high-health sizes can defer; health scale and core harvest edge decision M03 |
+| F-OPEN-05 · Power interface | Confirm literal kJ versus reference energy scale and update only the new configured machine's units. Existing 100 kWh Lettuce fixture is compatibility evidence. Test exact 8 and just below in chosen units. | Blocks M03 power integration |
+| F-OPEN-06 · General quality and output order | Confirm how EQ's adjusted quality becomes a multiplier, any minimum/cap and behavior at ≤0, placement of special additions, and Nutrition Fruit partial-score size branch. Test neutral quality separately from nonneutral. | Neutral quality sufficient for M03; nonneutral effects M07 |
+| F-OPEN-07 · Add-on traits and overflow | Confirm raw Kotton draw, trait draw ties, exact reproduction cap/RNG and perennial target; last-resort disposition when output and warehouse both full is unstated. Test full/full and retry with no duplicate grants. Proposed retained pending output is explicit project behavior. | Pending-output policy M03; full genetics/overflow parity M06–M08 |
+| F-OPEN-08 · Default harvest timing | Reference deposits automatically, GDD has explicit harvest action. Approve the ready-to-collect preview and transactional inventory transfer, or specify auto-routing with a collection action; do not blend the two invisibly. | Blocks M03 UX integration |
+| F-LOCAL-01 · Exact GDD economy/market estimate | GDD and old crop data imply valuation, and research/guide list examples, but the project records no independently verified general price formula. Input example one Coffee Beans item, guide lists 28 credits for that context; sale output beyond that context is unspecified. | **L** capability and example, no approved formula; defer M10 |
+
+Gate decisions are proposals for M03 review, not permission to use unverified behavior. A calculator's supported domain can be narrower than the complete simulation as long as blocked or deferred cases remain visible and tested.

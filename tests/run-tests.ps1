@@ -65,6 +65,15 @@ try {
         @{ Name = 'Dashboard startup'; Scene = 'test_main_dashboard'; Markers = @(
             '(?m)^DASHBOARD_STARTUP_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
         ) },
+        @{ Name = 'Three crop farming'; Scene = 'test_three_crops'; Markers = @(
+            '(?m)^THREE_CROP_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
+        ) },
+        @{ Name = 'Coffee farming'; Scene = 'test_coffee_farm'; Markers = @(
+            '(?m)^COFFEE_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
+        ) },
+        @{ Name = 'Liquid composition'; Scene = 'test_liquid_composition'; Markers = @(
+            '(?m)^LIQUID_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
+        ) },
         @{ Name = 'Nightly integration'; Scene = 'test_nightly_integration'; Markers = @(
             '(?m)^NIGHTLY_INTEGRATION_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
         ) }

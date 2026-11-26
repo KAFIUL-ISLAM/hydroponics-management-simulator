@@ -1,12 +1,24 @@
 # Project status
 
-**As of 2026-11-26** · **Completed milestone M01 — Foundation stabilization**
+**Published M01 · Reviewed M02 and M03 · M04 acceptance passed**
+
+Nutrition Fruit, Coffee Beans, and Kotton share the playable dashboard, settlement, and inventory. Verified healthy harvests are 7 giant fruit after two nights, 8 plantable Coffee Beans after three, and 13 large fiber after six. Full and mixed tablet displacement, confirmed draining, and capacity-blocked harvest recovery have automated coverage. The existing Lettuce scene remains runnable. [M04 report](M04_REPORT.md)
+
+M05 is next. Reconcile unresolved pollution tier boundaries and rounding before connecting pollutant analysis and damage to nightly settlement.
+
+The GitHub checkpoint regression passed on a fresh import. The user confirmed desktop acceptance for all three crops and the resource and inventory controls listed in the report. [Final checkpoint evidence](M04_FINAL_REPORT.md)
 
 M01-T01 through M01-T07 established the project baseline and stabilized resource and settlement logic. Package C completed dashboard synchronization, settlement feedback, integration tests, and the migration to `tests/`. The user approved the foundation and reported a successful final desktop smoke check. The checkpoint regression rerun passed all five suites with 453 explicit checks and four original crop assertion groups. [Foundation plan](FOUNDATION_STABILIZATION_PLAN.md) · [Final M01 report](M01_FINAL_REPORT.md)
 
+M02 reconciled the gameplay research, mapped 45 requirements, and recorded the calculation and settlement contract, including the remaining decisions for the first playable crop. This milestone covers documentation only. [M02 report](M02_REPORT.md) · [Requirements](REQUIREMENTS.md) · [Calculation contract](CALCULATION_CONTRACT.md)
+
+M03 Package A added the integer liquid model and verified all three numerical reference fixtures. The next integration package should stage liquid, power and plant state together. [Package A report](M03_PACKAGE_A_REPORT.md)
+
+M03 Package B provides the complete Coffee Beans loop as the normal launch. Nutrition Fruit and Kotton gameplay remain for M04. [Package B handoff](M03_PACKAGE_B_REPORT.md)
+
 ## Git baseline and evidence
 
-- The M01 working changes were based on `7b282e24dfff65957f8d181126c67da5498b7e2d` (`resources and simulator added`). The final pre-commit fetch found `main` and `origin/main` aligned at that revision. `02f30ca` introduced the dashboard, and `1694ee5` added initial research and design documentation.
+- M01 was published on `main` as `2c56490855d0da94eadce5f1c6bc093f5c797eae`, tagged `v0.1.0`. M02 checked the local commit and tag against that published checkpoint.
 - The audit describes the earlier, clean audit snapshot. Package B started with the prior uncommitted main-scene, resource validation, and documentation changes, plus untracked tests, reports, and screenshots.
 - The [project audit](PROJECT_AUDIT.md) is the implementation baseline. **Implemented** below means the behavior is present in source. M01-T02 verified the explicit scene and one night. The user independently verified rendering and the physical button click at 1280 × 720. M01-T03 added the dashboard as the default scene and verified it from a freshly imported temporary project. The existing one-night probe and four crop-resource test groups still pass. [M01-T02 results](M01_T02_REPORT.md) · [Manual evidence](TESTING_REPORT.md#8-2026-11-26--user-manual-verification-of-the-m01-t02-baseline) · [M01-T03 results](M01_T03_REPORT.md)
 
@@ -49,11 +61,10 @@ The project declares Godot 4.7 and GL Compatibility. M01-T02 verified `4.7.2.sta
 
 ## Open research and scope decisions
 
-- Choose the first playable crop after foundation stabilization. Decide whether to keep lettuce as a labeled demonstration crop or begin with a GDD crop, and confirm which crops and optional systems the assessment requires. [Crop scope](GDD.md#L525) · [Milestone priorities](GDD.md#L692)
-- Confirm growth points per night, mineral concentration timing and zero-water behavior, the concentration health-versus-blocking rules, mixed-liquid allocation, and µL rounding before implementing those rules. [Mineral and health formulas](FORMULAS.md#L41) · [Liquid loss](FORMULAS.md#L215)
-- Confirm pollutant tier boundaries and sensitivity units, equipment power and modifier formulas, trait multipliers, and crop-specific harvest and seed-return rules. Document which simplifications are acceptable for the submission. [Pollution formulas](FORMULAS.md#L144) · [Pending research](RESEARCH_NOTES.md#L241)
-- Confirm the assessment delivery format and target engine build. A fresh end-to-end test run and, if required, a Windows export remain separate work. [GDD target platform](GDD.md#L7) · [Audit questions](PROJECT_AUDIT.md#h-questions-requiring-clarification)
+- Review Coffee Beans as the first playable crop. The mandatory target still includes Nutrition Fruit, Coffee Beans, and Kotton. Lettuce remains the compatibility fixture. [Reference crop definitions](CALCULATION_CONTRACT.md#reference-crop-definitions)
+- Resolve exact depletion and zero-water behavior, the remaining liquid tie, maturity equality, score/health boundary handling, the energy unit, and harvest collection/overflow policy before releasing the first gameplay loop. [Open formula contracts](CALCULATION_CONTRACT.md#open-and-provisional-contracts)
+- Fractional pollution tiers, nonneutral quality, raw Kotton water before traits, advanced RNG and perennial output are later accuracy work. Confirm whether Windows export is required for the assessment. [M03–M10 roadmap](GAMEPLAY_IMPLEMENTATION_PLAN.md)
 
 ## Next recommended task
 
-For M02, choose the first playable crop and confirm its formula and unit contract before implementing the first complete production loop. The five-suite runner provides the foundation regression gate. [Open research and scope decisions](#open-research-and-scope-decisions) · [Test command](../README.md#run-the-automated-tests-on-windows)
+Review the first playable Coffee Beans loop, then add Nutrition Fruit and Kotton in M04. The descriptions of missing functionality in the M01 feature table are checkpoint observations. [Package B handoff](M03_PACKAGE_B_REPORT.md)

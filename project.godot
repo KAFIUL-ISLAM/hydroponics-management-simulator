@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Hydroponics Management Simulator"
-run/main_scene="uid://lm4cvp2hfxau"
+run/main_scene="res://scenes/coffee_dashboard.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 

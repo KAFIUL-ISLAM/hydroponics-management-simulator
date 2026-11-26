@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ReferenceCrop" format=3]
+
+[ext_resource type="Script" path="res://scripts/reference_crop.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+name_en = "Coffee Beans"
+name_zh = "咖啡豆"
+raw_target = 21
+raw_base_output = 8
+product_name = "咖啡豆 / Coffee Beans"
+target = 21
+healthy_output = 8
+draw_ul = 100000
+uptake_ul_per_point = 30
+mineral_low_pct = 1.75
+mineral_high_pct = 3.25
+pollution_damage_factor = 1.01
+annual = true
+output_is_seed = true
+native_traits = Dictionary[String, int]({"Caffeine Output": 1, "Coffee Paste Output": 1, "Potent": 1})
+native_complexity = 0
