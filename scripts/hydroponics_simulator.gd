@@ -7,61 +7,63 @@ signal crop_growth_blocked(reason: String)
 @export var game_state: GameState
 @export var resource_manager: ResourceManager
 
-var current_crop: CropData = null
-var current_growth: int = 0
+var current_crop: CropData:
+	get:
+		return game_state.selected_crop if is_instance_valid(game_state) else null
+
+var current_growth: int:
+	get:
+		return _current_growth
+
+var _current_growth: int = 0
 
 
 func _ready() -> void:
-	if game_state != null:
-		game_state.crop_selected.connect(_on_crop_selected)
-		game_state.night_processing_started.connect(_on_night_processing_started)
+	if game_state == null:
+		return
 
-		if game_state.selected_crop != null:
-			_on_crop_selected(game_state.selected_crop)
+	if not game_state._register_night_simulation(process_crop_night):
+		push_warning("HydroponicsSimulator: could not register the night simulation.")
+		return
+
+	game_state.crop_selected.connect(_on_crop_selected)
+	if current_crop != null:
+		_on_crop_selected(current_crop)
 
 
 func _on_crop_selected(crop: CropData) -> void:
-	current_crop = crop
-	current_growth = 0
-	crop_growth_changed.emit(current_crop, current_growth)
+	_current_growth = 0
+	crop_growth_changed.emit(crop, current_growth)
 
 
-func _on_night_processing_started(_day: int) -> void:
-	process_crop_night()
-	game_state.complete_night()
+## Only GameState can authorize this call, once per accepted night.
+func process_crop_night(permit: RefCounted = null) -> GameState.NightOutcome:
+	if not is_inside_tree() or not is_instance_valid(game_state) or not game_state._claim_settlement(process_crop_night, permit):
+		return GameState.NightOutcome.new(GameState.NightStatus.CONFIGURATION_ERROR, "Unauthorized settlement")
 
+	if not is_instance_valid(resource_manager):
+		var reason := "HydroponicsSimulator: ResourceManager is not assigned."
+		push_warning(reason)
+		return GameState.NightOutcome.new(GameState.NightStatus.CONFIGURATION_ERROR, reason)
 
-func process_crop_night() -> void:
-	if current_crop == null:
-		return
+	var crop := current_crop
+	if crop == null:
+		return GameState.NightOutcome.new(GameState.NightStatus.NO_CROP)
 
-	if resource_manager == null:
-		push_warning("HydroponicsSimulator: ResourceManager is not assigned.")
-		return
+	var result := resource_manager.try_consume_batch({
+		ResourceManager.ResourceType.WATER: crop.water_per_night_ml,
+		ResourceManager.ResourceType.MINERALS: crop.minerals_per_night_ml,
+	})
+	if result.status == ResourceManager.ConsumptionStatus.INVALID_INPUT:
+		var reason := "Invalid resource configuration"
+		crop_growth_blocked.emit(reason)
+		return GameState.NightOutcome.new(GameState.NightStatus.CONFIGURATION_ERROR, reason, result)
 
-	if not resource_manager.can_consume(
-		ResourceManager.ResourceType.WATER,
-		current_crop.water_per_night_ml
-	):
-		crop_growth_blocked.emit("Insufficient water")
-		return
+	if result.status == ResourceManager.ConsumptionStatus.INSUFFICIENT_RESOURCES:
+		var reason := "Insufficient water" if result.resource_type == ResourceManager.ResourceType.WATER else "Insufficient minerals"
+		crop_growth_blocked.emit(reason)
+		return GameState.NightOutcome.new(GameState.NightStatus.SHORTAGE, reason, result)
 
-	if not resource_manager.can_consume(
-		ResourceManager.ResourceType.MINERALS,
-		current_crop.minerals_per_night_ml
-	):
-		crop_growth_blocked.emit("Insufficient minerals")
-		return
-
-	resource_manager.try_consume(
-		ResourceManager.ResourceType.WATER,
-		current_crop.water_per_night_ml
-	)
-
-	resource_manager.try_consume(
-		ResourceManager.ResourceType.MINERALS,
-		current_crop.minerals_per_night_ml
-	)
-
-	current_growth += 1
-	crop_growth_changed.emit(current_crop, current_growth)
+	_current_growth += 1
+	crop_growth_changed.emit(crop, current_growth)
+	return GameState.NightOutcome.new(GameState.NightStatus.GROWN, "", result)

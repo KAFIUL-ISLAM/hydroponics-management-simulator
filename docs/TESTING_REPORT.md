@@ -66,3 +66,119 @@
 - 验证水培设备与作物状态之间的交互。
 - 实现并测试夜间结算流程。
 - 根据后续功能补充测试用例、测试结果及截图证据。
+
+## 7. 2026-11-26 — M01-T02 runtime baseline
+
+**Revision** `7b282e24dfff65957f8d181126c67da5498b7e2d` on `main` · **Environment** Windows, Godot `4.7.2.stable.official.ed1daf0bf`, headless debug.
+
+These are fresh results from this revision. Earlier screenshots and test records above remain historical evidence. [Commands, local log paths, and probe source](M01_T02_REPORT.md)
+
+| Check | Result | Runtime evidence |
+|---|---|---|
+| Verify engine and inspect project configuration | PASS | `--version` returned `4.7.2.stable.official.ed1daf0bf`. Source inspection found no `run/main_scene`. |
+| Launch `res://scenes/main.tscn` directly | PASS | Exit 0 at the 60-iteration limit. No scene-loading errors, GDScript parse errors, missing resources, or invalid node references were observed. |
+| Initial live state and label text | PASS | Day 1, `lettuce_prototype` (Lettuce), Growth 0, 1000 ml water, 50 ml minerals, 100 kWh, and `READY`. The label strings agreed with state. |
+| Settle one night through the connected button signal | PASS | An automated probe emitted `NextNightButton.pressed` once. Day advanced to 2, growth to 1, status returned to `READY`, and all three balances stayed unchanged. The label strings updated to match. No physical click was performed. |
+| Crop resource group 1 · Resource loads as `CropData` | PASS | `TEST 1 PASSED: CropData resource loaded` |
+| Crop resource group 2 · Identity | PASS | `TEST 2 PASSED: Crop identity verified` |
+| Crop resource group 3 · Defaults | PASS | `TEST 3 PASSED: Default values verified` |
+| Crop resource group 4 · Initial traits | PASS | `TEST 4 PASSED: Genetic traits initialized` |
+| Crop test overall | PASS | `ALL TESTS PASSED`, no assertion failure, and exit 0 at the 60-iteration limit. No manual termination was required for this test scene. |
+| Default project launch | FAIL | Godot reported `Can't run project: no main scene defined in the project.` The process was stopped after capturing the error. |
+| Visual render and physical Next Night click | NOT RUN | Headless execution verified node and label state. Desktop rendering, layout, and physical input still require the editor check in the task report. |
+| Export | NOT RUN | Outside the M01-T02 baseline. |
+
+Godot reported a Windows root certificate store read error on the dashboard, probe, and crop-test runs. Those checks completed. The dashboard script generated an unused `crop` parameter warning at line 96. The crop test generated redundant-assertion warnings at lines 10, 14–16, and 20–22. An initial invocation also generated a log-target error for `NUL`; the recorded baseline used ordinary temporary log files. [Diagnostics and manual steps](M01_T02_REPORT.md#diagnostics)
+
+## 8. 2026-11-26 — User manual verification of the M01-T02 baseline
+
+**Baseline revision** `7b282e24dfff65957f8d181126c67da5498b7e2d` · **Viewport** 1280 × 720 · **Evidence** user-reported Godot session and before-and-after screenshots.
+
+| Check | Result | User observation |
+|---|---|---|
+| Desktop dashboard rendering and physical Next Night click | PASS | The dashboard rendered at 1280 × 720 and responded to one click. |
+| Day and growth | PASS | Day 1 and Growth 0 before the click, Day 2 and Growth 1 after it. |
+| Crop, reserves and final status | PASS | Lettuce remained selected. Reserves stayed at 1000 ml water, 50 ml minerals, and 100 kWh. Final status was `READY`. |
+| Errors during manual play | PASS | The user reported no errors during the session. |
+
+The screenshots were provided by the user. No repository paths have been verified for that pair. This manual follow-up is separate from the automated diagnostics captured in [M01_T02_REPORT.md](M01_T02_REPORT.md#diagnostics).
+
+## 9. 2026-11-26 — M01-T03 default main scene and regression checks
+
+**Baseline revision** `7b282e24dfff65957f8d181126c67da5498b7e2d` plus the M01-T03 `project.godot` change · **Environment** Windows, Godot `4.7.2.stable.official.ed1daf0bf`, headless.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Clean project import | PASS | Copied the 49 tracked working-tree files into a temporary project that started without `.godot/` or project editor metadata. The copied configuration matched the workspace file. The import generated fresh project data and exited 0. |
+| Normal project launch | PASS | No scene or script argument. Verbose output confirmed `res://scenes/main.tscn` completed loading. Exit 0. The missing-main-scene error from M01-T02 did not recur. |
+| Configured dashboard initial state | PASS | The probe resolved `uid://lm4cvp2hfxau` to `res://scenes/main.tscn`. It observed Day 1, Growth 0, Lettuce, `READY`, 1000 ml water, 50 ml minerals, and 100 kWh. |
+| Existing one-night probe | PASS | Day 1 → 2 and Growth 0 → 1 after one button-signal emission. Lettuce, reserves, and final `READY` status matched M01-T02. |
+| Existing crop resource test | PASS | All four debug groups passed: resource type, identity, selected defaults, and empty traits. The run printed `ALL TESTS PASSED` and exited 0 at the iteration limit. |
+| Desktop launch after the configuration change | NOT RUN | The user verified the dashboard and physical input in the M01-T02 follow-up above. This task verified default launch headlessly. |
+
+The Windows certificate-store error, the unused dashboard parameter warning, and the seven redundant crop-test assertion warnings recurred. The editor import also reported that it could not save global editor settings. The project import and runtime runs completed. [Commands and diagnostic details](M01_T03_REPORT.md)
+
+## 10. 2026-11-26 — M01-T04 resource input validation
+
+**Baseline revision** `7b282e24dfff65957f8d181126c67da5498b7e2d` plus the M01-T03 and M01-T04 working-tree changes · **Environment** Windows, Godot `4.7.2.stable.official.ed1daf0bf`, headless debug.
+
+The M01-T03 acceptance logs confirmed default launch, UID resolution, initial state, the one-night regression, and all four crop-test groups. The user separately confirmed normal desktop launch and gameplay after M01-T03.
+
+| Check | Result | Evidence |
+|---|---|---|
+| ResourceManager validation | PASS | `RESOURCE_MANAGER_TEST_RESULT checks=118 failures=0`, exit 0. Coverage includes valid operations for all three balances, exact and zero amounts, valid shortages, invalid types and amounts, overflowing additions, directly corrupted selected balances, and return values and signal payloads. |
+| Test failure detection | PASS | A deliberately incorrect lookup expectation in a temporary project reported the named failed check, `checks=118 failures=1`, and exit 1 as expected. |
+| Existing crop resource test | PASS | All four existing groups passed and the bounded run exited 0. |
+| Dashboard baseline probe | PASS | Day 1 → 2, Growth 0 → 1, Lettuce remained selected, reserves stayed at 1000 ml / 50 ml / 100 kWh, and status was `READY`. |
+| Normal project launch | PASS | No scene argument. Godot loaded `res://scenes/main.tscn` and exited 0. |
+| Desktop checks for the M01-T04 changes | NOT RUN | This task ran headless. The existing dashboard and scene were preserved. |
+
+The resource suite intentionally triggered 20 invalid-request warnings and one overflow warning. The existing Windows certificate-store error, dashboard unused-parameter warning, and crop-test redundant-assertion warnings recurred. The negative-control copy also reported the existing global editor-settings write errors during import. [Commands, expected results, and full diagnostics](M01_T04_REPORT.md)
+
+## 11. 2026-11-26 — M01 Package B resource and settlement stabilization
+
+**Baseline revision** `7b282e24dfff65957f8d181126c67da5498b7e2d` plus working-tree changes · **Environment** Windows, Godot `4.7.2.stable.official.ed1daf0bf`, headless debug.
+
+| Check | Result | Evidence |
+|---|---|---|
+| M01-T05 focused reset | PASS | 136 resource checks, zero failures. Default and overridden starts, early reset, repeated reset, and reset after tree reentry passed. |
+| M01-T06 focused batch | PASS | 189 resource checks, zero failures. Covered exact debits, zero and empty costs, invalid input, shortages, and coherent observers. |
+| ResourceManager final | PASS | `RESOURCE_MANAGER_TEST_RESULT checks=192 failures=0`, exit 0. Includes the original 118 checks and the successful zero-cost night alongside reset and batch checks. |
+| M01-T07 nightly state | PASS | `NIGHT_STATE_TEST_RESULT checks=133 failures=0`, exit 0. Covered successful, blocked, idle, and configuration-error nights, guarded callbacks, and recovery. |
+| Failure detection | PASS | Both temporary negative controls reported a named failure, one failure in their completion record, and exit 1. |
+| Crop resource regression | PASS | All four historical groups printed their pass markers, then `ALL TESTS PASSED`. Bounded exit 0. |
+| Default launch and Lettuce probe | PASS | Godot loaded the dashboard without a scene argument. The unchanged probe observed Day 1 → 2, Growth 0 → 1, Lettuce, reserves 1000 ml / 50 ml / 100 kWh, and final `READY`. |
+| Package B desktop or export checks | NOT RUN | This verification used headless runs. |
+
+Expected fixture warnings and the existing Windows certificate-store, global settings, dashboard, and crop-test diagnostics are recorded in the [Package B report](M01_PACKAGE_B_REPORT.md).
+
+## 12. 2026-11-26 — M01 Package C dashboard and test migration
+
+**Revision** `7b282e24dfff65957f8d181126c67da5498b7e2d` plus working-tree changes. **Environment** Windows, Godot `4.7.2.stable.official.ed1daf0bf`, headless debug.
+
+M01-T11 moved the active suites to `tests/`. Commands and links above and in earlier reports reflect the paths used for those runs. For current testing, [run the complete suite](../README.md#run-the-automated-tests-on-windows).
+
+| Check | Result | Evidence |
+|---|---|---|
+| M01-T08 startup | PASS | Focused run passed 21 checks. Default and configured values, child growth before parent readiness, empty crop, and Next Night availability were verified. |
+| M01-T09 outcome feedback | PASS | Expanded startup and feedback suite passed 31 checks. Settlement outcome text is distinct from lifecycle state. |
+| M01-T10 integration | PASS | 97 checks passed through the scene's existing button signal. Exact debits, both shortages, no partial consumption or growth, visible feedback, recovery, configuration failure, idle night, and final lifecycle were verified. The feedback label fit the 1280 × 720 layout headlessly. |
+| M01-T11 clean import and consolidated runner | PASS | Fresh temporary copy imported with no prior cache. All five suites passed: four crop groups, 192 resource checks, 133 night-state checks, 31 startup/feedback checks, and 97 integration checks. The original scene UID and all five test script UIDs resolved to their new paths. |
+| Runner negative controls | PASS | A startup expectation failure and an integration engine error with a success marker and exit 0 both failed the runner. It printed `3/5 suites passed` and exited 1. |
+| Normal launch and original dashboard probe | PASS | Default launch loaded the dashboard. The original probe matched Day 1 → 2 and Growth 0 → 1, Lettuce, unchanged 1000 ml / 50 ml / 100 kWh reserves, and final `READY`. |
+| Package C desktop interaction and export | NOT RUN | Runtime state, the connected signal and layout were checked headlessly. |
+
+The known Windows certificate-store and temporary import settings diagnostics recurred. The crop assertions and validation fixtures retain their existing warnings. The unused dashboard crop parameter warning is absent. [Package C details](M01_PACKAGE_C_REPORT.md)
+
+## 13. 2026-11-26 — Final M01 regression gate
+
+**Source** `7b282e24dfff65957f8d181126c67da5498b7e2d` plus the reviewed M01 working tree · **Engine** Godot `4.7.2.stable.official.ed1daf0bf`
+
+| Check | Result | Evidence |
+|---|---|---|
+| Fresh import and automated suites | PASS | The consolidated runner exited 0 with `5/5 suites passed`. Resource manager 192, night state 133, dashboard startup 31, and nightly integration 97 totaled 453 explicit checks. The four original crop groups and their final marker passed. |
+| Default launch | PASS | Godot loaded `res://scenes/main.tscn` without a scene argument and exited 0. |
+| Original dashboard probe | PASS | `BASELINE_MATCH=true`, exit 0. Day 1 → 2, Growth 0 → 1, Lettuce, 1000 ml water, 50 ml minerals, 100 kWh, and final `READY`. |
+| Final desktop smoke check | PASS, user-reported | The user confirmed successful completion. Earlier baseline images are separately archived and do not depict the final dashboard. [Day 1](../screenshots/m01-t02-baseline-day1.png) · [Day 2](../screenshots/m01-t02-baseline-day2.png) |
+
+The existing Windows certificate-store and import settings diagnostics and expected fixture warnings did not affect the gate. [Final report and reproduction commands](M01_FINAL_REPORT.md)

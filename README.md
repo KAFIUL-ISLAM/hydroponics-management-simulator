@@ -99,7 +99,17 @@ hydroponics-management-simulator/
 └── .gitignore
 ```
 
+### 运行自动化测试（Windows）
+
+在项目根目录中运行以下命令，并将 `<Godot executable path>` 替换为 Godot 4.7.2 可执行文件的路径。第一次运行或移动测试文件后，使用 `-Import` 刷新 Godot 缓存。
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\tests\run-tests.ps1 -GodotPath "<Godot executable path>" -Import
+```
+
 ## 7. 开发计划
+
+M01 基础稳定化已完成。五组自动化测试共通过 453 项显式检查及原有四组作物断言。默认启动和生菜单夜结算基线已验证，用户报告最终桌面冒烟测试通过。下一里程碑将实现首个可玩作物的完整生产循环。 [M01 验收报告](docs/M01_FINAL_REPORT.md)
 
 项目采用分阶段开发方式，优先保证核心模拟机制的正确性，再逐步完善界面和扩展功能。
 
@@ -107,8 +117,8 @@ hydroponics-management-simulator/
 - [x] 初始化 Git 与 GitHub 仓库
 - [x] 建立项目文档结构
 - [ ] 完成核心机制研究与公式整理
-- [ ] 搭建主游戏场景
-- [ ] 实现基础资源管理
+- [x] 搭建主游戏场景
+- [x] 实现基础资源管理
 - [ ] 实现作物生长与矿物质消耗
 - [ ] 实现健康度与污染损伤
 - [ ] 实现种子特性与设备模块
@@ -223,7 +233,19 @@ hydroponics-management-simulator/
 └── .gitignore
 ```
 
+### Run the automated tests on Windows
+
+From the repository root, replace `<Godot executable path>` with the path to the Godot 4.7.2 executable.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\tests\run-tests.ps1 -GodotPath "<Godot executable path>" -Import
+```
+
+The runner checks all five suites for completion markers, exit codes, and unexpected errors. It prints a summary and the temporary log directory. Use `-Import` on the first run or after moving project files. A missing Godot cache also triggers an import automatically. The execution policy applies to that PowerShell process. [Current testing evidence](docs/TESTING_REPORT.md#12-2026-11-26--m01-package-c-dashboard-and-test-migration)
+
 ## 7. Development Roadmap
+
+M01 foundation stabilization is complete. The five automated suites passed 453 explicit checks and the four original crop assertion groups. Default launch and the one-night Lettuce baseline passed, and the user reported a successful final desktop smoke check. The next milestone is a complete production loop for the first playable crop. [M01 acceptance report](docs/M01_FINAL_REPORT.md)
 
 Development follows an incremental approach, prioritizing the correctness of core simulation mechanics before expanding the interface and additional features.
 
@@ -231,8 +253,8 @@ Development follows an incremental approach, prioritizing the correctness of cor
 - [x] Initialize Git and GitHub repository
 - [x] Establish documentation structure
 - [ ] Complete mechanics research and formula documentation
-- [ ] Build the main game scene
-- [ ] Implement basic resource management
+- [x] Build the main game scene
+- [x] Implement basic resource management
 - [ ] Implement crop growth and mineral consumption
 - [ ] Implement health and pollution damage
 - [ ] Implement seed traits and equipment modules

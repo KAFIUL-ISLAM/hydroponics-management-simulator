@@ -232,3 +232,37 @@ Project: Hydroponics Management Simulator
 
 ### 下一步
 继续实现作物状态与水培设备之间的交互，并在完成后进行测试和记录。
+
+## 2026-11-26 — M01-T03 default dashboard launch
+
+- Recorded the user's M01-T02 desktop check at 1280 × 720. The dashboard rendered, the physical Next Night click advanced Day 1 to 2 and Growth 0 to 1, and the user reported no errors. [Manual verification](TESTING_REPORT.md#8-2026-11-26--user-manual-verification-of-the-m01-t02-baseline)
+- Set `application/run/main_scene` to `uid://lm4cvp2hfxau`, the existing dashboard scene. This is the only project-setting change. [Project configuration](../project.godot#L14)
+- Imported a temporary project from the tracked working-tree files and verified headless default launch without a scene argument. The original one-night probe and four crop-resource test groups passed. Existing diagnostics and the editor-settings save error are documented in the report. [M01-T03 results](M01_T03_REPORT.md)
+- M01-T04 resource input validation is the next proposed task after review. [Foundation plan](FOUNDATION_STABILIZATION_PLAN.md#m01-t04--validate-resource-inputs)
+
+## 2026-11-26 — M01-T04 resource input validation
+
+- Verified the M01-T03 automated acceptance logs. The user confirmed normal desktop launch and manual gameplay after that task.
+- Added shared validation for resource type, operation amount, the selected balance, and credit overflow. Invalid mutations return false without changing the ledger or emitting either resource signal. Valid shortages retain their signal. [ResourceManager](../scripts/resource_manager.gd#L39)
+- Added the headless resource suite. All 118 checks passed. An intentionally failed expectation in a temporary copy produced the expected failure output and exit 1. The crop resource test, dashboard baseline probe, and normal launch passed. [Verification](M01_T04_REPORT.md)
+- M01-T05 configured reset is the next proposed task. [Foundation plan](FOUNDATION_STABILIZATION_PLAN.md#m01-t05--reset-to-configured-starting-balances)
+
+## 2026-11-26 — M01 Package B resource and settlement stabilization
+
+- M01-T05 captures starting balances at first readiness and restores them together. Default, overridden, repeated, and pre-initialization cases passed.
+- M01-T06 validates a batch before mutation, returns a structured result, and routes nightly water and mineral debits through it. A rejected batch leaves growth and balances unchanged.
+- M01-T07 gives GameState ownership of settlement and passes a one-use authorization to the simulator. Shortage advances time, configuration failure leaves the day unchanged, and synchronous callbacks cannot start a duplicate night, pause, or change crops. These policies are provisional engineering decisions.
+- Final checks passed for 192 resource checks, 133 night-state checks, both failure-detection controls, the four existing crop groups, normal launch, and the Lettuce baseline. [Package B results](M01_PACKAGE_B_REPORT.md)
+
+## 2026-11-26 — M01 Package C dashboard and test migration
+
+- M01-T08 connected dashboard signals before reading live child state. Startup and refresh cover configured balances, crop, growth, day, lifecycle status, and button availability.
+- M01-T09 rendered bilingual settlement outcomes, including the required and available quantities for the affected resource. The existing dashboard layout and settlement calculations were preserved.
+- M01-T10 added end-to-end checks using the real dashboard scene and test-only crop data. M01-T11 moved the test scenes and script UIDs into `tests/` and added the Windows runner.
+- A fresh import, all five suites, test UID checks, default launch, and the original one-night probe passed. The runner rejected both temporary negative controls. [Package C results](M01_PACKAGE_C_REPORT.md)
+
+## 2026-11-26 — M01 final review and GitHub checkpoint
+
+- The user completed the final desktop smoke check and approved Packages A, B, and C for the milestone checkpoint.
+- The publication candidate passed a fresh Godot import, all five automated suites, normal project launch, and the unchanged one-night Lettuce probe.
+- Reviewed the project files, UID sidecars, and baseline screenshots. Published command examples use portable paths while retaining the recorded arguments, results, and diagnostics. Local archives, cache, and a duplicate crop-test scene were excluded from the publication candidate. [Final M01 report](M01_FINAL_REPORT.md)

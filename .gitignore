@@ -5,3 +5,7 @@
 *.tmp
 .DS_Store
 Thumbs.db
+
+# Local archives and diagnostic output
+/docs.zip
+*.log
