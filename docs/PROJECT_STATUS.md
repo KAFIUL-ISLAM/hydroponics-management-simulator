@@ -1,144 +1,38 @@
-# Project status
+# Project Status
 
-## M11 completed and developer-accepted · v0.7.0
+## v1.0.0 release preparation
 
-On 2026-11-27, the developer reported passing all **30 M11 manual acceptance checks**: visual and interaction states (5), keyboard navigation (5), manual and analysis tools (9), gameplay regression (6), and resolution/Reduced Motion (5). This manual evidence is distinct from the Codex-reported automated results.
+The completed project is prepared as v1.0.0 — Orbital Hydroponics: Technical Assessment Edition. The release is awaiting final GitHub publication. The latest published release remains v0.7.0 until remote verification succeeds.
 
-Codex reports **19 suites passed**, **1,480 explicit checks** including **264 workshop GUI checks**, and four original crop assertion groups. Default launch, legacy Lettuce, deterministic Kotton comparison, and renderer captures at both supported resolutions passed. The added GUI tests cover 40 checks across two resolutions. Their echo test does not simulate an initial Enter followed by repeats, and they do not establish Reduced Motion collection or keyboard-focus styling on manual tabs; the developer manually verified those cases. See [M11 testing evidence](TESTING_REPORT.md#m11--2026-11-27) and the [M11 report](M11_FINAL_REPORT.md).
+The permanent clean Windows delivery pair is separate from the untracked workspace executable and PCK. Its accepted binaries have been hash-checked and preserved byte-for-byte.
 
-M11 refines keyboard/focus states, modal focus restoration, equipment/DNA availability explanations, and manual spacing while preserving the mouse-first interaction and approved artwork. Codex reports no repeatable performance improvement or established bottleneck. The 314-frame sample distribution across interactions is unspecified, and the synchronous settlement median uses three samples per resolution; see the full [performance results and limitations](M11_FINAL_REPORT.md#performance-observations). The release version is **v0.7.0 — Orbital Hydroponics: Refined Workshop**. M12 remains pending.
+## Implemented scope
 
-## M10 completed and developer-accepted · v0.6.0 historical release
+- Three-crop cultivation for Coffee Beans, Nutrition Fruit and Kotton.
+- Water, mineral, energy, pollution and inventory management.
+- Growth, health, harvest, offspring and supported genetics.
+- Equipment, vessels and compatible modules.
+- Orbital workshop presentation and dedicated analysis tools.
+- Mouse-first drag-and-drop and keyboard navigation.
+- Bilingual presentation and Reduced Motion.
+- Procedural one-shot audio controls.
 
-M09 was published on `main` at `6ff68084beb6449060db3a1c6fdd0eb613bc62f9`; the v0.5.0 release tag remains at `a73ed34d3c6aeda495e3c8cf46cd826d0420e24f`. Its historical verification passed 18 suites, 1,362 explicit checks (including 184 workshop checks), four original crop assertion groups, and default launch. These are M09 results, not a new test run.
+The normal gameplay entry point is `scenes/workshop.tscn`. `scenes/main.tscn` and `scenes/coffee_dashboard.tscn` remain legacy compatibility entry points.
 
-M10 is complete and the developer reports **19/19 manual acceptance items passed on 2026-11-27**. Coverage includes five battery-recovery checks, four machine-status checks, five manual/navigation checks, and five gameplay/presentation checks; the complete checklist is in [the M10 report](M10_FINAL_REPORT.md). Separately, Codex reports 19 regression suites and 1,440 explicit automated checks, including 224 workshop GUI checks, plus four original crop assertion groups. Default launch, the legacy Lettuce baseline, and renderer captures at both supported resolutions passed. The automated results were executed by Codex and are documented in [the testing report](TESTING_REPORT.md#m10--2026-11-27). M10 was released as **v0.6.0 — Orbital Hydroponics: Guided Cultivation**.
+## Verification
 
-- **Battery recovery:** the night-completion callback refreshed the workshop grids while `GameState` still held its settlement lock, caching drag eligibility as false. Both grids now query `farm.can_act()` when a drag starts or a drop is evaluated. The first replacement-battery drag succeeds without an intervening inventory action and transfers one refill; water, seed, and module drags were also checked. This is an interaction-state fix, not an energy-calculation change.
-- **Workshop usability:** status messages use a padded dark translucent background, bilingual text, existing warning icons/colors, persistent blocker visibility, expiring temporary feedback, and pointer-transparent overlays. An optional Quick Start / Advanced manual is available from the `?` button and F1, with navigation to existing tools.
-- **Controlled comparison:** the deterministic native-Kotton fixture varies only starting minerals. It reports improved health and harvest quantity/grade in the suitable concentration range, with unchanged six-night duration and energy use. Results are specific to this fixture, not a universal crop claim.
+The supplied M12 source handover reports 20/20 suites passed, 1,749 explicit automated checks, and four original crop assertion groups. The 461 workshop GUI, 72 audio and 38 Kotton checks are subsets of that total. The developer separately passed 29/29 manual checks on the original Windows build and 29/29 on the clean runtime-only build, with no issues reported for the clean build.
 
-[M10 report](M10_FINAL_REPORT.md) · [Chinese design analysis](HYDROPONICS_DESIGN_ANALYSIS_ZH.md) · [Demonstration guide](DEMONSTRATION_GUIDE.md) · [Visual plan](VISUAL_DEVELOPMENT_PLAN.md)
+The protected simulation, crop resources and numerical expectations remain unchanged. No complete source regression was rerun for documentation-only changes.
 
-## v0.5.0 · Interactive Hydroponics Workshop · historical release
+M12 added no performance profile. M11 performance sampling remains historical and does not establish a bottleneck or repeatable speedup.
 
-The developer approved M08-A through M08-C.4. The workshop is the default launch, and the legacy Lettuce scene remains available. The redesign preserves crop balance and numerical formulas. [Release report](M08_EXTENSION_FINAL_REPORT.md)
+## Remaining limitations
 
-## M08 complete · v0.4.0 Visual Transformation
+- Independent target-hardware compatibility remains unverified.
+- The project-wide software license remains unset.
+- Artwork redistribution has been explicitly authorized by the developer.
+- Some reference-derived boundaries and prototype policies remain unresolved.
+- The all-resources PCK contains historical test scenes and screenshots.
 
-The owner accepted M08-A through M08-D and authorized publication of v0.4.0. The final fresh regression passed 17 suites, 1,142 explicit checks and four original assertion groups. Default launch and the legacy Lettuce probe passed. The simulation remains frozen at v0.3.0. At the time of this M08 report, M09 was pending; it was subsequently accepted and published as recorded above. The owner reported 59% weekly Codex allowance remaining at that checkpoint, and the delivery target was December 1, 2026. [M08 final report](M08_FINAL_REPORT.md)
-
-## M08 Package D · Specialized workstations
-
-The owner accepted M08-D after ten desktop checks. The shared dark workstation treatment preserves the frozen simulation. [M08-D report](M08_PACKAGE_D_REPORT.md) · [Owner acceptance record](M08_FINAL_REPORT.md#verification)
-
-## M08 Package C · Environment-centered interface
-
-The laboratory composition carries clickable cultivation, tank and terminal access with workstation alternatives and a visual inventory strip. The owner reported all 11 M08-C desktop checks passed, including all three crop artworks and both resolutions. [M08-C report](M08_PACKAGE_C_REPORT.md)
-
-## M08 Package B · Laboratory artwork
-
-The owner accepted the M08-B artwork integration. The supplied laboratory and crop artwork were inspected in captures at both supported sizes. The later M08-C desktop review included all three crop artworks. [M08-B report](M08_PACKAGE_B_REPORT.md)
-
-## M08 Package A · Orbital Hydroponics visual foundation
-
-The owner accepted the shared metallic theme, three-column workstation foundation and live presentation bindings. [M08-A report](M08_PACKAGE_A_REPORT.md)
-
-## M07 milestone acceptance
-
-M05–M07 passed the fresh checkpoint regression with 13 suites, 932 explicit checks and four original crop assertion groups. The user confirmed M07-A equipment and M07-B editor desktop acceptance. [Checkpoint report](M07_FINAL_REPORT.md)
-
-Delivery is due December 1, 2026. The user reported 73% weekly Codex allowance remaining on November 26. Track updated reports in the active plan.
-
-## M07 Package B · DNA trait application
-
-The DNA dialog previews an available seed, queues a compatible trait application, and shows nightly progress and the terminal result. The plain editor uses finite demo disc charges and shared power. [M07-B implementation report](M07_PACKAGE_B_REPORT.md)
-
-## M07 Package A · Hydroponic equipment
-
-The Equipment dialog manages configurable demo stock, standard and locked starter machines, five supported modules and a second vessel. Atomic settlement uses the resolved speed and power. Nutrition Fruit bonuses and Kotton textile conversion are implemented. General nonneutral quality and equipment-specific reproduction remain open. [M07-A implementation report](M07_PACKAGE_A_REPORT.md)
-
-## M06 Package B · Seed reproduction and inventory
-
-Nutrition Fruit and Kotton resolve seed returns at maturity. The harvest and offspring transfer together when capacity permits. The **Genes** dialog cycles individual seeds and offers a validated modified Coffee Beans demo. Coffee Beans keep their plantable output. The user confirmed the M06-B desktop walkthrough. [M06-B report](M06_PACKAGE_B_REPORT.md)
-
-## M06 Package A · Seed genetics
-
-The farming dashboard can inspect the next seed or the planted crop. Native-effective values and the three clean cultivation fixtures are preserved. Changed ranks resolve deterministic growth, yield, supported draw, pollution sensitivity and Coffee composition. The planted properties are detached from the seed and shared crop resource. The user confirmed M06-A desktop acceptance. [M06-A report](M06_PACKAGE_A_REPORT.md)
-
-## M05 · Pollution simulation
-
-The shared farm analyzes all six harmful components before the nightly draw, applies crop-specific pollution damage alongside mineral damage, and publishes the typed breakdown after settlement. The bilingual analysis dialog includes controlled demo solutions. Fractional tiers and final rounding remain provisional. The user confirmed the M05 desktop checklist and supplied a separate physical-pollution screenshot. [M05 report](M05_REPORT.md)
-
-**Published M01 · Reviewed M02 and M03 · M04 acceptance passed**
-
-Nutrition Fruit, Coffee Beans, and Kotton share the playable dashboard, settlement, and inventory. Verified healthy harvests are 7 giant fruit after two nights, 8 plantable Coffee Beans after three, and 13 large fiber after six. Full and mixed tablet displacement, confirmed draining, and capacity-blocked harvest recovery have automated coverage. The existing Lettuce scene remains runnable. [M04 report](M04_REPORT.md)
-
-M05 is next. Reconcile unresolved pollution tier boundaries and rounding before connecting pollutant analysis and damage to nightly settlement.
-
-The GitHub checkpoint regression passed on a fresh import. The user confirmed desktop acceptance for all three crops and the resource and inventory controls listed in the report. [Final checkpoint evidence](M04_FINAL_REPORT.md)
-
-M01-T01 through M01-T07 established the project baseline and stabilized resource and settlement logic. Package C completed dashboard synchronization, settlement feedback, integration tests, and the migration to `tests/`. The user approved the foundation and reported a successful final desktop smoke check. The checkpoint regression rerun passed all five suites with 453 explicit checks and four original crop assertion groups. [Foundation plan](FOUNDATION_STABILIZATION_PLAN.md) · [Final M01 report](M01_FINAL_REPORT.md)
-
-M02 reconciled the gameplay research, mapped 45 requirements, and recorded the calculation and settlement contract, including the remaining decisions for the first playable crop. This milestone covers documentation only. [M02 report](M02_REPORT.md) · [Requirements](REQUIREMENTS.md) · [Calculation contract](CALCULATION_CONTRACT.md)
-
-M03 Package A added the integer liquid model and verified all three numerical reference fixtures. The next integration package should stage liquid, power and plant state together. [Package A report](M03_PACKAGE_A_REPORT.md)
-
-M03 Package B provides the complete Coffee Beans loop as the normal launch. Nutrition Fruit and Kotton gameplay remain for M04. [Package B handoff](M03_PACKAGE_B_REPORT.md)
-
-## Git baseline and evidence
-
-- M01 was published on `main` as `2c56490855d0da94eadce5f1c6bc093f5c797eae`, tagged `v0.1.0`. M02 checked the local commit and tag against that published checkpoint.
-- The audit describes the earlier, clean audit snapshot. Package B started with the prior uncommitted main-scene, resource validation, and documentation changes, plus untracked tests, reports, and screenshots.
-- The [project audit](PROJECT_AUDIT.md) records the M01 implementation baseline, not the current architecture. M01-T02 verified the explicit scene and one night. The user independently verified rendering and the physical button click at 1280 × 720. M01-T03 added the dashboard as the default scene and verified it from a freshly imported temporary project. The existing one-night probe and four crop-resource test groups passed at that checkpoint. [M01-T02 results](M01_T02_REPORT.md) · [Manual evidence](TESTING_REPORT.md#8-2026-11-26--user-manual-verification-of-the-m01-t02-baseline) · [M01-T03 results](M01_T03_REPORT.md)
-
-## Architecture · M01 checkpoint
-
-This section preserves the early dashboard architecture. The current normal gameplay entry point is [scenes/workshop.tscn](../scenes/workshop.tscn); see the [README](../README.md) and [M08 extension report](M08_EXTENSION_FINAL_REPORT.md) for the workshop architecture.
-
-The project declares Godot 4.7 and GL Compatibility. M01-T02 verified `4.7.2.stable.official.ed1daf0bf` from the installed Windows executable. The M01 dashboard was a native `Control` scene targeting 1280 × 720. There were no autoloads. The scene owned `GameState` for day/status and crop selection, `ResourceManager` for water and mineral reserves in ml and electricity in kWh, and `HydroponicsSimulator` for the nightly crop update. The dashboard controller sent the night action and rendered signals. `CropData` was a shared crop resource definition. `lettuce_prototype.tres` was the only crop resource and its production values were provisional at that checkpoint. [Project config](../project.godot#L11) · [Scene wiring](../scenes/main.tscn#L419) · [Dashboard controller](../scripts/main.gd#L15) · [Crop resource](../resources/lettuce_prototype.tres#L5)
-
-## Feature status · historical M01–M04 checkpoints
-
-The rows below preserve feature and verification states recorded during those earlier checkpoints; they are not a current inventory.
-
-| Status | Current scope |
-|---|---|
-| Implemented in source | Button-driven day progression, scalar resource balances with query/add/spend operations, crop definition and trait validation helpers, and dashboard bindings for day, status, reserves, and crop identity. [GameState](../scripts/game_state.gd#L35) · [ResourceManager](../scripts/resource_manager.gd#L26) · [CropData](../scripts/crop_data.gd#L65) · [Dashboard bindings](../scripts/main.gd#L15) |
-| Partial | One preselected lettuce, a growth counter that increments by one on eligible nights, fixed water/mineral costs, electricity storage, and an equipment panel with static labels. Genetics exists as fields and validation on `CropData`. The default lettuce has zero nightly costs and no maturity check. Synchronous settlement rejects pause. [Night processing](../scripts/hydroponics_simulator.gd) · [Crop defaults](../scripts/crop_data.gd#L37) · [Equipment panel](../scenes/main.tscn#L228) |
-| Missing | Player planting and replenishment, seed/plant instances, configured GDD crops, maturity and harvest, reproduction and trait effects, solution composition and mineral concentration, per-point uptake and liquid carry-off, plant health, pollution, power gating, functional equipment and modifiers, and item inventory. The GDD also proposes detailed resource records and optional economy and upgrades. [Crop requirements](GDD.md#L525) · [Prototype priorities](GDD.md#L692) |
-| Verified in M01-T02 and M01-T03 | The dashboard loads by explicit scene path and now loads as the default scene. One night advances Day 1 → 2 and Growth 0 → 1, returns to `READY`, and leaves reserves at 1000 ml water, 50 ml minerals, and 100 kWh. The four checked-in crop test groups passed before and after the change. The user verified desktop rendering and physical input in the M01-T02 follow-up. [Testing report](TESTING_REPORT.md#8-2026-11-26--user-manual-verification-of-the-m01-t02-baseline) · [M01-T03 results](M01_T03_REPORT.md) |
-| Verified in M01-T04 | The ResourceManager scene passed 118 checks, and a deliberate failed expectation in a temporary copy returned exit 1. The original crop test, one-night dashboard probe, and normal headless launch also passed. [M01-T04 results](M01_T04_REPORT.md) |
-| Verified in Package B | Configured initial balances reset as a coherent snapshot. Nightly resource debits are atomic. Accepted nights publish a typed terminal outcome with stable state. The resource and night suites passed 192 and 133 checks, respectively. Both negative controls detected their forced failure. Default launch, all four crop groups, and the original Lettuce probe passed. [Package B results](M01_PACKAGE_B_REPORT.md) |
-| Verified in Package C | Dashboard startup uses live state, including configured values and growth emitted before the UI connects. Bilingual outcomes distinguish growth, shortage, configuration error, and idle nights. The five suites passed after a fresh import from the migrated `tests/` paths, as did normal launch and the original Lettuce probe. [Package C results](M01_PACKAGE_C_REPORT.md) |
-| User-verified at the M01 checkpoint | The user reported that the final desktop smoke check passed. The earlier Day 1 and Day 2 screenshots document the M01-T02 baseline. [Day 1](../screenshots/m01-t02-baseline-day1.png) · [Day 2](../screenshots/m01-t02-baseline-day2.png) |
-| Unverified | Narrow-window layout, export, and later farming mechanics. The automated target-viewport layout check passed at 1280 × 720. [Final M01 report](M01_FINAL_REPORT.md) |
-
-## Known defects and risks
-
-| Evidence | Finding |
-|---|---|
-| Resolved in M01-T03 | Godot previously refused default launch. `run/main_scene` now references the dashboard UID and normal headless launch succeeds after a fresh import. [Project config](../project.godot#L14) · [Runtime report](M01_T03_REPORT.md) |
-| Confirmed from source | The default lettuce grows without a resource debit and has no maturity cap. Electricity is outside settlement. [Crop defaults](../scripts/crop_data.gd#L37) · [Simulator](../scripts/hydroponics_simulator.gd#L34) |
-| Resolved in M01-T08–T09 | The dashboard initializes from live state and uses the typed finished outcome for feedback. The machine stats remain placeholders. [Dashboard controller](../scripts/main.gd) |
-| Resolved in M01-T04 | Resource operations reject unknown types, invalid amounts, invalid selected balances, and overflowing credits. A known, valid shortage has its own signal, and invalid lookups retain the documented `0.0` fallback. [ResourceManager](../scripts/resource_manager.gd#L26) · [Verification](M01_T04_REPORT.md) |
-| Resolved in M01-T05 | Reset restores the balances captured at first readiness, including scene overrides. A pre-initialization reset leaves configuration intact. [ResourceManager](../scripts/resource_manager.gd) |
-| Resolved in M01-T06 | Nightly water and minerals are debited as one transaction. Growth advances only on batch success, and a zero-cost batch emits no resource snapshot. [ResourceManager](../scripts/resource_manager.gd) · [Simulator](../scripts/hydroponics_simulator.gd) |
-| Resolved in M01-T07 | A shortage advances the day without crop growth or debits. Configuration errors leave the day unchanged. GameState blocks reentry, crop changes, and pause during the synchronous night, and completion observers see finalized state. These are provisional engineering policies. [GameState](../scripts/game_state.gd) · [Package B results](M01_PACKAGE_B_REPORT.md) |
-| Remaining risk | Runtime writes to exported balances can bypass validation and reach a snapshot or become the initial captured values. The batched API validates only the affected balances. [ResourceManager](../scripts/resource_manager.gd) |
-
-## Documentation discrepancies
-
-- Current test scenes and the Windows runner live in `tests/`. Archived reports retain the paths used when their commands were recorded. [README](../README.md#run-the-automated-tests-on-windows) · [Test runner](../tests/run-tests.ps1)
-- The GDD header reflects the design/research phase and the technical design describes the data/simulation layer as future work. The current scene already has those nodes. The GDD's three priority crops remain planned, while the scene uses provisional lettuce. [GDD header](GDD.md#L7) · [Technical design](TECHNICAL_DESIGN.md#L84) · [Scene wiring](../scenes/main.tscn#L419)
-- The development log's five historical trait checks and the testing report's four crop-resource checks are distinct runs. The current runner covers the checked-in crop, resource, night-state, dashboard startup, and nightly integration suites. [Development log](DEVELOPMENT_LOG.md#L178) · [Current testing evidence](TESTING_REPORT.md#12-2026-11-26--m01-package-c-dashboard-and-test-migration)
-
-## Open research and scope decisions
-
-- The first playable loop has since shipped in the workshop. Nutrition Fruit, Coffee Beans, and Kotton are the active crops; Lettuce remains a compatibility fixture. [Reference crop definitions](CALCULATION_CONTRACT.md#reference-crop-definitions)
-- Formula research still records unresolved boundaries, including fractional pollution classification and some advanced genetics/equipment interactions. These are disclosed limitations, not blockers to the accepted M10 demo. [Open formula contracts](CALCULATION_CONTRACT.md#open-and-provisional-contracts)
-- Fractional pollution tiers, nonneutral quality, raw Kotton water before traits, advanced RNG and perennial output are later accuracy work. Confirm whether Windows export is required for the assessment. [M03–M10 roadmap](GAMEPLAY_IMPLEMENTATION_PLAN.md)
-
-## Next recommended task
-
-Proceed with M11 interaction polish and measured performance review, then M12 final regression, clean-target launch, and the agreed submission handoff. Do not expand simulation scope without approval. The descriptions of missing functionality in the M01 feature table are checkpoint observations. [Visual plan](VISUAL_DEVELOPMENT_PLAN.md) · [M10 handoff](M10_FINAL_REPORT.md)
+See [Testing Report](TESTING_REPORT.md), [Development Log](DEVELOPMENT_LOG.md), [Chinese Technical Analysis](HYDROPONICS_DESIGN_ANALYSIS_ZH.md) and [Credits and Licenses](CREDITS_AND_LICENSES.md).

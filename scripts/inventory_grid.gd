@@ -1,8 +1,11 @@
-extends ItemList
+﻿extends ItemList
 ## Positions are presentation-only. The farm still owns every seed and product stack.
 
 const VALID_COLOR := Color(0.12, 0.43, 0.33, 1.0)
 const INVALID_COLOR := Color(0.48, 0.19, 0.21, 1.0)
+
+signal item_picked_up
+signal item_repositioned
 
 var slots: Array[String] = []
 var rows: Dictionary = {}
@@ -12,6 +15,7 @@ var placement_allowed: Callable
 var external_can_drop: Callable
 var external_drop: Callable
 var _active_drag: Dictionary = {}
+var _drag_preview: TextureRect
 var _pressed_key := ""
 var _highlight := -1
 var _empty_icon: Texture2D
@@ -53,15 +57,19 @@ func _draw_slots() -> void:
 			var row: Dictionary = rows[key]
 			var slot := add_item("", row.icon)
 			set_item_tooltip(slot, row.tooltip)
-			if key == arriving_key:
-				set_item_icon_modulate(slot, Color.TRANSPARENT)
+			_update_item_visibility(slot)
 	_sync_selection()
+
+func _update_item_visibility(slot: int) -> void:
+	var key := slots[slot]
+	var mask_icon: bool = key == arriving_key or key == _active_drag.get("key", "")
+	set_item_icon_modulate(slot, Color.TRANSPARENT if mask_icon else Color.WHITE)
 
 func reveal_arrival() -> void:
 	var slot := slots.find(arriving_key)
-	if not arriving_key.is_empty() and slot >= 0:
-		set_item_icon_modulate(slot, Color.WHITE)
 	arriving_key = ""
+	if slot >= 0 and not slots[slot].is_empty():
+		_update_item_visibility(slot)
 
 func _sync_selection() -> void:
 	var slot := slots.find(selected_key) if not selected_key.is_empty() else -1
@@ -82,6 +90,9 @@ func _get_drag_data(at_position: Vector2) -> Variant:
 	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	preview.size = Vector2(32, 32)
 	set_drag_preview(preview)
+	_drag_preview = preview
+	_update_item_visibility(slot)
+	item_picked_up.emit()
 	return _active_drag
 
 func _gui_input(event: InputEvent) -> void:
@@ -124,6 +135,7 @@ func _drop_data(at_position: Vector2, data: Variant) -> void:
 	slots[target] = _active_drag.key
 	_active_drag = {}
 	_draw_slots()
+	item_repositioned.emit()
 
 func _clear_highlight() -> void:
 	if _highlight >= 0:
@@ -134,5 +146,9 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_DRAG_END or what == NOTIFICATION_MOUSE_EXIT:
 		_clear_highlight()
 	if what == NOTIFICATION_DRAG_END:
+		var source := slots.find(_active_drag.get("key", ""))
 		_active_drag = {}
+		_drag_preview = null
 		_pressed_key = ""
+		if source >= 0 and not slots[source].is_empty():
+			_update_item_visibility(source)

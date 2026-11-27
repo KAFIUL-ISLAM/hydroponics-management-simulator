@@ -1,6 +1,6 @@
-# M01 — Foundation stabilization plan
+# Foundation stabilization plan
 
-**Status: Implemented through M01-T11, ready for milestone review.** The task descriptions below record the approved scope and acceptance criteria. Current test paths use `tests/`. Earlier reports retain commands and paths from their recorded runs. [Package C handoff](M01_PACKAGE_C_REPORT.md)
+**Status: Historical foundation plan.** The task descriptions below record the approved scope and acceptance criteria used during early stabilization. Current test paths use `tests/`; consolidated evidence is in [TESTING_REPORT.md](TESTING_REPORT.md).
 
 The milestone preserves the existing dashboard and scene-local architecture. Retain the current prototype growth and resource costs as the baseline. Use explicitly labeled, test-only fixture values to exercise positive costs and shortages. Power gating, concentration, health, planting, harvest, and reference balancing belong to subsequent gameplay milestones. [Project status](PROJECT_STATUS.md) · [Audit](PROJECT_AUDIT.md) · [GDD required features](GDD.md#L692)
 

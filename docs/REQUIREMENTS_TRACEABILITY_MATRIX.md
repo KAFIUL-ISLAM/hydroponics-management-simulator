@@ -1,6 +1,4 @@
-# PRE-M08 requirements traceability
-
-2026-11-26 · audited checkpoint `v0.3.0` / `74a3e440f81ba440219ca86ec052e61937c5f5c5`
+# Requirements traceability
 
 ## Original employer requirements
 
@@ -8,7 +6,7 @@
 | --- | --- | --- | --- | --- | --- |
 | Demo hydroponics or chemical pharmaceutical production using Unity or Godot | [Employer brief](EMPLOYER_REQUIREMENTS.md) | Explicit | Complete | Owner selected Godot hydroponics; default launch, playable loop and desktop evidence at v0.3.0. | Low for the implementation; verify the chosen delivery artifact. |
 | Independently break down the gameplay and numerical design, and implement the chosen mechanic as closely as practical | [Employer brief](EMPLOYER_REQUIREMENTS.md) | Explicit | Complete for evidenced project slice | Research, calculation contract, 13 passing suites and manual walkthroughs. | Employer assessment remains pending. Explain tradeoffs and scope through the proposed Chinese analysis. |
-| Ten-day time limit | [Employer brief](EMPLOYER_REQUIREMENTS.md) | Explicit | Unverified | Owner targets December 1, 2026. | Confirm cutoff and submit within the agreed window. |
+| Ten-day time limit | [Employer brief](EMPLOYER_REQUIREMENTS.md) | Explicit | Unverified | The brief does not establish an exact start or end timestamp. | Evaluate the time-limit interpretation separately from implementation evidence. |
 | Handoff format, target OS, export, recording and delivery channel | Unspecified in the supplied wording | Delivery decision | Unverified | Editor launch and Windows desktop evidence exist. No checked-in export preset was located. | Confirm the artifact and verify it on a clean target machine. |
 
 **Mandatory deferred technical features.** The brief specifies no individual deferred feature. Internally marked Must rows below govern project scope only. Technical scope is frozen at v0.3.0. Perennials, warehouse routing, full DNA editing, quality mapping, grid geometry, more species and economy remain outside the proposed visual work.
@@ -17,7 +15,7 @@
 
 The exact requirement, source section and priority are retained under each ID in [REQUIREMENTS.md](REQUIREMENTS.md). The table summarizes every ID and replaces its historical planning status for audit purposes. Complete means the named project slice has implementation and relevant evidence. Partial means a material criterion remains open. Deferred means deliberately outside approved implementation. Missing means no corresponding implementation in the assessed scope. Unverified means evidence is insufficient. Risk refers to presenting the current build, with employer priority still unknown.
 
-**Implementation keys.** Dash = [default scene](../scenes/coffee_dashboard.tscn) and [dashboard script](../scripts/coffee_dashboard.gd). Farm = [farm runtime](../scripts/coffee_farm.gd). State = [GameState](../scripts/game_state.gd). Liquid = [composition](../scripts/liquid_composition.gd). Genes = [resolver](../scripts/crop_genetics.gd). Repro = [reproduction](../scripts/seed_reproduction.gd). Gear = [equipment](../scripts/hydroponic_equipment.gd). DNA = [editor](../scripts/dna_editor.gd). Legacy = [Lettuce scene](../scenes/main.tscn) and [simulator](../scripts/hydroponics_simulator.gd). Tests below name the matching `tests/test_<name>.gd` fixture. Manual evidence codes M01, M04, M05, M06 and M07 refer to user-confirmed walkthrough scope in the respective milestone reports, with consolidated M05–M07 attribution in [M07 final](M07_FINAL_REPORT.md). A dash in the manual column indicates no separate desktop check recorded for that criterion.
+**Implementation keys.** Dashboard = [default scene](../scenes/coffee_dashboard.tscn) and [dashboard script](../scripts/coffee_dashboard.gd). Farm = [farm runtime](../scripts/coffee_farm.gd). State = [GameState](../scripts/game_state.gd). Liquid = [composition](../scripts/liquid_composition.gd). Genes = [resolver](../scripts/crop_genetics.gd). Repro = [reproduction](../scripts/seed_reproduction.gd). Gear = [equipment](../scripts/hydroponic_equipment.gd). DNA = [editor](../scripts/dna_editor.gd). Legacy = [Lettuce scene](../scenes/main.tscn) and [simulator](../scripts/hydroponics_simulator.gd). Tests below name the matching `tests/test_<name>.gd` fixture. Manual evidence is reported separately in [TESTING_REPORT.md](TESTING_REPORT.md). A dash in the manual column indicates no separate desktop check recorded for that criterion.
 
 | ID and requirement | Internal source · priority | Status | Implementation | Automated evidence | Manual | Remaining limit · submission risk |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -66,4 +64,3 @@ The exact requirement, source section and priority are retained under each ID in
 | OPT-02 Selling and economy | GDD §12.3, F-LOCAL-01 · Could | Deferred | — | — | — | Scope frozen · Low |
 | OPT-03 Visual and animation improvement | GDD §12.3 · Could | Deferred | Existing functional dashboard and theme | Current bounds only | Current desktop baseline | Owner priority for proposed M08–M11, approval pending · High |
 | OOS-01 Exclusions | GDD §§8,12.4, F-GEN-06 · Out | Deferred | Partial editor only by later milestone scope | dna_editor | M07-B | Full replication, economy, multiplayer and complex 3D stay outside scope · Low |
-| Full set of intended submission artifacts | Owner PRE-M08 request · audit priority | Missing | No checked-in export preset or release artifact located | Editor launch only | — | Resolve employer format and target before M12 · High |

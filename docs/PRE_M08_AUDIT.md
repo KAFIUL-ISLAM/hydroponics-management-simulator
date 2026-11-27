@@ -1,17 +1,15 @@
-# PRE-M08 · Project audit and visual development preparation
-
-2026-11-26 · v0.3.0 · 74a3e440f81ba440219ca86ec052e61937c5f5c5
+# Historical project audit and visual preparation
 
 The three-crop loop and advanced systems passed a fresh regression. The owner has since supplied the employer brief. It calls for a playable demo and independent design and numerical analysis. It leaves the handoff format and target environment unspecified. The main delivery risks are clean-target verification and communicating player decisions and numerical outcomes clearly. The technical scope is frozen at v0.3.0, commit 74a3e440f81ba440219ca86ec052e61937c5f5c5. This audit adds documentation only.
 
 - [Original employer brief, English translation and Chinese analysis outline](EMPLOYER_REQUIREMENTS.md)
 - [Requirements traceability and submission risks](REQUIREMENTS_TRACEABILITY_MATRIX.md)
 - [Visual assets, licensing gaps and screenshot dimensions](VISUAL_ASSET_INVENTORY.md)
-- [Proposed M08–M12 roadmap and presentation tests](VISUAL_DEVELOPMENT_PLAN.md)
+- [Current visual development plan](VISUAL_DEVELOPMENT_PLAN.md)
 
 ## Evidence and scope
 
-The inspected documentation set covers README and AGENTS, project status and audit, GDD, glossary, technical design, requirements, research notes, formulas, calculation contract, foundation and gameplay plans, development log, testing report, and the M01–M07 milestone and package reports. Use the audited code, fresh run and [M07 checkpoint](M07_FINAL_REPORT.md) for baseline behavior. Older reports retain the behavior and plans at their respective dates. The initial workspace search found no standalone brief or export preset. The owner subsequently supplied the wording, now preserved in [Employer requirements](EMPLOYER_REQUIREMENTS.md). No deferred technical feature is established as mandatory by that wording. The selected delivery artifact remains to be verified.
+The historical audited documentation covered project status, GDD, glossary, technical design, requirements, research notes, formulas, calculation contract, development log and testing evidence. Use the audited code, current status and [testing report](TESTING_REPORT.md) for baseline behavior. The employer wording is preserved in [Employer requirements](EMPLOYER_REQUIREMENTS.md). No deferred technical feature is established as mandatory by that wording.
 
 Local HEAD, origin/main tracking ref and the peeled tag match the checkpoint. The previous publication verified GitHub directly. No fresh fetch was performed. Existing local exclusions include the obsolete root crop_resource_test.tscn, .godot/ and docs.zip. The obsolete scene references tetst/ and is outside the runner.
 
@@ -31,7 +29,7 @@ Source inspection, captured screenshots and automated results are identified bel
 | Harvest and reproduction | Mature display shows output quantity and size or textile. Collect stays enabled when storage is short. Products and offspring stay pending together; discard requires confirmation. | The player sees a capacity blocker without a count of slots to free. Offspring visibility depends on Genes. |
 | Replant and demos | Coffee output is plantable. Other seeds depend on return rules. Demo seed, demo Coffee and solution scenarios remain available. | Show demo affordances separately so the normal loop stays clear. |
 
-[Dashboard builders](../scripts/coffee_dashboard.gd#L53) · [DNA dialog](../scripts/coffee_dashboard.gd#L145) · [Action handling](../scripts/coffee_dashboard.gd#L440) · [State rendering](../scripts/coffee_dashboard.gd#L463) · [Night feedback](../scripts/coffee_dashboard.gd#L531) · [Historical desktop evidence](M07_FINAL_REPORT.md#desktop-evidence)
+[Dashboard builders](../scripts/coffee_dashboard.gd#L53) · [DNA dialog](../scripts/coffee_dashboard.gd#L145) · [Action handling](../scripts/coffee_dashboard.gd#L440) · [State rendering](../scripts/coffee_dashboard.gd#L463) · [Night feedback](../scripts/coffee_dashboard.gd#L531)
 
 ## UI architecture and redesign boundary
 
@@ -53,7 +51,7 @@ Safe changes are theme, spacing, visual grouping, readout formatting and modal v
 
 | Priority | Finding and evidence | Impact | Estimated effort |
 | --- | --- | --- | --- |
-| P0 | Handoff format, target environment and exact cutoff remain unspecified in the employer brief. | Delivery may fail if the chosen artifact cannot run in the evaluator's environment. | Owner confirmation and reserved M12 time. |
+| P0 | Handoff format and target environment remain unspecified in the employer brief. | Delivery may fail if the chosen artifact cannot run in the evaluator's environment. | Confirm the delivery format and target environment. |
 | P1 | Small feedback and a Chinese-only Next Night caption. Peer buttons compete for attention. Source and screenshots. | First-run and bilingual flow. | Low–medium |
 | P1 | Machine name is a fixed scene label while running state is refreshed. Inventory clears and reselects row zero on render. Source verified. | Selected machine or item can be misread before acting. | Low–medium |
 | P1 | Flat crop glyph, text-only progress, generic completion feedback and tooltip-only refill quantities. Source and screenshots. | Players struggle to see what changed and what to do next. | Medium |
@@ -81,9 +79,7 @@ Use the [existing runner](../tests/run-tests.ps1) in an isolated project for eac
 
 ## Decisions for the owner
 
-1. Confirm the target platform, delivery format, submission channel and exact deadline time.
+1. Confirm the target platform and delivery format.
 2. Choose the visual direction, default language treatment and minimum supported resolution/Windows scale.
 3. Decide whether the first-run walkthrough should feature Coffee Beans first, with an optional advanced route, or present the three crops equally.
 4. Confirm the asset and audio scope and reserve time for export and clean-target verification before approving M08.
-
-M08 and asset work remain unstarted.

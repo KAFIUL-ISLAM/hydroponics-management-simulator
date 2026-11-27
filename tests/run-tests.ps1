@@ -71,6 +71,9 @@ try {
         @{ Name = 'Workshop interface'; Scene = 'test_workshop_ui'; FrameBudget = '900'; Markers = @(
             '(?m)^WORKSHOP_UI_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
         ) },
+        @{ Name = 'Workshop audio'; Scene = 'test_workshop_audio'; Markers = @(
+            '(?m)^WORKSHOP_AUDIO_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
+        ) },
         @{ Name = 'M10 nutrient comparison'; Scene = 'test_m10_nutrient_demo'; Markers = @(
             '(?m)^M10_NUTRIENT_DEMO_RESULT checks=[1-9]\d* failures=0\s*$'
         ) },

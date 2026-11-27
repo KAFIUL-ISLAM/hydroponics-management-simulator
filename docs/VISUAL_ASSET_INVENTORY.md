@@ -1,6 +1,4 @@
-# PRE-M08 visual asset inventory
-
-2026-11-26 · `v0.3.0` · workspace inspection
+# Visual asset inventory
 
 | Asset class | Path and format | Runtime use / condition | Rights and gap |
 | --- | --- | --- | --- |
@@ -34,7 +32,7 @@ All files below are PNGs in [screenshots](../screenshots/), with matching Godot 
 | `screenshots/project-structure.png` | 363 × 496 | Early project tree |
 | `screenshots/resource-manager-test.png` | 1287 × 805 | Resource testing |
 
-The physical-pollution desktop screenshot supplied in conversation is separate from the repository PNG. [M05 evidence](M05_REPORT.md)
+The physical-pollution desktop screenshot supplied during historical development is separate from the repository PNG.
 
 ## Proposed asset priorities
 

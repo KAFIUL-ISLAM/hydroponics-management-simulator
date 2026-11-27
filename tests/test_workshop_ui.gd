@@ -18,6 +18,7 @@ func _ready() -> void:
 	await _check_battery_recovery(Vector2i(1920, 1080))
 	await _check_m11_presentation(Vector2i(1280, 720))
 	await _check_m11_presentation(Vector2i(1920, 1080))
+	await _check_drag_presentation()
 	var animated := await _check_night_feedback(Vector2i(1280, 720), false)
 	var reduced := await _check_night_feedback(Vector2i(1920, 1080), true)
 	_check(animated == reduced, "both motion modes report identical night results")
@@ -311,9 +312,33 @@ func _check_m11_presentation(dimensions: Vector2i) -> void:
 		_key(viewport, KEY_ENTER, false)
 		await get_tree().process_frame
 		_check(dialog.visible and dialog.exclusive and placement_bounds.encloses(Rect2(Vector2(dialog.position), Vector2(dialog.size))), "keyboard opens a bounded exclusive workstation")
+		await _check_fixed_pages(dialog)
+		if dialog == ui.equipment_dialog:
+			_check(ui.equipment_pages.get_tab_count() == 3, "equipment provides three fixed pages")
+			_check(ui.equipment_machine_display.text.contains("Capacity") and ui.equipment_effects_display.text.contains("Seed return"), "equipment shows live settings and aggregate effects")
+			ui.farm.demo_module_slots = 4
+			ui._refresh_equipment()
+			_check(ui.equipment_slot_grid.get_child_count() == 4 and ui.equipment_lock_status.text.contains("0 / 4"), "slot display follows configured machine slots")
+			ui.actions["install_module"].pressed.emit()
+			_check(ui.equipment_slot_grid.get_child(0).find_children("*", "TextureRect", true, false).size() == 1 and ui.equipment_lock_status.text.contains("1 / 4"), "installation refreshes installed icon and slot count")
+			ui.actions["remove_module"].pressed.emit()
+			_check(ui.equipment_lock_status.text.contains("0 / 4") and ui.module_choice.get_item_text(ui.module_choice.selected).contains("free"), "removal returns module stock to the selector")
+			ui.farm.demo_module_slots = 3
+			ui._refresh_equipment()
 		if dialog == view.manual:
 			var tab: TabContainer = dialog.find_children("*", "TabContainer", true, false)[0]
 			_check(tab.get_tab_count() == 2 and tab.get_theme_stylebox("tab_selected") != tab.get_theme_stylebox("tab_unselected"), "manual tabs distinguish selection")
+			var bar := tab.get_tab_bar()
+			bar.grab_focus()
+			var focus_style := bar.get_theme_stylebox("tab_focus") as StyleBoxFlat
+			_check(bar.has_focus() and focus_style != null and not focus_style.draw_center and focus_style.border_width_top > 0, "focused manual tab has a visible outline")
+			_check(focus_style != bar.get_theme_stylebox("tab_selected") and focus_style != bar.get_theme_stylebox("tab_hovered"), "manual tab focus style differs from selection and hover")
+			for control in dialog.find_children("*", "Button", true, false):
+				if control.tooltip_text.contains("Next page"):
+					control.pressed.emit()
+					_check(tab.current_tab == 1 and control.disabled and bar.has_focus(), "page-turn button advances and preserves a visible keyboard focus stop")
+					tab.current_tab = 0
+					break
 		_key(dialog, KEY_ESCAPE, true)
 		await get_tree().process_frame
 		await get_tree().process_frame
@@ -330,10 +355,111 @@ func _check_m11_presentation(dimensions: Vector2i) -> void:
 	_key(viewport, KEY_ESCAPE, true)
 	_check(not view.machine_panel.visible and view.machine.has_focus(), "closing the chamber returns focus to its opener")
 	next.grab_focus()
+	var accepted := [0]
+	ui.game_state.night_processing_finished.connect(func(_day: int, _next: int, _outcome: GameState.NightOutcome) -> void:
+		accepted[0] += 1
+	)
 	_key(viewport, KEY_ENTER, true)
+	for repeat in 3:
+		_key(viewport, KEY_ENTER, true, true)
 	_key(viewport, KEY_ENTER, false)
 	_check(ui.game_state.current_day == day + 1, "deliberate keyboard activation advances one night")
+	for repeat in 3:
+		_key(viewport, KEY_ENTER, true, true)
+	_key(viewport, KEY_ENTER, false)
+	_check(ui.game_state.current_day == day + 1 and accepted[0] == 1, "held and trailing Enter repeats cannot resettle a completed activation")
 	viewport.free()
+
+func _check_drag_presentation() -> void:
+	var viewport := SubViewport.new()
+	viewport.size = Vector2i(1280, 720)
+	viewport.gui_embed_subwindows = true
+	add_child(viewport)
+	var ui = WorkshopScene.instantiate()
+	viewport.add_child(ui)
+	await get_tree().process_frame
+	var view: View = ui.workshop
+	var tray = view.supply_tray
+	var grid = ui.inventory_tiles
+	var farm: View.Farm = ui.farm
+	var cues: Array[StringName] = []
+	view.audio.cue_requested.connect(func(cue: StringName) -> void: cues.append(cue))
+	var occupied := farm.occupied_slots()
+	var seed_key: String = ui._inventory_key(farm.selected_seed())
+	var source := _cell(grid, seed_key)
+	var outside := Vector2(5, 5)
+	_begin_drag(viewport, source)
+	_check(viewport.gui_is_dragging() and is_instance_valid(grid._drag_preview) and grid._drag_preview.texture != null, "inventory drag retains its native texture preview")
+	_check(grid.get_item_icon_modulate(grid.slots.find(seed_key)) == Color.TRANSPARENT and farm.occupied_slots() == occupied, "inventory drag hides only the icon before transfer")
+	_check(cues == [&"item_pickup"], "valid drag starts one pickup cue")
+	var entries: Dictionary = grid.rows.duplicate(true)
+	entries[seed_key].tooltip += "\nFixture refresh"
+	grid.sync(entries, grid.slots.size(), grid.selected_key, true)
+	_check(grid.get_item_icon_modulate(grid.slots.find(seed_key)) == Color.TRANSPARENT, "source stays hidden through a grid rebuild")
+	_mouse_motion(viewport, outside, outside - source, MOUSE_BUTTON_MASK_LEFT)
+	_button(viewport, outside, false)
+	_check(grid.get_item_icon_modulate(grid.slots.find(seed_key)) == Color.WHITE and farm.occupied_slots() == occupied, "invalid drop restores the original seed and stock")
+	_check(cues.count(&"item_reject") == 1 and not cues.has(&"item_place"), "invalid drop emits one reject and no placement")
+	_begin_drag(viewport, source)
+	viewport.gui_cancel_drag()
+	_button(viewport, source + Vector2(22, 0), false)
+	_check(grid.get_item_icon_modulate(grid.slots.find(seed_key)) == Color.WHITE and farm.occupied_slots() == occupied, "cancelled repeated drag restores the source")
+	_check(cues.count(&"item_reject") == 1 and not cues.has(&"item_place"), "drag cancellation makes no reject or placement cue")
+	var center := view.machine.get_global_rect().get_center()
+	_click(viewport, center, true)
+	await get_tree().process_frame
+	var module_key := View.MODULE + str(farm.demo_modules.front())
+	var module_point := _cell(tray, module_key)
+	var installed = view.slots["modules"]
+	var destination: Vector2 = installed.get_global_rect().get_center()
+	var stock := farm.available_modules(farm.demo_modules.front())
+	_begin_drag(viewport, module_point)
+	_check(viewport.gui_is_dragging() and is_instance_valid(tray._drag_preview) and tray.get_item_icon_modulate(tray.slots.find(module_key)) == Color.TRANSPARENT and farm.installed_modules.is_empty(), "supplies render only the preview before a drop")
+	_mouse_motion(viewport, destination, destination - module_point, MOUSE_BUTTON_MASK_LEFT)
+	_button(viewport, destination, false)
+	_check(farm.installed_modules.size() == 1 and farm.available_modules(farm.demo_modules.front()) == stock - 1, "valid drop transfers exactly one module")
+	_check(cues.count(&"item_place") == 1, "successful installation emits exactly one placement cue")
+	_begin_drag(viewport, destination)
+	_check(viewport.gui_is_dragging() and is_instance_valid(installed._drag_preview) and installed.get_theme_color("icon_normal_color") == Color.TRANSPARENT, "installed module keeps the frame and hides the original icon")
+	view._open_equipment()
+	_button(viewport, destination + Vector2(22, 0), false)
+	_check(not viewport.gui_is_dragging() and not installed._drag_icon_hidden and farm.installed_modules.size() == 1, "opening a modal cancels drag and restores installed icon")
+	ui.equipment_dialog.hide()
+	await get_tree().process_frame
+	_check(_drag(viewport, destination, module_point) and farm.installed_modules.is_empty() and farm.available_modules(farm.demo_modules.front()) == stock, "repeated module drag returns exactly one item to supplies")
+	_check(cues.count(&"item_place") == 2, "successful module return emits exactly one additional placement cue")
+	viewport.free()
+
+func _begin_drag(viewport: SubViewport, source: Vector2) -> void:
+	_mouse_motion(viewport, source, Vector2.ZERO)
+	_button(viewport, source, true)
+	_mouse_motion(viewport, source + Vector2(22, 0), Vector2(22, 0), MOUSE_BUTTON_MASK_LEFT)
+
+func _check_fixed_pages(dialog: AcceptDialog) -> void:
+	var tabs: TabContainer = dialog.find_children("*", "TabContainer", true, false)[0]
+	var initial := tabs.current_tab
+	var panel_scrolls := dialog.find_children("*", "ScrollContainer", true, false).filter(
+		func(control: Control) -> bool: return control.get_window() == dialog)
+	_check(panel_scrolls.is_empty() and tabs.get_tab_count() >= 2, "instrument body uses fixed pages without a scroll container")
+	for index in tabs.get_tab_count():
+		tabs.current_tab = index
+		await get_tree().process_frame
+		var page := tabs.get_tab_control(index)
+		var bounds := Rect2(Vector2.ZERO, Vector2(dialog.size))
+		_check(bounds.encloses(page.get_global_rect()) and page.size.y >= page.get_combined_minimum_size().y, "each fixed page fits inside the dialog")
+		for readout in page.find_children("*", "Label", true, false):
+			if readout.is_visible_in_tree():
+				_check(bounds.encloses(readout.get_global_rect()), "bilingual readout stays inside the dialog")
+		for readout in page.find_children("*", "RichTextLabel", true, false):
+			if readout.is_visible_in_tree():
+				_check(not readout.scroll_active and bounds.encloses(readout.get_global_rect()) and readout.get_content_height() <= readout.size.y, "fixed rich text fits without scrolling")
+		var wheel := InputEventMouseButton.new()
+		wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN
+		wheel.position = page.get_global_rect().get_center()
+		wheel.pressed = true
+		dialog.push_input(wheel, true)
+		_check(tabs.current_tab == index, "wheel over the page does not move content or change tabs")
+	tabs.current_tab = initial
 
 func _key(target: Viewport, code: Key, down: bool, repeat := false) -> void:
 	var event := InputEventKey.new()
@@ -514,6 +640,8 @@ func _check_night_feedback(dimensions: Vector2i, reduce: bool) -> Dictionary:
 	_click(viewport, output)
 	_click(viewport, output)
 	_check(farm.occupied_slots() == count + 1 and (ui.inventory_tiles.arriving_key.is_empty() == reduce), "reduced motion preserves collection and the rapid-click guard")
+	_check(farm.plant.pending + farm.plant.offspring.size() == pending - 1 and view.visible_output_keys.size() == mini(5, pending - 1), "collection removes exactly one pending unit and refreshes visible output in both modes")
+	_check(view.status_chip.visible and view.status_text.text.contains("Harvest pending") and view.message.text.contains("Output ready"), "collection preserves persistent and temporary output feedback in both modes")
 	await _wait_for_arrival(view)
 	viewport.free()
 	return reported

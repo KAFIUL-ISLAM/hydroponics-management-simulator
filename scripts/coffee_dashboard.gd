@@ -30,6 +30,13 @@ var next_seed_button: Button
 var demo_genes_button: Button
 var equipment_dialog: AcceptDialog
 var equipment_readout: Label
+var equipment_pages: TabContainer
+var equipment_notice: Label
+var equipment_machine_display: RichTextLabel
+var equipment_effects_display: RichTextLabel
+var equipment_module_display: RichTextLabel
+var equipment_slot_grid: GridContainer
+var equipment_lock_status: Label
 var machine_choice: OptionButton
 var vessel_choice: OptionButton
 var module_choice: OptionButton
@@ -37,6 +44,9 @@ var dna_dialog: AcceptDialog
 var dna_seed: OptionButton
 var dna_trait: OptionButton
 var dna_readout: Label
+var dna_pages: TabContainer
+var genes_pages: TabContainer
+var liquid_pages: TabContainer
 var dna_start: Button
 var machine_name_label: Label
 var machine_state_label: Label
@@ -137,11 +147,14 @@ func _build_actions() -> void:
 	genetics_dialog = AcceptDialog.new()
 	genetics_dialog.title = "种子分析 / Seed analysis"
 	add_child(genetics_dialog)
-	var genes_body := Workstation.body(genetics_dialog, "标本图谱 / Seed profile", art.texture("seed"), Color("#AE91ED"))
+	var genes_body := Workstation.fixed_body(genetics_dialog, "标本扫描仪 / Botanical scanner", art.texture("seed"),
+		Color("#424a30"), Color("#132a24"), Color("#c8dd9b"))
 	genes_portrait = Art.decoration(null)
-	genes_portrait.custom_minimum_size.y = 62
+	genes_portrait.custom_minimum_size.y = 52
 	genes_body.add_child(genes_portrait)
-	genes_readout = Workstation.readout(Workstation.row(genes_body))
+	genes_pages = Workstation.fixed_tabs(genes_body)
+	genes_readout = Workstation.readout(genes_body)
+	genes_readout.hide()
 	next_seed_button = genetics_dialog.add_button("下一个种子 / Next seed", true)
 	next_seed_button.pressed.connect(_next_seed)
 	demo_genes_button = genetics_dialog.add_button("演示 / Demo Coffee", false)
@@ -243,7 +256,10 @@ func _present(dialog: AcceptDialog) -> void:
 	var current := get_viewport().gui_get_focus_owner()
 	if current != null and current.get_window() == get_window():
 		return_focus = current
-	dialog.popup_centered()
+	if dialog.has_meta("fixed_instrument"):
+		dialog.popup_centered(Workstation.FIXED_SIZE)
+	else:
+		dialog.popup_centered()
 	if dialog == confirm_action:
 		confirm_action.get_cancel_button().grab_focus.call_deferred()
 
@@ -262,6 +278,8 @@ func _restore_workstation_focus() -> void:
 func _sync_workstation_layer() -> void:
 	for dialog: AcceptDialog in workstation_dialogs:
 		if dialog.visible:
+			if get_viewport().gui_is_dragging():
+				get_viewport().gui_cancel_drag()
 			workstation_shade.show()
 			return
 	workstation_shade.hide()
@@ -523,11 +541,19 @@ func _build_dna() -> void:
 	dna_dialog = AcceptDialog.new()
 	dna_dialog.title = "DNA 编辑器 / DNA editor"
 	add_child(dna_dialog)
-	var content := Workstation.body(dna_dialog, "DNA 操作台 / Genetic workstation", art.texture("station"), Color("#AE91ED"))
-	var selectors := Workstation.row(content)
+	var content := Workstation.fixed_body(dna_dialog, "基因工程终端 / Genetic terminal", art.texture("station"),
+		Color("#404b55"), Color("#132b34"), Color("#c8b9f1"))
+	var selector_row := HBoxContainer.new()
+	content.add_child(selector_row)
+	var selectors := Workstation.row(selector_row)
+	selectors.get_parent().size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	Workstation.section(selectors, "选定种子 / Selected seed")
 	dna_seed = OptionButton.new()
+	dna_seed.fit_to_longest_item = false
+	dna_seed.clip_text = true
 	selectors.add_child(dna_seed)
+	selectors = Workstation.row(selector_row)
+	selectors.get_parent().size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	Workstation.section(selectors, "性状数据盘 / Trait disc")
 	dna_trait = OptionButton.new()
 	selectors.add_child(dna_trait)
@@ -540,6 +566,8 @@ func _build_dna() -> void:
 	Workstation.section(operation, "操作状态与结果 / Operation status and result")
 	dna_progress = Workstation.meter(operation)
 	dna_readout = Workstation.readout(operation)
+	dna_readout.hide()
+	dna_pages = Workstation.fixed_tabs(content)
 	dna_start = dna_dialog.add_button("确认应用 / Confirm application", false)
 	dna_start.theme_type_variation = &"PrimaryAction"
 	dna_start.pressed.connect(func() -> void:
@@ -568,6 +596,22 @@ func _open_dna(requested_seed: Farm.Seed = null) -> void:
 	_present(dna_dialog)
 
 func _refresh_dna() -> void:
+	_compose_dna_readout()
+	var page := dna_pages.current_tab
+	Workstation.clear_pages(dna_pages)
+	var text := dna_readout.text
+	var preview_title := "应用预览 / Proposed application"
+	var trait_title := "当前特性 / Current traits"
+	var preview := text.split(preview_title, true, 1)
+	var traits := preview[0].split(trait_title, true, 1)
+	Workstation.append_reading_pages(dna_pages, "状态 / Status", traits[0])
+	if traits.size() > 1:
+		Workstation.append_reading_pages(dna_pages, "性状 / Traits", trait_title + traits[1])
+	if preview.size() > 1:
+		Workstation.append_reading_pages(dna_pages, "预览 / Preview", preview_title + preview[1])
+	dna_pages.current_tab = clampi(page, 0, dna_pages.get_tab_count() - 1)
+
+func _compose_dna_readout() -> void:
 	var editor := farm.dna_editor
 	dna_start.disabled = true
 	dna_start.tooltip_text = "选择可用种子与性状 / Select an available seed and trait"
@@ -632,11 +676,21 @@ func _build_equipment() -> void:
 	equipment_dialog = AcceptDialog.new()
 	equipment_dialog.title = "设备管理 / Equipment"
 	add_child(equipment_dialog)
-	var content := Workstation.body(equipment_dialog, "设备与耗能 / Equipment and power", art.texture("terminal"), Color("#E9B65A"))
-	var readout := Workstation.row(content)
-	Workstation.section(readout, "当前配置 / Current configuration")
-	equipment_readout = Workstation.readout(readout)
-	Workstation.section(content, "设备与容器 / Machine and vessel")
+	var shell := Workstation.fixed_body(equipment_dialog, "设备维护台 / Equipment service console", art.texture("terminal"),
+		Color("#454942"), Color("#192a29"), Color("#e6cf9d"))
+	equipment_pages = Workstation.fixed_tabs(shell)
+	equipment_notice = Workstation.section(shell, "")
+	equipment_notice.hide()
+	var content := Workstation.fixed_page(equipment_pages, "设备与容器 / Machine and vessel")
+	var icons := HBoxContainer.new()
+	content.add_child(icons)
+	for key in ["machine", "tank"]:
+		var illustration := Art.decoration(art.texture(key))
+		illustration.custom_minimum_size = Vector2(56, 48)
+		icons.add_child(illustration)
+	equipment_machine_display = Workstation.fixed_readout(Workstation.row(content), "", 145)
+	equipment_readout = Workstation.readout(shell)
+	equipment_readout.hide()
 	machine_choice = OptionButton.new()
 	for id: int in farm.demo_machines:
 		var entry := Equipment.machine_definition(id)
@@ -649,19 +703,28 @@ func _build_equipment() -> void:
 	vessel_choice.add_item("水罐 / 3 L water can", Equipment.Vessel.CAN)
 	_equipment_row(content, vessel_choice, "换容器 / Switch vessel", "switch_vessel", func() -> bool:
 		return farm.select_vessel(vessel_choice.get_selected_id()))
+	content = Workstation.fixed_page(equipment_pages, "模组 / Modules")
 	var module_header := HBoxContainer.new()
 	content.add_child(module_header)
 	var module_icon := Art.decoration(art.texture("module"))
 	module_icon.custom_minimum_size = Vector2(25, 25)
 	module_header.add_child(module_icon)
 	Workstation.section(module_header, "模组插槽与库存 / Module slots and stock")
-	equipment_slots = Workstation.readout(content)
+	equipment_slots = Workstation.readout(shell)
+	equipment_slots.hide()
+	equipment_lock_status = Workstation.section(content, "")
+	equipment_slot_grid = GridContainer.new()
+	equipment_slot_grid.columns = 8
+	content.add_child(equipment_slot_grid)
 	module_choice = OptionButton.new()
 	var module_row := _equipment_row(content, module_choice, "安装 / Install", "install_module", func() -> bool:
 		return farm.install_module(module_choice.get_selected_id()))
 	_equipment_control(module_row, "移除 / Remove", "remove_module", func() -> bool:
 		return farm.remove_module(module_choice.get_selected_id()))
+	equipment_module_display = Workstation.fixed_readout(Workstation.row(content), "", 140)
 	module_choice.item_selected.connect(func(_index: int) -> void: _refresh_equipment())
+	content = Workstation.fixed_page(equipment_pages, "效果 / Effects")
+	equipment_effects_display = Workstation.fixed_readout(Workstation.row(content), "", 285)
 
 func _equipment_row(parent: VBoxContainer, choice: OptionButton, label: String, key: String, operation: Callable) -> HBoxContainer:
 	var row := HBoxContainer.new()
@@ -695,6 +758,7 @@ func _refresh_equipment() -> void:
 		effective.adjusted_quality, effective.reproduction_multiplier, effective.extra_output]
 	if not effective.replacement.is_empty():
 		equipment_readout.text += effective.replacement + "\n"
+	equipment_machine_display.text = equipment_readout.text
 	equipment_slots.text = "%s   %d/%d · 演示库存 / Demo stock\n" % [
 		"■ ".repeat(mini(16, farm.installed_modules.size())) + "□ ".repeat(clampi(slot_count - farm.installed_modules.size(), 0, 16)),
 		farm.installed_modules.size(), slot_count]
@@ -711,9 +775,12 @@ func _refresh_equipment() -> void:
 	if module_choice.get_item_index(module_id) >= 0:
 		module_choice.select(module_choice.get_item_index(module_id))
 	var selected_module := Equipment.module_definition(module_choice.get_selected_id())
+	equipment_module_display.text = ""
 	if selected_module != null and module_choice.item_count > 0:
-		equipment_readout.text += "模组 / Module: P %+d · E %+d · Q %+d\n%s\n" % [
-			selected_module.performance, selected_module.efficiency, selected_module.quality, selected_module.description]
+		var module_details := "%s\n性能 / P: %+d · 效率 / E: %+d · 质量 / Q: %+d\n%s\n" % [
+			selected_module.label, selected_module.performance, selected_module.efficiency, selected_module.quality, selected_module.description]
+		equipment_module_display.text = module_details
+		equipment_readout.text += module_details
 	if not farm.equipment_error.is_empty():
 		equipment_readout.text += "\n未应用 / Rejected · " + farm.equipment_error
 	var locked := farm.running or not farm.can_act()
@@ -721,28 +788,72 @@ func _refresh_equipment() -> void:
 	if locked:
 		locked_hint = "设备运行中 / Stop the machine to change equipment" if farm.running else "暂不可操作 / Equipment is currently unavailable"
 		equipment_readout.text += "\n" + locked_hint
+	equipment_lock_status.text = "%d / %d · 演示库存 / Demo stock" % [farm.installed_modules.size(), slot_count]
+	if not locked_hint.is_empty():
+		equipment_lock_status.text += " · " + locked_hint
+	equipment_notice.text = locked_hint
+	if not farm.equipment_error.is_empty():
+		equipment_notice.text = "未应用 / Rejected · " + farm.equipment_error
+	equipment_notice.visible = not equipment_notice.text.is_empty()
+	equipment_effects_display.text = equipment_readout.text
+	_render_equipment_slots(slot_count, locked)
 	for key in ["switch_machine", "switch_vessel", "install_module", "remove_module"]:
 		actions[key].disabled = locked
 		actions[key].tooltip_text = locked_hint
+
+func _render_equipment_slots(slot_count: int, locked: bool) -> void:
+	for child in equipment_slot_grid.get_children():
+		equipment_slot_grid.remove_child(child)
+		child.queue_free()
+	if slot_count <= 0:
+		Workstation.section(equipment_slot_grid, "锁定 · 无模组槽 / Locked · No module slots")
+		return
+	for index in slot_count:
+		var tile := PanelContainer.new()
+		tile.custom_minimum_size = Vector2(56, 54)
+		equipment_slot_grid.add_child(tile)
+		var installed := index < farm.installed_modules.size()
+		var line := VBoxContainer.new()
+		tile.add_child(line)
+		if installed:
+			var icon := Art.decoration(art.texture("module"))
+			icon.custom_minimum_size = Vector2(32, 31)
+			line.add_child(icon)
+			tile.tooltip_text = Equipment.module_definition(farm.installed_modules[index]).label
+		else:
+			var marker := Workstation.section(line, "—" if locked else "+")
+			marker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			tile.tooltip_text = "空槽 / Empty slot"
+		var identifier := Workstation.section(line, str(index + 1))
+		identifier.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		if locked:
+			tile.tooltip_text += "\n槽位锁定 / Slot locked"
 
 func _build_analysis() -> void:
 	liquid_dialog = AcceptDialog.new()
 	liquid_dialog.title = "液体分析 / Liquid analysis"
 	add_child(liquid_dialog)
-	var content := Workstation.body(liquid_dialog, "溶液诊断 / Solution diagnostics", art.texture("tank"), Color("#58BCEB"))
+	var body := Workstation.fixed_body(liquid_dialog, "化学分析仪 / Chemical analyzer", art.texture("tank"),
+		Color("#315560"), Color("#102b34"), Color("#97e0ec"))
+	liquid_pages = Workstation.fixed_tabs(body)
+	var content := Workstation.fixed_page(liquid_pages, "成分 / Composition")
 	var summary := Workstation.row(content)
 	Workstation.section(summary, "容器与矿物 / Vessel and minerals")
 	liquid_summary = Workstation.readout(summary)
+	liquid_summary.autowrap_mode = TextServer.AUTOWRAP_OFF
+	liquid_summary.custom_minimum_size.x = 680
 	liquid_capacity = Workstation.meter(summary)
 	liquid_band = Workstation.readout(summary)
+	liquid_band.autowrap_mode = TextServer.AUTOWRAP_OFF
+	liquid_band.custom_minimum_size.x = 680
 	liquid_range = Workstation.meter(summary)
 	optimal_segment = ColorRect.new()
 	optimal_segment.color = Color("#E9B65A")
 	optimal_segment.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	liquid_range.add_child(optimal_segment)
 	optimal_segment.offset_bottom = 3
-	Workstation.section(content, "污染检测 / Pollutant readings")
-	analysis_text = Workstation.readout(Workstation.row(content))
+	analysis_text = Workstation.readout(body)
+	analysis_text.hide()
 	Workstation.section(content, "演示溶液 / Demo solution replacement")
 	var scenario_row := HBoxContainer.new()
 	content.add_child(scenario_row)
@@ -769,7 +880,7 @@ func _show_analysis() -> void:
 	var result := farm.pollution_analysis(snapshot)
 	var mineral_pct: Variant = farm.vessel.mineral_concentration_pct()
 	var mineral_label := "未定义 / undefined" if mineral_pct == null else "%.3f%%" % mineral_pct
-	liquid_summary.text = "纯水 / Water: %d µL   矿物 / Minerals: %d µL (%s)\n" % [
+	liquid_summary.text = "纯水 / Water: %d µL\n矿物 / Minerals: %d µL (%s)\n" % [
 		result.water_ul, snapshot.get(LIQ.Component.MINERALS, 0), mineral_label]
 	liquid_summary.text += "溶液 / Solution: %d / %d µL" % [farm.vessel.total_ul(), farm.vessel.capacity_ul()]
 	liquid_capacity.max_value = maxi(1, farm.vessel.capacity_ul())
@@ -802,6 +913,14 @@ func _show_analysis() -> void:
 		analysis_text.text += "\n\n上次运行夜损伤 / Last running night damage (health units) · %d" % last_night.pollution_damage
 		for index: int in last_night.pollution.components.size():
 			analysis_text.text += "\n%s: %.2f" % [POLLUTANT_NAMES[index], last_night.pollution.components[index].nightly_damage]
+	var selected_page := liquid_pages.current_tab
+	Workstation.clear_pages(liquid_pages, 1)
+	var history_title := "上次运行夜损伤 / Last running night damage"
+	var readings := analysis_text.text.split(history_title, true, 1)
+	Workstation.append_reading_pages(liquid_pages, "污染 / Pollution", readings[0], 13)
+	if readings.size() > 1:
+		Workstation.append_reading_pages(liquid_pages, "上夜 / Last night", history_title + readings[1])
+	liquid_pages.current_tab = clampi(selected_page, 0, liquid_pages.get_tab_count() - 1)
 	_present(liquid_dialog)
 
 func _confirm_drain() -> bool:
@@ -871,6 +990,18 @@ func _present_genetics(text: String) -> void:
 	genes_readout.text = text
 	genetics_dialog.dialog_text = text
 	genetics_dialog.get_label().hide()
+	var page := genes_pages.current_tab
+	Workstation.clear_pages(genes_pages)
+	var traits_title := "性状 / Traits"
+	var requirements_title := "基础 → 生效 / Raw → effective"
+	var traits := text.split(traits_title, true, 1)
+	var profile := traits[0].split(requirements_title, true, 1)
+	Workstation.append_reading_pages(genes_pages, "档案 / Profile", profile[0])
+	if profile.size() > 1:
+		Workstation.append_reading_pages(genes_pages, "需求 / Requirements", requirements_title + profile[1], 9, true)
+	if traits.size() > 1:
+		Workstation.append_reading_pages(genes_pages, "性状 / Traits", traits_title + traits[1])
+	genes_pages.current_tab = clampi(page, 0, genes_pages.get_tab_count() - 1)
 	_present(genetics_dialog)
 
 func _next_seed() -> void:

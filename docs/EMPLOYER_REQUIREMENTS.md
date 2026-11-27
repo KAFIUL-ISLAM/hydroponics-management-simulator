@@ -29,18 +29,18 @@ Source: Original Chinese instructions supplied by the project owner on 2026-11-2
 
 | Explicit instruction | Evidence and assessment |
 | --- | --- |
-| Demo one of the two systems | The owner chose hydroponics. The Godot dashboard supports selecting, cultivating, harvesting and replanting crops. Pollution, inheritance, equipment and trait application extend that playable loop. Prior desktop walkthroughs cover these systems. [Milestone evidence](M07_FINAL_REPORT.md) |
+| Demo one of the two systems | The project implements hydroponics. The workshop supports selecting, cultivating, harvesting and replanting crops. Pollution, inheritance, equipment and trait application extend that playable loop. [Testing evidence](TESTING_REPORT.md) |
 | Use Unity or Godot | The owner chose Godot. The baseline loads in Godot 4.7.2. [Project configuration](../project.godot) · [Fresh audit](PRE_M08_AUDIT.md#performance-and-regression) |
 | Independently decompose gameplay and numbers | The project records gameplay rules, numerical contracts, source provenance, provisional decisions and deterministic fixtures. A concise Chinese analysis would make that work easier for the evaluator to follow. [GDD](GDD.md) · [Research notes](RESEARCH_NOTES.md) · [Calculation contract](CALCULATION_CONTRACT.md) |
 | Reproduce the chosen system as closely as practical | The supported implementation has published reference-derived fixtures and documented local policies. The audit confirmed 13 suites, 932 explicit checks and four original assertion groups. This supports the documented slice. Broader fidelity is outside the claim. [Traceability](REQUIREMENTS_TRACEABILITY_MATRIX.md) |
 | Show gameplay understanding and implementation of an abstract task | The player can manage resource constraints, inspect outcomes and compare equipment or seed configurations. The design analysis can connect those decisions to observable results and tests. This is evidence of the process. Employer judgment is pending. |
-| Ten-day limit | Explicit. The owner’s delivery target is December 1, 2026. The original message supplies a duration without an exact start or cutoff timestamp, so delivery timing remains for the owner to confirm. |
+| Ten-day limit | Explicit in the original brief. It supplies a duration but no exact start or end timestamp, so calendar interpretation is outside the implementation evidence. |
 
 The [internal GDD and traceability matrix](REQUIREMENTS_TRACEABILITY_MATRIX.md) define project priorities. The employer wording supplies no scoring rubric, mandatory feature-by-feature checklist, target OS, export requirement, recording requirement or delivery channel. Clarity, usability and professional presentation are proposed ways to demonstrate the work. They carry no stated employer scoring weight.
 
 ## Submission readiness and technical freeze
 
-No current simulation omission is established as a submission blocker by the supplied wording. Submission logistics remain open: confirm the exact cutoff and channel, the artifact the evaluator should receive, and their target environment. The chosen artifact must launch from a clean copy. An executable export is a conditional verification task if selected for delivery. The current editor launch and regression evidence do not verify an export. A recording and a Chinese write-up are recommended evidence rather than explicit deliverables.
+No current simulation omission is established as a submission blocker by the supplied wording. Delivery logistics remain separate from gameplay scope: the artifact must launch from a clean copy, and an executable export requires target-environment verification. A recording and a Chinese write-up are recommended evidence rather than explicit deliverables.
 
 Technical scope is frozen at **v0.3.0**, commit **74a3e440f81ba440219ca86ec052e61937c5f5c5**. Perennials, warehouse overflow, persistent seed identifiers, wider DNA editing, module geometry, full quality mapping, textile grading, economic systems and other open technical work remain deferred. The brief’s fidelity request makes it worthwhile to disclose material differences, such as provisional pollution rounding and demo supplies. It provides no basis for requiring those deferred systems before delivery. Historical milestone records remain in place.
 
@@ -56,5 +56,3 @@ Lead with one clean Coffee Beans cycle from crop selection to replanting. Show t
 4. **系统联动与策略**。解释矿物浓度区间、污染敏感度、设备取舍、种子性状、遗传和热度如何影响决策。挑选一组污染对比和一组设备对比即可。
 5. **取舍与证据**。区分参考资料、项目约定、尚未核实的边界和演示设置。说明为何保留这些取舍，以及用哪些自动化检查和人工流程验证。
 6. **演示路线与操作入口**。给出启动方式、核心循环和可选进阶演示。图片、视频和导出包按确认后的交付方式准备。
-
-M08 remains unauthorized. This reconciliation prepares documentation and demonstration planning only.

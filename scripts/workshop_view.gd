@@ -9,6 +9,9 @@ const InventoryGrid = preload("res://scripts/inventory_grid.gd")
 const ChamberArt = preload("res://scripts/workshop_chamber_art.gd")
 const NightFeedback = preload("res://scripts/workshop_night_feedback.gd")
 const Manual = preload("res://scripts/workshop_manual.gd")
+const Audio = preload("res://scripts/workshop_audio.gd")
+const AudioSettings = preload("res://scripts/workshop_audio_settings.gd")
+const Editor = preload("res://scripts/dna_editor.gd")
 const WATER := "supply:water"
 const ENERGY := "supply:energy"
 const TABLET := "supply:tablet"
@@ -19,7 +22,7 @@ const GENETICS := "device:genes"
 const DNA := "device:dna"
 const SIZE := Vector2(52, 48)
 const OUTPUT_COLUMNS := 5
-const MOTION_SETTINGS := "user://workshop_presentation.cfg"
+const MOTION_SETTINGS := Audio.SETTINGS_PATH
 # Bounds of the exposed dustbin lid in the source image.
 const BIN_UV := Rect2(0.201, 0.635, 0.100, 0.080)
 
@@ -68,10 +71,21 @@ var blocker_slot := ""
 var blocker_detail := ""
 var blocker_context: Array = []
 var blocker_style: StyleBoxFlat
+var audio: Audio
+var audio_settings: AudioSettings
+var audio_button: Button
+var _was_running := false
+var _was_harvest_ready := false
+var _previous_dna_stage: Editor.Stage
 
 func setup(ui: Control) -> void:
 	dashboard = ui
 	farm = ui.farm
+	audio = Audio.new()
+	add_child(audio)
+	_was_running = farm.running
+	_was_harvest_ready = not farm.pending_output().is_empty()
+	_previous_dna_stage = farm.dna_editor.stage
 	charge_reference = maxi(1, farm.energy_kj)
 	art = ui.art
 	var preferences := ConfigFile.new()
@@ -103,6 +117,8 @@ func setup(ui: Control) -> void:
 	_build_inventory()
 	_build_machine()
 	_build_tool_dock()
+	_build_audio_settings()
+	_bind_audio_events()
 	_build_status_chips()
 	night_feedback = NightFeedback.new()
 	add_child(night_feedback)
@@ -282,7 +298,7 @@ func _update_focus_order() -> void:
 		for slot in output_slots:
 			if slot.visible and not slot.disabled:
 				order.append(slot)
-	order.append_array([dashboard.inventory_tiles, supply_tray, tools[GENETICS], tools[DNA], tools[ANALYSER], manual_button, dashboard.next_night_button])
+	order.append_array([dashboard.inventory_tiles, supply_tray, tools[GENETICS], tools[DNA], tools[ANALYSER], manual_button, audio_button, dashboard.next_night_button])
 	for index in order.size():
 		var control := order[index]
 		control.focus_next = control.get_path_to(order[(index + 1) % order.size()])
@@ -330,6 +346,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _close_machine() -> void:
+	if not output_drag.is_empty() and get_viewport().gui_is_dragging():
+		get_viewport().gui_cancel_drag()
 	var focus := get_viewport().gui_get_focus_owner()
 	var restore := focus != null and machine_panel.is_ancestor_of(focus)
 	machine_panel.hide()
@@ -360,20 +378,27 @@ func _input(event: InputEvent) -> void:
 		var icon := grid.get_item_icon(index)
 		var source := grid.get_global_transform_with_canvas() * grid.get_item_rect(index).get_center()
 		var accepted := false
+		var inspected := false
 		for target: Slot in drop_targets:
 			if _contains_pointer(target, event.position):
 				accepted = target.try_transfer(data)
+				inspected = target == tools[GENETICS] or target == tools[DNA]
 				break
 		if not accepted:
 			_animate_return(icon, event.position, source)
+			audio.play(&"item_reject")
+		elif not inspected:
+			audio.play(&"item_place")
 		viewport.set_input_as_handled()
-		viewport.gui_cancel_drag()
+		if viewport.gui_is_dragging():
+			viewport.gui_cancel_drag()
 	elif not output_drag.is_empty() and is_same(data, output_drag):
 		var icon := machine_drag_source.icon
 		var source := machine_drag_source.get_global_transform_with_canvas() * (machine_drag_source.size * 0.5)
 		var over_inventory := _contains_pointer(dashboard.inventory_tiles, event.position) or _contains_pointer(supply_tray, event.position)
 		if not over_inventory or not _return_to_inventory(data):
 			_animate_return(icon, event.position, source)
+			audio.play(&"item_reject")
 		viewport.set_input_as_handled()
 		viewport.gui_cancel_drag()
 
@@ -435,7 +460,7 @@ func _build_tool_dock() -> void:
 	var dock := PanelContainer.new()
 	add_child(dock)
 	_place(dock, Vector2(1, 0), Vector2(1, 0))
-	dock.offset_left = -249
+	dock.offset_left = -288
 	dock.offset_right = -18
 	dock.offset_top = 10
 	var row := HBoxContainer.new()
@@ -449,15 +474,46 @@ func _build_tool_dock() -> void:
 	manual_button.tooltip_text = "种植手册 / Farming manual · F1"
 	manual_button.pressed.connect(_open_manual)
 	row.add_child(manual_button)
+	audio_button = Button.new()
+	audio_button.text = "🔊"
+	audio_button.custom_minimum_size.x = 34
+	audio_button.tooltip_text = "音频设置 / Audio settings"
+	audio_button.pressed.connect(func() -> void: dashboard._present(audio_settings))
+	row.add_child(audio_button)
 	manual = Manual.new()
 	dashboard.add_child(manual)
 	manual.theme = dashboard.theme
 	manual.transient = true
 	manual.exclusive = true
-	manual.setup(art.texture("seed"))
+	manual.setup(art)
 	manual.tool_requested.connect(_open_manual_tool)
 	dashboard.workstation_dialogs.append(manual)
 	manual.visibility_changed.connect(dashboard._sync_workstation_layer)
+
+func _build_audio_settings() -> void:
+	audio_settings = AudioSettings.new()
+	dashboard.add_child(audio_settings)
+	audio_settings.theme = dashboard.theme
+	audio_settings.setup(audio)
+	dashboard.workstation_dialogs.append(audio_settings)
+	audio_settings.visibility_changed.connect(dashboard._sync_workstation_layer)
+
+func _bind_audio_events() -> void:
+	for grid: InventoryGrid in [dashboard.inventory_tiles, supply_tray]:
+		grid.item_picked_up.connect(audio.play.bind(&"item_pickup"))
+		grid.item_repositioned.connect(audio.play.bind(&"item_place"))
+	slots["modules"].item_picked_up.connect(audio.play.bind(&"item_pickup"))
+	motion_button.pressed.connect(audio.play.bind(&"ui_click"))
+	machine_panel.visibility_changed.connect(func() -> void:
+		audio.play(&"popup_open" if machine_panel.visible else &"popup_close"))
+	for dialog: AcceptDialog in dashboard.workstation_dialogs:
+		dialog.visibility_changed.connect(func() -> void:
+			audio.play(&"popup_open" if dialog.visible else &"popup_close"))
+		for tabs: TabContainer in dialog.find_children("*", "TabContainer", true, false):
+			var cue: StringName = &"page_turn" if dialog == manual else &"tab_switch"
+			tabs.tab_changed.connect(func(_index: int) -> void:
+				if dialog.visible:
+					audio.play(cue))
 
 func _open_manual() -> void:
 	if not get_viewport().gui_is_dragging():
@@ -643,6 +699,7 @@ func _return_to_inventory(data: Variant) -> bool:
 	var accepted := farm.remove_module(output_drag.module)
 	if accepted:
 		output_drag = {}
+		audio.play(&"item_place")
 		_show_message("模组已归还 / Module returned")
 		dashboard._render()
 	return accepted
@@ -653,6 +710,7 @@ func _notification(what: int) -> void:
 		machine_drag_source = null
 
 func refresh() -> void:
+	_observe_audio_state()
 	_refresh_supply_tray()
 	_refresh_blocker()
 	day.text = "第 %d 天 / Day %d" % [dashboard.game_state.current_day, dashboard.game_state.current_day]
@@ -763,6 +821,7 @@ func _collect_from_slot(index: int) -> void:
 	var item: Variant = farm.collect_one(visible_output_keys[index])
 	if item == null:
 		return
+	audio.play(&"item_collect")
 	var key: String = dashboard.product_unit_key(item, farm.products[item] - 1) if item is String else dashboard._inventory_key(item)
 	grid.slots[destination] = key
 	if reduced_motion:
@@ -811,6 +870,7 @@ func _slot_view(kind: String, icon_key: String, hint: String, occupied := true) 
 		slot.add_theme_color_override(color_name, Color("#7490a777"))
 
 func _night_started(_day: int) -> void:
+	audio.play(&"night_transition")
 	night_feedback.capture(farm)
 	before_crop_texture = crop_art.texture
 
@@ -911,8 +971,26 @@ func _apply_outcome_blocker(outcome: GameState.NightOutcome) -> void:
 	if not blocker_slot.is_empty():
 		blocker_detail = outcome.detail
 		blocker_context = _blocker_context()
+		if blocker_slot != "seed" and blocker_slot != previous:
+			audio.play(&"resource_warning")
 	if not previous.is_empty() or not blocker_slot.is_empty():
 		refresh()
+
+func _observe_audio_state() -> void:
+	var harvest_ready := _has_output() and not farm.pending_output().is_empty()
+	if harvest_ready and not _was_harvest_ready:
+		audio.play(&"harvest_ready")
+	elif farm.running != _was_running:
+		audio.play(&"machine_start" if farm.running else &"machine_stop")
+	_was_running = farm.running
+	_was_harvest_ready = harvest_ready
+	var stage := farm.dna_editor.stage
+	if stage != _previous_dna_stage:
+		if stage == Editor.Stage.SUCCEEDED:
+			audio.play(&"dna_success")
+		elif stage == Editor.Stage.FAILED:
+			audio.play(&"dna_failure")
+	_previous_dna_stage = stage
 
 func _pulse_chamber() -> void:
 	if growth_pulse != null:

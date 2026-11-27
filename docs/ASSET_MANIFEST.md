@@ -1,4 +1,4 @@
-# M08-B artwork manifest
+# Artwork manifest
 
 All originals are the project owner's draft ChatGPT-generated pack in [assets/orbital_assets](../assets/orbital_assets/). The [pack README](../assets/orbital_assets/README.md) records the origin and identifies the plants as extracts from a combined sheet. No reference-game imagery or additional generated imagery was added. Originals remain intact. Runtime copies live under `assets/orbital_assets/runtime/`.
 
