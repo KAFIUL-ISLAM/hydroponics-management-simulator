@@ -1,5 +1,11 @@
 # 测试报告
 
+## M09 · 2026-11-27
+
+Godot 4.7.2 passed all 18 suites, 1,362 explicit checks including 184 workshop checks, and four original crop assertion groups after a fresh isolated import. The default workshop launched successfully. The rendered workshop tests covered both supported viewport sizes, matched actual night deltas in both motion modes, and verified reentrant input, blocker recovery, transient feedback, production and collection. After removal of a presentation-script type warning, the focused 184-check suite passed again. Finalization matched the tested sources and reused those results.
+
+The developer separately reported manual acceptance with two pending M10 corrections. Status contrast on the chamber artwork and the first battery drag after depletion without an intervening drag still need coverage. [M10 plan](VISUAL_DEVELOPMENT_PLAN.md#m10-implementation-plan)
+
 ## v0.5.0 release gate · 2026-11-27
 
 Fresh isolated Godot 4.7.2 regression passed all 18 suites, 1,327 explicit checks including 149 workshop GUI checks, and four original crop assertion groups. Default workshop launch and the archived one-night Lettuce probe passed. The known Windows certificate-store diagnostic appeared. Separately, the developer reported manual testing and approval of M08-A through M08-C.4. [Release report](M08_EXTENSION_FINAL_REPORT.md)

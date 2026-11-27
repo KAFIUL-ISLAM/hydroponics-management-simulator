@@ -1,5 +1,13 @@
 # 开发日志 | Development Log
 
+## 2026-11-27 · M09 accepted
+
+The developer accepted M09 after manual gameplay testing and identified two issues to address within M10. “Harvest pending” and similar machine messages are hard to read against the chamber. After the machine runs out of energy, a replacement battery can fail to start dragging until the player drags another inventory item. The battery failure is developer-reported and its cause remains unverified. M10 includes both corrections and focused regression coverage. [M10 plan](VISUAL_DEVELOPMENT_PLAN.md#m10-implementation-plan)
+
+## 2026-11-27 · M09 night and machine feedback
+
+The workshop reuses its existing night and collection transitions. A transient strip shows actual night resource, growth, health and output changes, and the affected compartment exposes the existing shortage or configuration message. Reduced Motion is a saved local option in the machine header. Both modes use the same simulation signals and transactions. M10 remains pending.
+
 ## 2026-11-27 · v0.5.0 Interactive Hydroponics Workshop
 
 The developer approved the M08 extension after manual gameplay testing. The release adds the default icon workshop, direct machine interaction, individual output collection, capacity-aware inventory, dedicated tools, the painted dustbin and crop alignment. M09 remains pending. [Release notes and verification](M08_EXTENSION_FINAL_REPORT.md)

@@ -1,8 +1,17 @@
 # Project status
 
+## M09 accepted · M10 pending
+
+The developer completed manual M09 testing and accepted the implementation with two corrections scheduled for M10. The isolated automated run passed all 18 suites, 1,362 explicit checks including 184 workshop checks, and four original crop assertion groups. Default launch passed. Simulation formulas and crop balance are unchanged.
+
+- **Machine status readability.** Messages such as “Harvest pending” are difficult to read over the bright chamber. M10 will add a compact bilingual status background with improved contrast and padding. Persistent blockers will stay visible until resolved. Temporary resource feedback will expire, and the overlay will ignore pointer input.
+- **Replacement battery drag after depletion.** The developer reports that dragging a replacement from the supplies tray can fail after an insufficient-energy warning. Dragging another inventory item first restores it. The cause remains unverified. M10 will reproduce the sequence, fix the verified cause, and check water, seeds and modules for related failures.
+
+[Combined M10 plan](VISUAL_DEVELOPMENT_PLAN.md#m10-implementation-plan)
+
 ## v0.5.0 · Interactive Hydroponics Workshop
 
-The developer approved M08-A through M08-C.4. The workshop is the default launch, and the legacy Lettuce scene remains available. The redesign preserves crop balance and numerical formulas. M09 is pending and covers optional transitions and outcome feedback for the icon-based workflow. [Release report](M08_EXTENSION_FINAL_REPORT.md)
+The developer approved M08-A through M08-C.4. The workshop is the default launch, and the legacy Lettuce scene remains available. The redesign preserves crop balance and numerical formulas. [Release report](M08_EXTENSION_FINAL_REPORT.md)
 
 ## M08 complete · v0.4.0 Visual Transformation
 

@@ -14,6 +14,9 @@ func _ready() -> void:
 	await _play_produce(1)
 	await _play_produce(2)
 	await _check_output_counts()
+	var animated := await _check_night_feedback(Vector2i(1280, 720), false)
+	var reduced := await _check_night_feedback(Vector2i(1920, 1080), true)
+	_check(animated == reduced, "both motion modes report identical night results")
 	print("WORKSHOP_UI_TEST_RESULT checks=%d failures=%d" % [checks, failures])
 	get_tree().quit(0 if failures == 0 else 1)
 
@@ -27,6 +30,7 @@ func _play(dimensions: Vector2i) -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var view: View = ui.workshop
+	view.set_reduced_motion(false)
 	var grid: ItemList = ui.inventory_tiles
 	var tray: ItemList = view.supply_tray
 	var farm = ui.farm
@@ -181,6 +185,7 @@ func _play_produce(catalog_index: int) -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var view: View = ui.workshop
+	view.set_reduced_motion(false)
 	var grid: ItemList = ui.inventory_tiles
 	var definition = farm.catalog[catalog_index]
 	var seed_item = farm.seed_stock(definition).front()
@@ -253,6 +258,97 @@ func _wait_for_arrival(view: View) -> void:
 	var deadline := Time.get_ticks_msec() + 1500
 	while view.collecting and Time.get_ticks_msec() < deadline:
 		await get_tree().process_frame
+
+func _check_night_feedback(dimensions: Vector2i, reduce: bool) -> Dictionary:
+	var viewport := SubViewport.new()
+	viewport.size = dimensions
+	add_child(viewport)
+	var ui = WorkshopScene.instantiate()
+	var farm: View.Farm = ui.get_node("CoffeeFarm")
+	farm.initial_minerals_ul = 350000
+	viewport.add_child(ui)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var view: View = ui.workshop
+	view.set_reduced_motion(reduce)
+	var next: Vector2 = ui.next_night_button.get_global_rect().get_center()
+	_check(view.blocker_slot.is_empty(), "intentional idle starts without a warning")
+	_click(viewport, next)
+	_check(view.blocker_slot == "seed" and view.slots["seed"].tooltip_text.contains("No seed planted") and view.night_feedback.metrics.is_empty(), "advancing without a seed gives contextual feedback without zero-value changes")
+	view.message_tween.custom_step(2.2)
+	_check(view.blocker_slot.is_empty(), "idle seed hint expires with its message")
+	var seed_item := farm.selected_seed()
+	_click(viewport, view.machine.get_global_rect().get_center(), true)
+	await get_tree().process_frame
+	_drag(viewport, _cell(ui.inventory_tiles, ui._inventory_key(seed_item)), view.slots["seed"].get_global_rect().get_center())
+	_check(farm.running and farm.installed_modules.is_empty(), "night feedback works with no optional modules")
+	var before := farm.vessel.snapshot_ul()
+	var initial_power := farm.energy_kj
+	var initial_health := farm.plant.health
+	var start_day: int = ui.game_state.current_day
+	var signals := [0, 0]
+	ui.game_state.night_processing_started.connect(func(_day: int) -> void:
+		signals[0] += 1
+		ui.next_night_button.pressed.emit()
+	)
+	ui.game_state.night_processing_finished.connect(func(_day: int, _next: int, _outcome: GameState.NightOutcome) -> void:
+		signals[1] += 1
+	)
+	_click(viewport, next)
+	_click(viewport, next, true)
+	_check(signals == [1, 1] and ui.game_state.current_day == start_day + 1, "reentrant input and double click settle exactly once")
+	var after := farm.vessel.snapshot_ul()
+	var reported := view.night_feedback.metrics.duplicate()
+	_check(reported == {
+		"energy": farm.energy_kj - initial_power,
+		"water": after[View.Farm.W] - before[View.Farm.W],
+		"minerals": after[View.Farm.M] - before[View.Farm.M],
+		"growth": farm.plant.growth,
+		"health": farm.plant.health - initial_health,
+	}, "feedback matches authoritative balances and crop progress")
+	_check(view.night_feedback.visible and view.message.text.contains("New growth stage") and view.night_fade.mouse_filter == Control.MOUSE_FILTER_IGNORE, "growth stage feedback is visible and the fade ignores input")
+	_check(is_zero_approx(view.night_fade.modulate.a) == reduce, "reduced motion suppresses the fade while preserving results")
+	var timer := view.night_feedback.expiry
+	var remaining := timer.time_left
+	view.machine_panel.hide()
+	view.machine_panel.show()
+	_check(view.night_feedback.metrics == reported and timer.time_left <= remaining, "reopening machine does not replay night results")
+	await get_tree().process_frame
+	_check(Rect2(Vector2.ZERO, Vector2(dimensions)).encloses(view.night_feedback.row.get_global_rect()) and view.night_feedback.mouse_filter == Control.MOUSE_FILTER_IGNORE, "resource feedback fits and does not capture input")
+	timer.start(0.02)
+	await timer.timeout
+	_check(view.night_feedback.metrics.is_empty() and not view.night_feedback.visible, "transient metrics clear automatically")
+	var charged := farm.energy_kj
+	farm.energy_kj = 0
+	_click(viewport, next)
+	_check(view.blocker_slot == "power" and view.slots["power"].tooltip_text.contains("Energy shortage") and view.night_feedback.metrics.is_empty(), "true energy blocker highlights power without repeating stale deltas")
+	farm.energy_kj = charged
+	ui._render()
+	_check(view.blocker_slot.is_empty(), "changing blocker conditions clears the old highlight")
+	var normal_vessel := farm.vessel
+	farm.vessel = View.Farm.Liquid.new(normal_vessel.capacity_ul())
+	farm.vessel.replenish({View.Farm.W: 1000, View.Farm.M: 30})
+	_click(viewport, next)
+	_check(view.blocker_slot == "water" and view.slots["water"].tooltip_text.contains("Mixed liquid shortage"), "true solution blocker highlights water")
+	farm.vessel = View.Farm.Liquid.new(normal_vessel.capacity_ul())
+	_click(viewport, next)
+	_check(view.blocker_slot == "chassis" and view.slots["chassis"].tooltip_text.contains("Invalid liquid"), "configuration messages use the authoritative outcome")
+	farm.vessel = normal_vessel
+	for index in 4:
+		if view._has_output():
+			break
+		_click(viewport, next)
+	var pending: int = view.night_feedback.metrics.get("output", 0)
+	_check(view._has_output() and pending > 0 and pending == farm.plant.pending + farm.plant.offspring.size() and view.message.text.contains("Output ready"), "completion reports actual new output")
+	await get_tree().process_frame
+	var count := farm.occupied_slots()
+	var output := view.output_slots[0].get_global_rect().get_center()
+	_click(viewport, output)
+	_click(viewport, output)
+	_check(farm.occupied_slots() == count + 1 and (ui.inventory_tiles.arriving_key.is_empty() == reduce), "reduced motion preserves collection and the rapid-click guard")
+	await _wait_for_arrival(view)
+	viewport.free()
+	return reported
 
 func _check_output_counts() -> void:
 	var viewport := SubViewport.new()

@@ -1,5 +1,18 @@
 # PRE-M08 proposed visual development plan
 
+**M09 accepted.** The developer approved nightly changes, contextual blockers, growth and output cues, and reduced motion. Machine status readability and the reported depleted-battery drag issue carry into M10. [Current status](PROJECT_STATUS.md)
+
+## M10 implementation plan
+
+1. **Reproduce and fix battery drag recovery.** Run the default workshop to depletion, accept the insufficient-energy outcome, then attempt the very first replacement drag directly from the supply tray. Trace the press, drag payload, input locks, tray refresh, warning overlay hit testing, cancellation and machine-state transition. Fix the verified cause while preserving consumption and installation rules. Add a GUI regression for the exact sequence without any intervening drag, and check water containers, seeds, and optional modules for the same issue.
+2. **Improve machine status visibility.** Reuse the status icon and colors in a padded dark translucent label with Chinese and English. Keep live blockers visible until resolved and let resource-change feedback expire. Keep the overlay pointer-transparent. Verify contrast and fit at 1280 × 720 and 1920 × 1080, and automate the pointer-filter and status-lifetime checks.
+3. **Guide the first farming loop.** Teach crop and seed choice, drag-to-plant, automatic start, Next Night, and click-to-collect without obscuring controls or costs. Show blocker recovery, distinguish demo actions, retain selected inventory items, and improve equipment and DNA navigation. Verify that a fresh player can harvest and replant Coffee Beans.
+4. **Prepare the demo and Chinese design analysis.** Follow the agreed gameplay decomposition outline. Show one numerical comparison driven by a setup choice, with optional pollution, equipment, and DNA demonstrations. Run the full regression and complete a two-resolution desktop walkthrough.
+
+M11 covers interaction polish, performance checks, and optional approved audio. M12 covers the final regression, clean-target launch, agreed export or capture, credits, and the submission handoff.
+
+## Historical checkpoints and roadmap
+
 **v0.5.0 checkpoint.** The developer accepted the M08 extension. The default interface is the icon-based workshop. M09 will use the existing night-completion and transaction results to show one concise outcome, highlight crop and resource changes using the workshop icons, and support reduced motion with equivalent data. Verify rapid input, stale feedback replacement, and unchanged settlement at both resolutions. Implementation remains pending. [Workshop release report](M08_EXTENSION_FINAL_REPORT.md)
 
 **M08 final checkpoint.** Packages A–D are complete and accepted. The v0.4.0 release passed the automated gate and the owner authorized publication. M09 remains pending. The December 1, 2026 delivery target remains active. The latest owner-reported weekly Codex allowance is 59%. [M08 final report](M08_FINAL_REPORT.md)

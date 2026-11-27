@@ -68,7 +68,7 @@ try {
         @{ Name = 'Workstations'; Scene = 'test_workstations'; Markers = @(
             '(?m)^WORKSTATIONS_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
         ) },
-        @{ Name = 'Workshop interface'; Scene = 'test_workshop_ui'; FrameBudget = '420'; Markers = @(
+        @{ Name = 'Workshop interface'; Scene = 'test_workshop_ui'; FrameBudget = '600'; Markers = @(
             '(?m)^WORKSHOP_UI_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
         ) },
         @{ Name = 'Environment interface'; Scene = 'test_environment_ui'; Markers = @(

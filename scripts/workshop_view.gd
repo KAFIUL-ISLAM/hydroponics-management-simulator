@@ -7,6 +7,7 @@ const Equipment = preload("res://scripts/hydroponic_equipment.gd")
 const Slot = preload("res://scripts/workshop_slot.gd")
 const InventoryGrid = preload("res://scripts/inventory_grid.gd")
 const ChamberArt = preload("res://scripts/workshop_chamber_art.gd")
+const NightFeedback = preload("res://scripts/workshop_night_feedback.gd")
 const WATER := "supply:water"
 const ENERGY := "supply:energy"
 const TABLET := "supply:tablet"
@@ -17,6 +18,7 @@ const GENETICS := "device:genes"
 const DNA := "device:dna"
 const SIZE := Vector2(52, 48)
 const OUTPUT_COLUMNS := 5
+const MOTION_SETTINGS := "user://workshop_presentation.cfg"
 # Bounds of the exposed dustbin lid in the source image.
 const BIN_UV := Rect2(0.201, 0.635, 0.100, 0.080)
 
@@ -48,12 +50,24 @@ var backdrop: TextureRect
 var dustbin: Slot
 var tools: Dictionary[String, Slot] = {}
 var drop_targets: Array[Slot] = []
+var night_feedback: NightFeedback
+var reduced_motion := false
+var motion_button: Button
+var growth_pulse: Tween
+var before_crop_texture: Texture2D
+var blocker_slot := ""
+var blocker_detail := ""
+var blocker_context: Array = []
+var blocker_style: StyleBoxFlat
 
 func setup(ui: Control) -> void:
 	dashboard = ui
 	farm = ui.farm
 	charge_reference = maxi(1, farm.energy_kj)
 	art = ui.art
+	var preferences := ConfigFile.new()
+	if preferences.load(MOTION_SETTINGS) == OK:
+		reduced_motion = preferences.get_value("accessibility", "reduced_motion", false) == true
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ui.move_child(self, ui.workstation_shade.get_index())
 	ui.get_node("SafeArea").hide()
@@ -88,6 +102,11 @@ func setup(ui: Control) -> void:
 	message.add_theme_constant_override("shadow_offset_y", 2)
 	add_child(message)
 	_place(message, Vector2(0.1, 0.08), Vector2(0.9, 0.13))
+	night_feedback = NightFeedback.new()
+	add_child(night_feedback)
+	_place(night_feedback, Vector2(0.04, 0.14), Vector2(0.68, 0.20))
+	night_feedback.setup(art)
+	ui.game_state.night_processing_started.connect(_night_started)
 	night_fade = ColorRect.new()
 	night_fade.color = Color("#090f24")
 	night_fade.modulate.a = 0.0
@@ -155,6 +174,9 @@ func _build_machine() -> void:
 	empty_slot_style.border_color = Color("#314454")
 	empty_slot_style.set_border_width_all(1)
 	empty_slot_style.set_corner_radius_all(5)
+	blocker_style = empty_slot_style.duplicate() as StyleBoxFlat
+	blocker_style.border_color = Color("#ffbd78")
+	blocker_style.set_border_width_all(2)
 	machine_panel = PanelContainer.new()
 	add_child(machine_panel)
 	_place(machine_panel, Vector2(1, 0.12), Vector2(1, 0.12))
@@ -170,6 +192,13 @@ func _build_machine() -> void:
 	info.tooltip_text = "液体与污染 / Liquid and pollution"
 	info.pressed.connect(dashboard._show_analysis)
 	header.add_child(info)
+	motion_button = Button.new()
+	motion_button.toggle_mode = true
+	motion_button.button_pressed = reduced_motion
+	motion_button.text = "◐"
+	motion_button.toggled.connect(_save_motion_preference)
+	header.add_child(motion_button)
+	_update_motion_hint()
 	var close := Button.new()
 	close.text = "×"
 	close.tooltip_text = "关闭 / Close"
@@ -269,7 +298,7 @@ func _contains_pointer(control: Control, viewport_position: Vector2) -> bool:
 	return control.is_visible_in_tree() and Rect2(Vector2.ZERO, control.size).has_point(local_point)
 
 func _animate_return(icon: Texture2D, release: Vector2, source: Vector2) -> void:
-	if icon == null:
+	if icon == null or reduced_motion:
 		return
 	var ghost := Art.decoration(icon)
 	ghost.size = Vector2(32, 32)
@@ -509,6 +538,8 @@ func _notification(what: int) -> void:
 
 func refresh() -> void:
 	_refresh_supply_tray()
+	if not blocker_slot.is_empty() and _blocker_context() != blocker_context:
+		_clear_blocker()
 	day.text = "第 %d 天 / Day %d" % [dashboard.game_state.current_day, dashboard.game_state.current_day]
 	var equipment := farm.effective_equipment()
 	var total_ml := farm.vessel.total_ul() / 1000.0
@@ -553,6 +584,7 @@ func refresh() -> void:
 
 func _refresh_output(crop_key: String) -> void:
 	var pending := farm.pending_output()
+	var inventory_full := farm.occupied_slots() >= farm.inventory_capacity
 	visible_output_keys.clear()
 	var counts := PackedStringArray()
 	var total := 0
@@ -581,6 +613,11 @@ func _refresh_output(crop_key: String) -> void:
 			slot.icon = art.texture(icon_key, crop_key)
 			slot.text = ""
 			slot.tooltip_text = _output_name(key) + "\n点击领取 / Click to collect one"
+			if inventory_full:
+				slot.add_theme_stylebox_override("normal", blocker_style)
+				slot.tooltip_text += "\n库存已满 / Inventory full"
+			else:
+				slot.remove_theme_stylebox_override("normal")
 			if index == visible_output_keys.size() - 1 and total > visible_output_keys.size():
 				var extra := total - visible_output_keys.size()
 				slot.text = "+%d" % extra
@@ -609,6 +646,13 @@ func _collect_from_slot(index: int) -> void:
 		return
 	var key: String = dashboard.product_unit_key(item, farm.products[item] - 1) if item is String else dashboard._inventory_key(item)
 	grid.slots[destination] = key
+	if reduced_motion:
+		collecting = true
+		dashboard._render()
+		await get_tree().process_frame
+		await get_tree().create_timer(0.25).timeout
+		collecting = false
+		return
 	grid.arriving_key = key
 	collecting = true
 	dashboard._render()
@@ -637,31 +681,129 @@ func _slot_view(kind: String, icon_key: String, hint: String, occupied := true) 
 	slot.icon = art.texture(icon_key) if occupied else null
 	slot.tooltip_text = hint
 	slot.text = "" if occupied else {"seed": "+", "modules": "◇", "power": "ϟ", "water": "◈"}.get(kind, "")
-	if occupied:
+	if kind == blocker_slot:
+		slot.add_theme_stylebox_override("normal", blocker_style)
+		slot.tooltip_text += "\n" + blocker_detail
+	elif occupied:
 		slot.remove_theme_stylebox_override("normal")
 	else:
 		slot.add_theme_stylebox_override("normal", empty_slot_style)
 	for color_name in ["font_color", "font_hover_color", "font_focus_color"]:
 		slot.add_theme_color_override(color_name, Color("#7490a777"))
 
+func _night_started(_day: int) -> void:
+	night_feedback.capture(farm)
+	before_crop_texture = crop_art.texture
+
 func night_finished(outcome: GameState.NightOutcome) -> void:
+	var crop_key := Art.species_key(farm.plant.genetics.crop.species) if farm.plant != null else "seed"
+	night_feedback.publish(farm, crop_key)
 	if _has_output() and farm.pending_output().is_empty() and farm.collect():
 		dashboard._render()
+	_apply_outcome_blocker(outcome)
 	if transition != null:
 		transition.kill()
-	night_fade.modulate.a = 0.58
-	transition = create_tween()
-	transition.tween_property(night_fade, "modulate:a", 0.0, 0.42)
+	night_fade.modulate.a = 0.0
+	if not reduced_motion:
+		night_fade.modulate.a = 0.48
+		transition = create_tween()
+		transition.tween_property(night_fade, "modulate:a", 0.0, 0.42)
+	_pulse_chamber()
 	if not outcome.detail.is_empty():
 		_show_message(outcome.detail)
-	elif _has_output():
+	elif night_feedback.metrics.has("output"):
 		_show_message("生产完成 / Output ready")
+	elif outcome.status == GameState.NightStatus.GROWN and _has_output():
+		_show_message("生产完成，无产出 / Production finished with no output")
+	elif before_crop_texture != crop_art.texture and night_feedback.metrics.has("growth"):
+		_show_message("进入新生长阶段 / New growth stage")
+	else:
+		_show_message("")
+
+func _blocker_context() -> Array:
+	var context := [farm.plant, farm.running, farm.machine_id, farm.installed_modules.duplicate()]
+	if blocker_slot != "water":
+		context.append(farm.energy_kj)
+	if blocker_slot != "power":
+		context.append(farm.vessel.snapshot_ul())
+	return context
+
+func _clear_blocker() -> void:
+	blocker_slot = ""
+	blocker_detail = ""
+	blocker_context.clear()
+
+func _apply_outcome_blocker(outcome: GameState.NightOutcome) -> void:
+	var previous := blocker_slot
+	_clear_blocker()
+	match outcome.status:
+		GameState.NightStatus.SHORTAGE:
+			blocker_slot = "power" if farm.energy_kj < farm.effective_equipment().energy_kj else "water"
+		GameState.NightStatus.CONFIGURATION_ERROR:
+			blocker_slot = "chassis"
+		GameState.NightStatus.NO_CROP:
+			if farm.plant == null:
+				blocker_slot = "seed"
+	if not blocker_slot.is_empty():
+		blocker_detail = outcome.detail
+		blocker_context = _blocker_context()
+	if not previous.is_empty() or not blocker_slot.is_empty():
+		refresh()
+
+func _pulse_chamber() -> void:
+	if growth_pulse != null:
+		growth_pulse.kill()
+	crop_art.modulate = Color.WHITE
+	output_grid.modulate = Color.WHITE
+	if reduced_motion:
+		return
+	var target: Control = crop_art
+	if night_feedback.metrics.has("output"):
+		target = output_grid
+	if target == crop_art and not night_feedback.metrics.has("growth"):
+		return
+	target.modulate = Color(0.76, 1.0, 0.82)
+	growth_pulse = create_tween()
+	growth_pulse.tween_property(target, "modulate", Color.WHITE, 0.48 if target == output_grid or crop_art.texture != before_crop_texture else 0.25)
+
+func _save_motion_preference(enabled: bool) -> void:
+	set_reduced_motion(enabled)
+	var preferences := ConfigFile.new()
+	preferences.load(MOTION_SETTINGS)
+	preferences.set_value("accessibility", "reduced_motion", enabled)
+	preferences.save(MOTION_SETTINGS)
+
+func set_reduced_motion(enabled: bool) -> void:
+	reduced_motion = enabled
+	motion_button.set_pressed_no_signal(enabled)
+	_update_motion_hint()
+	if enabled:
+		if transition != null:
+			transition.kill()
+		night_fade.modulate.a = 0.0
+		_pulse_chamber()
+
+func _update_motion_hint() -> void:
+	motion_button.tooltip_text = "减少动态效果 / Reduced motion · " + ("开 / On" if reduced_motion else "关 / Off")
 
 func _show_message(detail: String) -> void:
 	if message_tween != null:
 		message_tween.kill()
 	message.text = detail
-	message.modulate.a = 1.0
+	message.modulate.a = 1.0 if not detail.is_empty() else 0.0
+	if detail.is_empty():
+		_clear_idle_hint()
+		return
 	message_tween = create_tween()
 	message_tween.tween_interval(1.8)
-	message_tween.tween_property(message, "modulate:a", 0.0, 0.3)
+	if reduced_motion:
+		message_tween.tween_callback(message.hide)
+	else:
+		message_tween.tween_property(message, "modulate:a", 0.0, 0.3)
+	message_tween.tween_callback(_clear_idle_hint)
+	message.show()
+
+func _clear_idle_hint() -> void:
+	if blocker_slot == "seed":
+		_clear_blocker()
+		refresh()
