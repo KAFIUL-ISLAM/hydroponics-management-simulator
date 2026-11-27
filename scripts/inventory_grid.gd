@@ -8,6 +8,7 @@ var slots: Array[String] = []
 var rows: Dictionary = {}
 var selected_key := ""
 var placement_enabled := false
+var placement_allowed: Callable
 var external_can_drop: Callable
 var external_drop: Callable
 var _active_drag: Dictionary = {}
@@ -71,7 +72,7 @@ func _sync_selection() -> void:
 
 func _get_drag_data(at_position: Vector2) -> Variant:
 	var slot := slots.find(_pressed_key) if not _pressed_key.is_empty() else get_item_at_position(at_position, true)
-	if not placement_enabled or slot < 0 or slots[slot].is_empty() or slots[slot] == arriving_key:
+	if not _placement_allowed() or slot < 0 or slots[slot].is_empty() or slots[slot] == arriving_key:
 		return null
 	_active_drag = {"key": slots[slot]}
 	var preview := TextureRect.new()
@@ -100,9 +101,12 @@ func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
 	return valid
 
 func _can_place(slot: int, data: Variant) -> bool:
-	return placement_enabled and slot >= 0 and slot < slots.size() \
+	return _placement_allowed() and slot >= 0 and slot < slots.size() \
 		and not drag_key(data).is_empty() and slots[slot] != _active_drag.key \
 		and (arriving_key.is_empty() or slots[slot] != arriving_key)
+
+func _placement_allowed() -> bool:
+	return placement_allowed.call() if placement_allowed.is_valid() else placement_enabled
 
 func drag_key(data: Variant) -> String:
 	if not _active_drag.is_empty() and is_same(data, _active_drag) and rows.has(_active_drag.key):

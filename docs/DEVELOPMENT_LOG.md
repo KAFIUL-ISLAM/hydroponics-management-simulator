@@ -1,12 +1,18 @@
 # 开发日志 | Development Log
 
+## 2026-11-27 · M10 completed · v0.6.0 intended release
+
+Codex completed the M10 workshop interaction, onboarding, and nutrient-comparison implementation. On 2026-11-27, the developer reported passing all 19 manual acceptance items: battery recovery (5), machine status (4), manual and navigation (5), and gameplay/presentation (5). M10 is complete and developer-accepted; its intended release is v0.6.0. The M09 battery-recovery report was traced to grid refresh during the `GameState` settlement lock, which cached drag eligibility as false. Both workshop grids now check `farm.can_act()` at drag start or drop evaluation. The first battery refill succeeds immediately after depletion, with water, seed, and module drag recovery also covered. This changes interaction eligibility, not energy calculation. The manual, status treatment, and deterministic Kotton comparison are documented in the [M10 report](M10_FINAL_REPORT.md), [design analysis](HYDROPONICS_DESIGN_ANALYSIS_ZH.md), and [demonstration guide](DEMONSTRATION_GUIDE.md).
+
+Codex reports 19 regression suites, 1,440 explicit checks including 224 workshop GUI checks, four original crop assertion groups, successful default launch and legacy Lettuce baseline, and renderer captures at both supported resolutions. These are Codex results, not tests run by Copilot for this documentation update. The developer's 19-item manual acceptance is recorded separately in the [M10 report](M10_FINAL_REPORT.md). The handover's older “desktop acceptance is pending” sentence is superseded by the dated developer record. [Testing evidence](TESTING_REPORT.md#m10--2026-11-27)
+
 ## 2026-11-27 · M09 accepted
 
-The developer accepted M09 after manual gameplay testing and identified two issues to address within M10. “Harvest pending” and similar machine messages are hard to read against the chamber. After the machine runs out of energy, a replacement battery can fail to start dragging until the player drags another inventory item. The battery failure is developer-reported and its cause remains unverified. M09 was published on `main` at `6ff68084beb6449060db3a1c6fdd0eb613bc62f9`; v0.5.0 remains the latest release tag at `a73ed34d3c6aeda495e3c8cf46cd826d0420e24f`. M10 includes both corrections and focused regression coverage. [M10 plan](VISUAL_DEVELOPMENT_PLAN.md#m10-implementation-plan)
+The developer accepted M09 after manual gameplay testing and identified two issues to address within M10. “Harvest pending” and similar machine messages were hard to read against the chamber. After the machine ran out of energy, a replacement battery could fail to start dragging until the player dragged another inventory item. The battery failure was developer-reported at this checkpoint; M10 later confirmed and corrected the interaction-state cause. M09 was published on `main` at `6ff68084beb6449060db3a1c6fdd0eb613bc62f9`; at this historical checkpoint, v0.5.0 was the latest release tag at `a73ed34d3c6aeda495e3c8cf46cd826d0420e24f`. [M10 report](M10_FINAL_REPORT.md)
 
 ## 2026-11-27 · M09 night and machine feedback
 
-The workshop reuses its existing night and collection transitions. A transient strip shows actual night resource, growth, health and output changes, and the affected compartment exposes the existing shortage or configuration message. Reduced Motion is a saved local option in the machine header. Both modes use the same simulation signals and transactions. M10 remains pending.
+The workshop reuses its existing night and collection transitions. A transient strip shows actual night resource, growth, health and output changes, and the affected compartment exposes the existing shortage or configuration message. Reduced Motion is a saved local option in the machine header. Both modes use the same simulation signals and transactions. M10 was subsequently accepted and is intended for v0.6.0.
 
 Older M08 checkpoint entries below retain the status recorded at those milestones; their “M09 pending/paused” wording predates M09 acceptance above.
 

@@ -8,6 +8,7 @@ const Slot = preload("res://scripts/workshop_slot.gd")
 const InventoryGrid = preload("res://scripts/inventory_grid.gd")
 const ChamberArt = preload("res://scripts/workshop_chamber_art.gd")
 const NightFeedback = preload("res://scripts/workshop_night_feedback.gd")
+const Manual = preload("res://scripts/workshop_manual.gd")
 const WATER := "supply:water"
 const ENERGY := "supply:energy"
 const TABLET := "supply:tablet"
@@ -27,6 +28,12 @@ var farm: Farm
 var art: Art
 var day: Label
 var message: Label
+var message_chip: PanelContainer
+var status_chip: PanelContainer
+var status_text: Label
+var status_icon: TextureRect
+var manual: Manual
+var manual_button: Button
 var machine: Button
 var machine_panel: PanelContainer
 var slots: Dictionary[String, Slot] = {}
@@ -94,17 +101,10 @@ func setup(ui: Control) -> void:
 	_build_inventory()
 	_build_machine()
 	_build_tool_dock()
-	message = Label.new()
-	message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	message.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	message.add_theme_color_override("font_shadow_color", Color.BLACK)
-	message.add_theme_constant_override("shadow_offset_x", 2)
-	message.add_theme_constant_override("shadow_offset_y", 2)
-	add_child(message)
-	_place(message, Vector2(0.1, 0.08), Vector2(0.9, 0.13))
+	_build_status_chips()
 	night_feedback = NightFeedback.new()
 	add_child(night_feedback)
-	_place(night_feedback, Vector2(0.04, 0.14), Vector2(0.68, 0.20))
+	_place(night_feedback, Vector2(0.04, 0.18), Vector2(0.68, 0.24))
 	night_feedback.setup(art)
 	ui.game_state.night_processing_started.connect(_night_started)
 	night_fade = ColorRect.new()
@@ -123,6 +123,51 @@ func _place(control: Control, start: Vector2, end: Vector2) -> void:
 	control.offset_top = 0
 	control.offset_right = 0
 	control.offset_bottom = 0
+
+func _build_status_chips() -> void:
+	var positioner := CenterContainer.new()
+	positioner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(positioner)
+	_place(positioner, Vector2(0.04, 0.075), Vector2(0.76, 0.165))
+	var stack := VBoxContainer.new()
+	stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	positioner.add_child(stack)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color("#101927e8")
+	style.border_color = Color("#70889ba6")
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(6)
+	style.content_margin_left = 10
+	style.content_margin_right = 10
+	style.content_margin_top = 5
+	style.content_margin_bottom = 5
+	status_chip = _make_status_chip(stack, style)
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	status_chip.add_child(row)
+	status_icon = Art.decoration(null)
+	status_icon.custom_minimum_size = Vector2(20, 20)
+	row.add_child(status_icon)
+	status_text = _make_status_label(row)
+	message_chip = _make_status_chip(stack, style)
+	message = _make_status_label(message_chip)
+
+func _make_status_chip(stack: VBoxContainer, style: StyleBoxFlat) -> PanelContainer:
+	var chip := PanelContainer.new()
+	chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chip.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	chip.add_theme_stylebox_override("panel", style)
+	stack.add_child(chip)
+	chip.hide()
+	return chip
+
+func _make_status_label(parent: Container) -> Label:
+	var label := Label.new()
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 15)
+	parent.add_child(label)
+	return label
 
 func _build_inventory() -> void:
 	var dock := PanelContainer.new()
@@ -146,6 +191,7 @@ func _build_inventory() -> void:
 	grid.fixed_icon_size = Vector2i(32, 32)
 	grid.fixed_column_width = 43
 	grid.max_columns = 12
+	grid.placement_allowed = farm.can_act
 	grid.custom_minimum_size.x = 595
 	grid.external_can_drop = _can_return_to_inventory
 	grid.external_drop = _return_to_inventory
@@ -163,6 +209,7 @@ func _build_inventory() -> void:
 	supply_tray.fixed_column_width = 37
 	supply_tray.same_column_width = true
 	supply_tray.max_columns = 6
+	supply_tray.placement_allowed = farm.can_act
 	supply_tray.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	supply_tray.external_can_drop = _can_return_to_inventory
 	supply_tray.external_drop = _return_to_inventory
@@ -252,6 +299,10 @@ func _machine_input(event: InputEvent) -> void:
 		accept_event()
 
 func _unhandled_key_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F1:
+		_open_manual()
+		get_viewport().set_input_as_handled()
+		return
 	if machine_panel.visible and event.is_action_pressed("ui_cancel"):
 		machine_panel.hide()
 		get_viewport().set_input_as_handled()
@@ -350,7 +401,7 @@ func _build_tool_dock() -> void:
 	var dock := PanelContainer.new()
 	add_child(dock)
 	_place(dock, Vector2(1, 0), Vector2(1, 0))
-	dock.offset_left = -222
+	dock.offset_left = -249
 	dock.offset_right = -18
 	dock.offset_top = 10
 	var row := HBoxContainer.new()
@@ -359,6 +410,30 @@ func _build_tool_dock() -> void:
 	_make_tool(row, GENETICS, "dna", "种子分析仪 / Seed profile\nInspect genetics and effective crop properties")
 	_make_tool(row, DNA, "station", "DNA 编辑器 / DNA editor\nPreview modification of a selected seed")
 	_make_tool(row, ANALYSER, "analyser", "液体分析仪 / Liquid analyser\nInspect machine concentration and pollution")
+	manual_button = Button.new()
+	manual_button.text = "?"
+	manual_button.tooltip_text = "种植手册 / Farming manual · F1"
+	manual_button.pressed.connect(_open_manual)
+	row.add_child(manual_button)
+	manual = Manual.new()
+	dashboard.add_child(manual)
+	manual.setup(art.texture("seed"))
+	manual.tool_requested.connect(_open_manual_tool)
+	dashboard.workstation_dialogs.append(manual)
+	manual.visibility_changed.connect(dashboard._sync_workstation_layer)
+
+func _open_manual() -> void:
+	if not get_viewport().gui_is_dragging():
+		dashboard._present(manual)
+
+func _open_manual_tool(tool: String) -> void:
+	var previous_focus: Control = dashboard.return_focus
+	manual.hide()
+	match tool:
+		"equipment": dashboard._present(dashboard.equipment_dialog)
+		"liquid": _open_tool(ANALYSER)
+		"dna": _open_tool(DNA)
+	dashboard.return_focus = previous_focus
 
 func _make_tool(row: HBoxContainer, tool_id: String, icon_key: String, hint: String) -> void:
 	var tool := Slot.new()
@@ -538,8 +613,7 @@ func _notification(what: int) -> void:
 
 func refresh() -> void:
 	_refresh_supply_tray()
-	if not blocker_slot.is_empty() and _blocker_context() != blocker_context:
-		_clear_blocker()
+	_refresh_blocker()
 	day.text = "第 %d 天 / Day %d" % [dashboard.game_state.current_day, dashboard.game_state.current_day]
 	var equipment := farm.effective_equipment()
 	var total_ml := farm.vessel.total_ul() / 1000.0
@@ -575,6 +649,7 @@ func refresh() -> void:
 		slots["modules"].tooltip_text += "\n拖回库存 / Drag to return: " + chips[-1]
 	_slot_view("chassis", "machine", machine.tooltip_text + "\n点击查看设备 / Click for equipment controls")
 	_refresh_output(crop_key)
+	_refresh_machine_status()
 	power_level.max_value = charge_reference
 	power_level.value = farm.energy_kj
 	power_level.tooltip_text = slots["power"].tooltip_text
@@ -710,7 +785,7 @@ func night_finished(outcome: GameState.NightOutcome) -> void:
 		transition.tween_property(night_fade, "modulate:a", 0.0, 0.42)
 	_pulse_chamber()
 	if not outcome.detail.is_empty():
-		_show_message(outcome.detail)
+		_show_message(outcome.detail if blocker_slot.is_empty() or blocker_slot == "seed" else "")
 	elif night_feedback.metrics.has("output"):
 		_show_message("生产完成 / Output ready")
 	elif outcome.status == GameState.NightStatus.GROWN and _has_output():
@@ -732,6 +807,51 @@ func _clear_blocker() -> void:
 	blocker_slot = ""
 	blocker_detail = ""
 	blocker_context.clear()
+
+func _refresh_blocker() -> void:
+	if blocker_slot.is_empty() or _blocker_context() == blocker_context:
+		return
+	if farm.plant == null or not farm.running:
+		_clear_blocker()
+		return
+	match blocker_slot:
+		"power":
+			var required := farm.effective_equipment().energy_kj
+			if farm.energy_kj >= required:
+				_clear_blocker()
+			else:
+				blocker_detail = "电力不足 / Energy shortage: %d / %d kJ" % [farm.energy_kj, required]
+		"water":
+			var staged := Farm.Liquid.new(farm.vessel.capacity_ul())
+			if staged.replenish(farm.vessel.snapshot_ul()) == Farm.Liquid.Status.OK:
+				var crop := farm.plant.genetics.crop
+				var outcome := staged.consume_night(crop.draw_ul, farm.effective_equipment().growth, crop.uptake_ul_per_point)
+				if outcome.status == Farm.Liquid.Status.OK:
+					_clear_blocker()
+				else:
+					blocker_detail = "营养液不足 / Mixed liquid shortage"
+	if not blocker_slot.is_empty():
+		blocker_context = _blocker_context()
+
+func _refresh_machine_status() -> void:
+	var label := ""
+	var icon := ""
+	var color := Color("#9cf1d3")
+	if not blocker_slot.is_empty() and blocker_slot != "seed":
+		label = blocker_detail
+		icon = {"power": "energy", "water": "water", "chassis": "machine"}.get(blocker_slot, "")
+		color = Color("#ffd2a1")
+	elif _has_output():
+		icon = Art.species_key(farm.plant.genetics.crop.species)
+		if farm.occupied_slots() >= farm.inventory_capacity:
+			label = "待收获，库存已满 / Harvest pending, inventory full"
+			color = Color("#ffd2a1")
+		else:
+			label = "待收获，点击产出 / Harvest pending, click output"
+	status_text.text = label
+	status_text.add_theme_color_override("font_color", color)
+	status_icon.texture = art.texture(icon)
+	status_chip.visible = not label.is_empty()
 
 func _apply_outcome_blocker(outcome: GameState.NightOutcome) -> void:
 	var previous := blocker_slot
@@ -790,18 +910,20 @@ func _show_message(detail: String) -> void:
 	if message_tween != null:
 		message_tween.kill()
 	message.text = detail
-	message.modulate.a = 1.0 if not detail.is_empty() else 0.0
+	message_chip.modulate.a = 1.0
 	if detail.is_empty():
+		message_chip.hide()
 		_clear_idle_hint()
 		return
 	message_tween = create_tween()
 	message_tween.tween_interval(1.8)
 	if reduced_motion:
-		message_tween.tween_callback(message.hide)
+		message_tween.tween_callback(message_chip.hide)
 	else:
-		message_tween.tween_property(message, "modulate:a", 0.0, 0.3)
+		message_tween.tween_property(message_chip, "modulate:a", 0.0, 0.3)
+		message_tween.tween_callback(message_chip.hide)
 	message_tween.tween_callback(_clear_idle_hint)
-	message.show()
+	message_chip.show()
 
 func _clear_idle_hint() -> void:
 	if blocker_slot == "seed":

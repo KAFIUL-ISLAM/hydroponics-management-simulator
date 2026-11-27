@@ -1,15 +1,18 @@
 # Project status
 
-## M09 accepted · M10 pending
+## M10 completed and developer-accepted · v0.6.0 intended release
 
-The developer completed manual M09 testing and accepted the implementation with two corrections scheduled for M10. M09 was published on `main` at `6ff68084beb6449060db3a1c6fdd0eb613bc62f9`; the v0.5.0 release tag remains at `a73ed34d3c6aeda495e3c8cf46cd826d0420e24f`. Historical M09 verification passed 18 suites, 1,362 explicit checks (including 184 workshop checks), four original crop assertion groups, and default launch. Manual acceptance was recorded separately. These are historical results, not a new test run. Simulation formulas and crop balance are unchanged.
+M09 was published on `main` at `6ff68084beb6449060db3a1c6fdd0eb613bc62f9`; the v0.5.0 release tag remains at `a73ed34d3c6aeda495e3c8cf46cd826d0420e24f`. Its historical verification passed 18 suites, 1,362 explicit checks (including 184 workshop checks), four original crop assertion groups, and default launch. These are M09 results, not a new test run.
 
-- **Machine status readability.** Messages such as “Harvest pending” are difficult to read over the bright chamber. M10 will add a compact bilingual status background with improved contrast and padding. Persistent blockers will stay visible until resolved. Temporary resource feedback will expire, and the overlay will ignore pointer input.
-- **Replacement battery drag after depletion.** The developer reports that dragging a replacement from the supplies tray can fail after an insufficient-energy warning. Dragging another inventory item first restores it. The cause remains unverified. M10 will reproduce the sequence, fix the verified cause, and check water, seeds and modules for related failures.
+M10 is complete and the developer reports **19/19 manual acceptance items passed on 2026-11-27**. Coverage includes five battery-recovery checks, four machine-status checks, five manual/navigation checks, and five gameplay/presentation checks; the complete checklist is in [the M10 report](M10_FINAL_REPORT.md). Separately, Codex reports 19 regression suites and 1,440 explicit automated checks, including 224 workshop GUI checks, plus four original crop assertion groups. Default launch, the legacy Lettuce baseline, and renderer captures at both supported resolutions passed. The automated results were executed by Codex and are documented in [the testing report](TESTING_REPORT.md#m10--2026-11-27). The intended release version is **v0.6.0 — Orbital Hydroponics: Guided Cultivation**.
 
-[Combined M10 plan](VISUAL_DEVELOPMENT_PLAN.md#m10-implementation-plan)
+- **Battery recovery:** the night-completion callback refreshed the workshop grids while `GameState` still held its settlement lock, caching drag eligibility as false. Both grids now query `farm.can_act()` when a drag starts or a drop is evaluated. The first replacement-battery drag succeeds without an intervening inventory action and transfers one refill; water, seed, and module drags were also checked. This is an interaction-state fix, not an energy-calculation change.
+- **Workshop usability:** status messages use a padded dark translucent background, bilingual text, existing warning icons/colors, persistent blocker visibility, expiring temporary feedback, and pointer-transparent overlays. An optional Quick Start / Advanced manual is available from the `?` button and F1, with navigation to existing tools.
+- **Controlled comparison:** the deterministic native-Kotton fixture varies only starting minerals. It reports improved health and harvest quantity/grade in the suitable concentration range, with unchanged six-night duration and energy use. Results are specific to this fixture, not a universal crop claim.
 
-## v0.5.0 · Interactive Hydroponics Workshop
+[M10 report](M10_FINAL_REPORT.md) · [Chinese design analysis](HYDROPONICS_DESIGN_ANALYSIS_ZH.md) · [Demonstration guide](DEMONSTRATION_GUIDE.md) · [Visual plan](VISUAL_DEVELOPMENT_PLAN.md)
+
+## v0.5.0 · Interactive Hydroponics Workshop · historical release
 
 The developer approved M08-A through M08-C.4. The workshop is the default launch, and the legacy Lettuce scene remains available. The redesign preserves crop balance and numerical formulas. [Release report](M08_EXTENSION_FINAL_REPORT.md)
 
@@ -124,10 +127,10 @@ The rows below preserve feature and verification states recorded during those ea
 
 ## Open research and scope decisions
 
-- Review Coffee Beans as the first playable crop. The mandatory target still includes Nutrition Fruit, Coffee Beans, and Kotton. Lettuce remains the compatibility fixture. [Reference crop definitions](CALCULATION_CONTRACT.md#reference-crop-definitions)
-- Resolve exact depletion and zero-water behavior, the remaining liquid tie, maturity equality, score/health boundary handling, the energy unit, and harvest collection/overflow policy before releasing the first gameplay loop. [Open formula contracts](CALCULATION_CONTRACT.md#open-and-provisional-contracts)
+- The first playable loop has since shipped in the workshop. Nutrition Fruit, Coffee Beans, and Kotton are the active crops; Lettuce remains a compatibility fixture. [Reference crop definitions](CALCULATION_CONTRACT.md#reference-crop-definitions)
+- Formula research still records unresolved boundaries, including fractional pollution classification and some advanced genetics/equipment interactions. These are disclosed limitations, not blockers to the accepted M10 demo. [Open formula contracts](CALCULATION_CONTRACT.md#open-and-provisional-contracts)
 - Fractional pollution tiers, nonneutral quality, raw Kotton water before traits, advanced RNG and perennial output are later accuracy work. Confirm whether Windows export is required for the assessment. [M03–M10 roadmap](GAMEPLAY_IMPLEMENTATION_PLAN.md)
 
 ## Next recommended task
 
-Review the first playable Coffee Beans loop, then add Nutrition Fruit and Kotton in M04. The descriptions of missing functionality in the M01 feature table are checkpoint observations. [Package B handoff](M03_PACKAGE_B_REPORT.md)
+Proceed with M11 interaction polish and measured performance review, then M12 final regression, clean-target launch, and the agreed submission handoff. Do not expand simulation scope without approval. The descriptions of missing functionality in the M01 feature table are checkpoint observations. [Visual plan](VISUAL_DEVELOPMENT_PLAN.md) · [M10 handoff](M10_FINAL_REPORT.md)

@@ -2,7 +2,7 @@
 
 **基于 Godot 4 开发的水培农业管理模拟项目**
 
-**v0.5.0 · 交互式水培工作间。** 支持 1280 × 720 和 1920 × 1080。使用 Godot 4.7.2 打开 `project.godot`，按 **F5** 启动。 [发布报告](docs/M08_EXTENSION_FINAL_REPORT.md)
+**M10 · 引导式水培种植 · 计划发布 v0.6.0。** 支持 1280 × 720 和 1920 × 1080。使用 Godot 4.7.2 打开 `project.godot`，按 **F5** 启动。 [M10 报告](docs/M10_FINAL_REPORT.md)
 
 [简体中文](#简体中文) | [English](#english)
 
@@ -115,7 +115,7 @@ powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\tests\run-tests.
 
 ## 7. 开发计划
 
-M01–M07 实现了可玩的三作物种植循环和进阶系统。M08 扩展将默认界面改为图标式交互工作间。M09 夜间反馈与减少动态效果已获开发者验收并发布到 `main`；当前发布标签仍为 v0.5.0。M10 是当前待办阶段。 [项目状态](docs/PROJECT_STATUS.md) · [M10 计划](docs/VISUAL_DEVELOPMENT_PLAN.md)
+M01–M07 建立了三作物种植循环和进阶系统。M08 扩展将默认界面改为图标式交互工作间；M09 已验收并发布到 `main`。M10 已完成并获开发者本地验收，计划版本为 v0.6.0。查看 [M10 报告](docs/M10_FINAL_REPORT.md)、[中文数值分析](docs/HYDROPONICS_DESIGN_ANALYSIS_ZH.md) 和[演示指南](docs/DEMONSTRATION_GUIDE.md)。 [项目状态](docs/PROJECT_STATUS.md) · [视觉计划](docs/VISUAL_DEVELOPMENT_PLAN.md)
 
 ## 8. 研究与参考资料
 
@@ -232,6 +232,8 @@ Double-click the chamber and drag in a Coffee Beans, Nutrition Fruit, or Kotton 
 
 Click a ready output icon to collect one item. A full inventory leaves the rest in the chamber. Drag disposable seeds or produce onto the painted dustbin under the telephone to free space. Coffee Beans output can be replanted. For the legacy Lettuce fixture, open `scenes/main.tscn` and press **F6**.
 
+Open the optional farming manual from the **?** button or **F1**. See the [demonstration guide](docs/DEMONSTRATION_GUIDE.md) for the complete cultivation loop, blocker recovery and optional analysis/equipment/DNA routes.
+
 ### Run the automated tests on Windows
 
 From the repository root, replace `<Godot executable path>` with the path to the Godot 4.7.2 executable.
@@ -240,7 +242,7 @@ From the repository root, replace `<Godot executable path>` with the path to the
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\tests\run-tests.ps1 -GodotPath "<Godot executable path>" -Import
 ```
 
-The runner checks all 18 suites for completion markers, exit codes and unexpected errors. Use `-Import` on the first run or after moving project files. A missing Godot cache triggers import automatically. [Current testing evidence](docs/M08_EXTENSION_FINAL_REPORT.md#verification)
+The runner checks all 19 suites for completion markers, exit codes and unexpected errors. Use `-Import` on the first run or after moving project files. A missing Godot cache triggers import automatically. The latest M10 evidence was executed by Codex; see [the testing report](docs/TESTING_REPORT.md#m10--2026-11-27).
 
 Use the upper-right **DNA Editor** to preview a trait application. Drop a seed onto it to select that exact instance. Confirm the application, close the dialog and settle nights to advance it. Applications use shared power and finite demo disc charges.
 
@@ -252,7 +254,7 @@ Use **Liquid Analysis** or the machine’s information icon to inspect concentra
 
 ## 7. Development Roadmap
 
-M01–M07 delivered the three-crop farming loop and advanced mechanics. The M08 extension ships the interactive workshop in v0.5.0. M09 night feedback and Reduced Motion were subsequently accepted and published on `main`; v0.5.0 remains the latest release tag. M10 is the current pending milestone. [Current project status](docs/PROJECT_STATUS.md) · [Visual plan](docs/VISUAL_DEVELOPMENT_PLAN.md)
+M01–M07 delivered the three-crop farming loop and advanced mechanics. The M08 extension established the interactive workshop. M09 was accepted and published on `main`; M10 is complete and developer-accepted locally, with all 19 manual checks passed. Its intended release version is v0.6.0. M11 and M12 remain. See the [M10 report](docs/M10_FINAL_REPORT.md), [Chinese design analysis](docs/HYDROPONICS_DESIGN_ANALYSIS_ZH.md), and [demonstration guide](docs/DEMONSTRATION_GUIDE.md). [Current project status](docs/PROJECT_STATUS.md) · [Visual plan](docs/VISUAL_DEVELOPMENT_PLAN.md)
 
 ## 8. Research References
 

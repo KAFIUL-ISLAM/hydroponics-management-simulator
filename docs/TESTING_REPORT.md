@@ -1,10 +1,24 @@
 # 测试报告
 
+## M10 · 2026-11-27
+
+**Evidence source:** Codex's M10 handover reports 19 regression suites passed, with 1,440 explicit automated checks including 224 workshop GUI checks, plus the four original crop assertion groups. The default launch and legacy Lettuce baseline passed. Renderer captures were checked at 1280 × 720 and 1920 × 1080. The suite count includes the M10 nutrient-comparison fixture; workshop GUI checks exercise the immediate post-depletion battery drag, exact one-refill transfer, water/seed/module drags, bilingual persistent status, temporary-message expiry, pointer transparency, manual access/navigation, inventory selection retention, and Coffee collection/replanting. These results were executed by Codex; Copilot did not independently rerun the regression suite for this documentation task.
+
+Separately, on 2026-11-27 the developer reported passing all **19 manual acceptance items**: 5 battery-recovery checks, 4 machine-status checks, 5 farming-manual/navigation checks, and 5 gameplay/presentation checks. This is manual acceptance, not part of Codex's automated totals. M10 is complete and developer-accepted; its intended release version is v0.6.0. The Codex handover's older closing sentence that desktop acceptance was pending is superseded by this dated acceptance record; the complete checklist is in [`M10_FINAL_REPORT.md`](M10_FINAL_REPORT.md).
+
+The deterministic comparison is implemented by `tests/test_m10_nutrient_demo.gd` and launched by `tests/test_m10_nutrient_demo.tscn`. The six-night runs use native Kotton, 5,000 mL pure water, 100 kJ, the standard machine, no modules, no added pollution, and RNG seed 42; only initial minerals differ (50 mL versus 150 mL). Both reach growth 48, draw 1,500 mL mixed solution, and spend 48 kJ. The below-range case ends at 0.917%, 52% health and 12 Regular fiber; the suitable-range case ends at 2.917%, 100% health and 13 Large fiber. Each produces two offspring seeds. The measured result is limited to this fixture. Run it with:
+
+```text
+Godot --headless --debug --path . res://tests/test_m10_nutrient_demo.tscn
+```
+
+The battery fix addresses drag eligibility during settlement-lock refreshes; it does not change energy cost or settlement formulas. See the [M10 milestone report](M10_FINAL_REPORT.md) for reproduction, correction, usability changes and file traceability.
+
 ## M09 · 2026-11-27
 
 These are historical M09 results for published commit `6ff68084beb6449060db3a1c6fdd0eb613bc62f9`, not a new test execution for this documentation update. Godot 4.7.2 passed all 18 suites, 1,362 explicit checks including 184 workshop checks, and four original crop assertion groups after a fresh isolated import. The default workshop launched successfully. The rendered workshop tests covered both supported viewport sizes, matched actual night deltas in both motion modes, and verified reentrant input, blocker recovery, transient feedback, production and collection. After removal of a presentation-script type warning, the focused 184-check suite passed again. Finalization matched the tested sources and reused those results.
 
-The developer separately reported manual acceptance with two pending M10 corrections. Status contrast on the chamber artwork and the first battery drag after depletion without an intervening drag still need coverage. [M10 plan](VISUAL_DEVELOPMENT_PLAN.md#m10-implementation-plan)
+At M09 acceptance, the developer identified two follow-up issues: status contrast and the first replacement-battery drag after depletion. Both were addressed in M10; see the current M10 record above.
 
 ## v0.5.0 release gate · 2026-11-27
 

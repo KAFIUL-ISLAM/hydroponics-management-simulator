@@ -14,6 +14,8 @@ func _ready() -> void:
 	await _play_produce(1)
 	await _play_produce(2)
 	await _check_output_counts()
+	await _check_battery_recovery(Vector2i(1280, 720))
+	await _check_battery_recovery(Vector2i(1920, 1080))
 	var animated := await _check_night_feedback(Vector2i(1280, 720), false)
 	var reduced := await _check_night_feedback(Vector2i(1920, 1080), true)
 	_check(animated == reduced, "both motion modes report identical night results")
@@ -259,6 +261,91 @@ func _wait_for_arrival(view: View) -> void:
 	while view.collecting and Time.get_ticks_msec() < deadline:
 		await get_tree().process_frame
 
+func _check_battery_recovery(dimensions: Vector2i) -> void:
+	var viewport := SubViewport.new()
+	viewport.size = dimensions
+	viewport.gui_embed_subwindows = true
+	add_child(viewport)
+	var ui = WorkshopScene.instantiate()
+	var farm: View.Farm = ui.get_node("CoffeeFarm")
+	farm.energy_kj = 8
+	viewport.add_child(ui)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var view: View = ui.workshop
+	view.set_reduced_motion(false)
+	var grid: ItemList = ui.inventory_tiles
+	var tray: ItemList = view.supply_tray
+	_check(not view.manual.visible, "optional manual does not block first launch")
+	var focused_seed = ui.stored_items.get_selected_metadata()
+	_click(viewport, view.manual_button.get_global_rect().get_center())
+	await get_tree().process_frame
+	_check(view.manual.visible and Rect2i(Vector2i.ZERO, dimensions).encloses(Rect2i(view.manual.position, view.manual.size)), "bilingual manual opens and fits")
+	view.manual.get_ok_button().pressed.emit()
+	await get_tree().process_frame
+	_check(not view.manual.visible and is_same(ui.stored_items.get_selected_metadata(), focused_seed), "manual can be dismissed without resetting inventory selection")
+	var help := InputEventKey.new()
+	help.keycode = KEY_F1
+	help.pressed = true
+	viewport.push_input(help, true)
+	_check(view.manual.visible, "F1 reopens the manual")
+	view.manual.tool_requested.emit("equipment")
+	_check(ui.equipment_dialog.visible and not view.manual.visible, "manual equipment shortcut uses existing dialog")
+	ui.equipment_dialog.hide()
+	await get_tree().process_frame
+	_click(viewport, view.manual_button.get_global_rect().get_center())
+	view.manual.tool_requested.emit("dna")
+	_check(ui.dna_dialog.visible and is_same(ui.stored_items.get_selected_metadata(), focused_seed), "manual DNA navigation retains inventory selection")
+	ui.dna_dialog.hide()
+	await get_tree().process_frame
+	_click(viewport, view.machine.get_global_rect().get_center(), true)
+	await get_tree().process_frame
+	var item := farm.selected_seed()
+	_drag(viewport, _cell(grid, ui._inventory_key(item)), view.slots["seed"].get_global_rect().get_center())
+	_check(farm.running, "battery regression starts an operating Coffee machine")
+	var next: Vector2 = ui.next_night_button.get_global_rect().get_center()
+	_click(viewport, next)
+	_check(farm.energy_kj == 0, "operating night drains the installed charge")
+	_click(viewport, next)
+	_check(view.blocker_slot == "power" and farm.can_act(), "energy warning publishes and settlement unlocks")
+	await get_tree().process_frame
+	var bounds := Rect2(Vector2.ZERO, Vector2(dimensions))
+	var status_box := view.status_chip.get_global_rect()
+	_check(view.status_chip.visible and view.status_text.text.contains("电力不足") and view.status_text.text.contains("Energy shortage"), "persistent blocker is readable in both languages")
+	_check(bounds.encloses(status_box) and not status_box.intersects(view.machine_panel.get_global_rect()) and not status_box.intersects(grid.get_global_rect()) and not status_box.intersects(view.manual_button.get_global_rect()), "status chip fits without covering controls")
+	var style := view.status_chip.get_theme_stylebox("panel") as StyleBoxFlat
+	_check(style.bg_color.a > 0.8 and style.bg_color.a < 1.0 and view.status_chip.mouse_filter == Control.MOUSE_FILTER_IGNORE and view.status_text.mouse_filter == Control.MOUSE_FILTER_IGNORE and view.status_icon.mouse_filter == Control.MOUSE_FILTER_IGNORE, "status has translucent contrast and ignores pointer input")
+	view._show_message("临时提示 / Temporary feedback")
+	view.message_tween.custom_step(2.2)
+	_check(view.status_chip.visible and not view.message_chip.visible, "temporary message expires while blocker stays visible")
+	var supply := farm.energy_supply_kj
+	_drag(viewport, _cell(tray, View.ENERGY), view.slots["power"].get_global_rect().get_center())
+	_check(farm.energy_kj == farm.refill_energy_kj and farm.energy_supply_kj == supply - farm.refill_energy_kj, "first battery drag after depletion transfers exactly one refill without another inventory interaction")
+	_check(not view.status_chip.visible, "battery refill clears resolved status")
+	_click(viewport, next)
+	await get_tree().process_frame
+	var water := farm.water_supply_ul
+	_check(_drag(viewport, _cell(tray, View.WATER), view.slots["water"].get_global_rect().get_center()) and farm.water_supply_ul == water - farm.refill_water_ul, "first water drag after settlement transfers one refill")
+	_click(viewport, next)
+	await get_tree().process_frame
+	var seed_key: String = ui._inventory_key(ui.stored_items.get_selected_metadata())
+	var stock := farm.occupied_slots()
+	_check(_drag(viewport, _cell(grid, seed_key), view.slots["seed"].get_global_rect().get_center()) and farm.occupied_slots() == stock, "seed remains draggable after settlement and an occupied slot rejects it")
+	var module_key := View.MODULE + str(farm.demo_modules.front())
+	_check(_drag(viewport, _cell(tray, module_key), view.slots["modules"].get_global_rect().get_center()) and farm.installed_modules.size() == 1, "module remains draggable and installs after maturity")
+	_check(view.status_chip.visible and view.status_text.text.contains("Harvest pending"), "pending harvest shows persistent machine status")
+	if dimensions.x == 1280:
+		var pending := farm.plant.pending
+		var output: Vector2 = view.output_slots[0].get_global_rect().get_center()
+		for unit in pending:
+			_click(viewport, output)
+			await _wait_for_arrival(view)
+		_check(farm.plant == null and not view.status_chip.visible, "completing collection clears pending status")
+		var replant: View.Farm.Seed = farm.beans.back()
+		_drag(viewport, _cell(grid, ui._inventory_key(replant)), view.slots["seed"].get_global_rect().get_center())
+		_check(farm.plant != null and is_same(farm.plant.seed_item, replant) and farm.running, "Coffee quick-start loop collects and replants an output seed")
+	viewport.free()
+
 func _check_night_feedback(dimensions: Vector2i, reduce: bool) -> Dictionary:
 	var viewport := SubViewport.new()
 	viewport.size = dimensions
@@ -405,7 +492,7 @@ func _click(viewport: SubViewport, point: Vector2, double := false) -> void:
 	_button(viewport, point, true, double)
 	_button(viewport, point, false)
 
-func _drag(viewport: SubViewport, from: Vector2, to: Vector2, highlight: Control = null, valid := false, coalesced := false) -> void:
+func _drag(viewport: SubViewport, from: Vector2, to: Vector2, highlight: Control = null, valid := false, coalesced := false) -> bool:
 	_mouse_motion(viewport, from, Vector2.ZERO)
 	_button(viewport, from, true)
 	if coalesced:
@@ -420,7 +507,9 @@ func _drag(viewport: SubViewport, from: Vector2, to: Vector2, highlight: Control
 		_check(highlight.self_modulate == expected, "slot highlights match transaction compatibility")
 		if highlight.drop_glow != null:
 			_check(highlight.drop_glow.visible == valid, "dustbin only glows for valid disposal")
+	var started := viewport.gui_is_dragging()
 	_button(viewport, to, false)
+	return started
 
 func _button(viewport: SubViewport, point: Vector2, pressed: bool, double := false) -> void:
 	var event := InputEventMouseButton.new()

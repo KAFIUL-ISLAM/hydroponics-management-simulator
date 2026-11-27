@@ -68,8 +68,11 @@ try {
         @{ Name = 'Workstations'; Scene = 'test_workstations'; Markers = @(
             '(?m)^WORKSTATIONS_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
         ) },
-        @{ Name = 'Workshop interface'; Scene = 'test_workshop_ui'; FrameBudget = '600'; Markers = @(
+        @{ Name = 'Workshop interface'; Scene = 'test_workshop_ui'; FrameBudget = '900'; Markers = @(
             '(?m)^WORKSHOP_UI_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
+        ) },
+        @{ Name = 'M10 nutrient comparison'; Scene = 'test_m10_nutrient_demo'; Markers = @(
+            '(?m)^M10_NUTRIENT_DEMO_RESULT checks=[1-9]\d* failures=0\s*$'
         ) },
         @{ Name = 'Environment interface'; Scene = 'test_environment_ui'; Markers = @(
             '(?m)^ENVIRONMENT_UI_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
