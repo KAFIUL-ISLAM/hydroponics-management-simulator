@@ -2,7 +2,7 @@
 
 **基于 Godot 4 开发的水培农业管理模拟项目**
 
-**M10 · 引导式水培种植 · 计划发布 v0.6.0。** 支持 1280 × 720 和 1920 × 1080。使用 Godot 4.7.2 打开 `project.godot`，按 **F5** 启动。 [M10 报告](docs/M10_FINAL_REPORT.md)
+**M11 · 精修工作间 · v0.7.0。** 支持 1280 × 720 和 1920 × 1080。使用 Godot 4.7.2 打开 `project.godot`，按 **F5** 启动。 [M11 报告](docs/M11_FINAL_REPORT.md)
 
 [简体中文](#简体中文) | [English](#english)
 
@@ -115,7 +115,7 @@ powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\tests\run-tests.
 
 ## 7. 开发计划
 
-M01–M07 建立了三作物种植循环和进阶系统。M08 扩展将默认界面改为图标式交互工作间；M09 已验收并发布到 `main`。M10 已完成并获开发者本地验收，计划版本为 v0.6.0。查看 [M10 报告](docs/M10_FINAL_REPORT.md)、[中文数值分析](docs/HYDROPONICS_DESIGN_ANALYSIS_ZH.md) 和[演示指南](docs/DEMONSTRATION_GUIDE.md)。 [项目状态](docs/PROJECT_STATUS.md) · [视觉计划](docs/VISUAL_DEVELOPMENT_PLAN.md)
+M01–M07 建立了三作物种植循环和进阶系统。M08 扩展将默认界面改为图标式交互工作间；M09 和 M10 已验收并发布。M11 已获开发者验收，版本为 v0.7.0；M12 仍待完成。查看 [M11 报告](docs/M11_FINAL_REPORT.md)、[M10 报告](docs/M10_FINAL_REPORT.md)、[中文数值分析](docs/HYDROPONICS_DESIGN_ANALYSIS_ZH.md) 和[演示指南](docs/DEMONSTRATION_GUIDE.md)。 [项目状态](docs/PROJECT_STATUS.md) · [视觉计划](docs/VISUAL_DEVELOPMENT_PLAN.md)
 
 ## 8. 研究与参考资料
 
@@ -254,7 +254,7 @@ Use **Liquid Analysis** or the machine’s information icon to inspect concentra
 
 ## 7. Development Roadmap
 
-M01–M07 delivered the three-crop farming loop and advanced mechanics. The M08 extension established the interactive workshop. M09 was accepted and published on `main`; M10 is complete and developer-accepted locally, with all 19 manual checks passed. Its intended release version is v0.6.0. M11 and M12 remain. See the [M10 report](docs/M10_FINAL_REPORT.md), [Chinese design analysis](docs/HYDROPONICS_DESIGN_ANALYSIS_ZH.md), and [demonstration guide](docs/DEMONSTRATION_GUIDE.md). [Current project status](docs/PROJECT_STATUS.md) · [Visual plan](docs/VISUAL_DEVELOPMENT_PLAN.md)
+M01–M07 delivered the three-crop farming loop and advanced mechanics. The M08 extension established the interactive workshop. M09 and M10 are accepted and published; M11 is developer-accepted, with all 30 manual checks passed, as v0.7.0. M12 remains. See the [M11 report](docs/M11_FINAL_REPORT.md), [M10 report](docs/M10_FINAL_REPORT.md), [Chinese design analysis](docs/HYDROPONICS_DESIGN_ANALYSIS_ZH.md), and [demonstration guide](docs/DEMONSTRATION_GUIDE.md). [Current project status](docs/PROJECT_STATUS.md) · [Visual plan](docs/VISUAL_DEVELOPMENT_PLAN.md)
 
 ## 8. Research References
 

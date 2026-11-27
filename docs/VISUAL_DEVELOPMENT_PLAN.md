@@ -1,6 +1,15 @@
 # Visual development plan and milestone history
 
-**M10 completed and developer-accepted · v0.6.0 intended release.** On 2026-11-27, the developer reported all 19 manual acceptance checks passed (5 battery recovery, 4 machine status, 5 manual/navigation, and 5 gameplay/presentation). Codex's automated and renderer evidence is recorded separately in [TESTING_REPORT.md](TESTING_REPORT.md#m10--2026-11-27). [Current status](PROJECT_STATUS.md) · [M10 report](M10_FINAL_REPORT.md)
+**M11 completed and developer-accepted · v0.7.0.** On 2026-11-27, the developer reported all 30 manual acceptance checks passed. Codex's automated and renderer evidence is recorded separately in [TESTING_REPORT.md](TESTING_REPORT.md#m11--2026-11-27). M12 remains pending. [Current status](PROJECT_STATUS.md) · [M11 report](M11_FINAL_REPORT.md)
+
+## M11 completed scope and acceptance record
+
+1. **Interaction polish.** Hover, selection, and keyboard focus are distinguished across inventory, supplies, and manual tabs. Drop-only slots are skipped during Tab navigation. Escape restores focus to the invoking chamber or tool, and holding Enter on Next Night does not repeat settlement. Equipment and DNA controls explain unavailable actions; manual tab spacing matches the workshop.
+2. **Preserved presentation.** Approved layout and artwork, pointer-transparent status overlays, and mouse-first drag-and-drop remain. Audio is deferred.
+3. **Performance evidence.** The supplied measurements do not establish a bottleneck or repeatable speedup. M11 made no performance refactor; see the [M11 report](M11_FINAL_REPORT.md#performance-observations) for exact values, sampling ambiguity, and limits.
+4. **Acceptance.** The developer reports all 30 manual checks passed, including repeated Enter, Reduced Motion collection, and keyboard-focus visibility. Automated evidence and its limits are separate in the [testing report](TESTING_REPORT.md#m11--2026-11-27).
+
+M12 remains final regression, clean-target launch, delivery-format and cutoff confirmation, and verification of any agreed export or capture, credits, and submission package.
 
 ## M10 completed scope and acceptance record
 
@@ -9,11 +18,11 @@
 3. **Onboarding and tools.** The optional manual has Quick Start and Advanced tabs, opens from `?` and F1, links to existing analysis/equipment/DNA tools, and preserves inventory selection. The tested Coffee workflow includes planting, automatic operation, Next Night, output collection and replanting.
 4. **Demonstration and design materials.** The reproducible native-Kotton comparison changes only initial mineral volume. The exact measured values, boundaries, and normal-versus-debug demonstration steps are in the [Chinese analysis](HYDROPONICS_DESIGN_ANALYSIS_ZH.md) and [demonstration guide](DEMONSTRATION_GUIDE.md).
 
-M11 covers interaction polish, performance checks, and optional approved audio. M12 covers the final regression, clean-target launch, agreed export or capture, credits, and the submission handoff.
+M11 is now completed and developer-accepted. M12 covers the final regression, clean-target launch, agreed export or capture, credits, and the submission handoff.
 
 ## Historical checkpoints and roadmap
 
-Checkpoint statements and the initial planning table below preserve what was proposed or pending at those historical reviews. M09 and M10 were subsequently accepted; the current remaining scope is M11/M12 above and in [PROJECT_STATUS.md](PROJECT_STATUS.md). Do not treat historical estimates, allowance figures or pending statements as current status.
+Checkpoint statements and the initial planning table below preserve what was proposed or pending at those historical reviews. M09–M11 were subsequently accepted; the current remaining scope is M12 above and in [PROJECT_STATUS.md](PROJECT_STATUS.md). Do not treat historical estimates, allowance figures or pending statements as current status.
 
 **v0.5.0 checkpoint.** The developer accepted the M08 extension. The default interface is the icon-based workshop. M09 was planned to use the existing night-completion and transaction results to show one concise outcome, highlight crop and resource changes using the workshop icons, and support reduced motion with equivalent data. That work was subsequently completed and accepted. [M09 verification](TESTING_REPORT.md) · [Workshop release report](M08_EXTENSION_FINAL_REPORT.md)
 

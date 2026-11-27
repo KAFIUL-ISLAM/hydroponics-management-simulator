@@ -16,6 +16,8 @@ func _ready() -> void:
 	await _check_output_counts()
 	await _check_battery_recovery(Vector2i(1280, 720))
 	await _check_battery_recovery(Vector2i(1920, 1080))
+	await _check_m11_presentation(Vector2i(1280, 720))
+	await _check_m11_presentation(Vector2i(1920, 1080))
 	var animated := await _check_night_feedback(Vector2i(1280, 720), false)
 	var reduced := await _check_night_feedback(Vector2i(1920, 1080), true)
 	_check(animated == reduced, "both motion modes report identical night results")
@@ -260,6 +262,85 @@ func _wait_for_arrival(view: View) -> void:
 	var deadline := Time.get_ticks_msec() + 1500
 	while view.collecting and Time.get_ticks_msec() < deadline:
 		await get_tree().process_frame
+
+func _check_m11_presentation(dimensions: Vector2i) -> void:
+	var viewport := SubViewport.new()
+	viewport.size = dimensions
+	viewport.gui_embed_subwindows = true
+	add_child(viewport)
+	var ui = WorkshopScene.instantiate()
+	viewport.add_child(ui)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var view: View = ui.workshop
+	var grid: ItemList = ui.inventory_tiles
+	var tray: ItemList = view.supply_tray
+	view.set_reduced_motion(true)
+	var placement_bounds := Rect2(Vector2.ZERO, Vector2(dimensions))
+	_check(grid.get_theme_stylebox("hovered") != grid.get_theme_stylebox("selected") and grid.get_theme_stylebox("cursor") != grid.get_theme_stylebox("selected"), "hover, selection and keyboard cursor use distinct shared styles")
+	var day: int = ui.game_state.current_day
+	view.machine.grab_focus()
+	_key(viewport, KEY_TAB, true)
+	_key(viewport, KEY_TAB, false)
+	_check(grid.has_focus() and ui.game_state.current_day == day, "Tab goes from chamber to inventory without advancing time")
+	var next: Button = ui.next_night_button
+	next.grab_focus()
+	_key(viewport, KEY_ENTER, true, true)
+	_key(viewport, KEY_ENTER, false)
+	_check(ui.game_state.current_day == day and next.has_focus(), "echo and focus changes do not advance the night")
+	view.machine.grab_focus()
+	_key(viewport, KEY_ENTER, true)
+	_key(viewport, KEY_ENTER, false)
+	await get_tree().process_frame
+	_check(view.machine_panel.visible and view.slots["seed"].focus_mode == Control.FOCUS_NONE and view.slots["modules"].focus_mode == Control.FOCUS_NONE, "keyboard opens chamber and skips controls that only accept drops")
+	var supply_point := _cell(tray, View.ENERGY)
+	_click(viewport, supply_point)
+	ui._render()
+	_check(tray.slots[tray.get_selected_items()[0]] == View.ENERGY, "refresh preserves supply selection")
+	var stored = ui.stored_items.get_selected_metadata()
+	var readouts := [
+		[view.manual_button, view.manual], [view.tools[View.ANALYSER], ui.liquid_dialog],
+		[view.tools[View.GENETICS], ui.genetics_dialog], [view.tools[View.DNA], ui.dna_dialog],
+		[view.slots["chassis"], ui.equipment_dialog],
+	]
+	for entry: Array in readouts:
+		var trigger: Button = entry[0]
+		var dialog: AcceptDialog = entry[1]
+		trigger.grab_focus()
+		_key(viewport, KEY_ENTER, true)
+		_key(viewport, KEY_ENTER, false)
+		await get_tree().process_frame
+		_check(dialog.visible and dialog.exclusive and placement_bounds.encloses(Rect2(Vector2(dialog.position), Vector2(dialog.size))), "keyboard opens a bounded exclusive workstation")
+		if dialog == view.manual:
+			var tab: TabContainer = dialog.find_children("*", "TabContainer", true, false)[0]
+			_check(tab.get_tab_count() == 2 and tab.get_theme_stylebox("tab_selected") != tab.get_theme_stylebox("tab_unselected"), "manual tabs distinguish selection")
+		_key(dialog, KEY_ESCAPE, true)
+		await get_tree().process_frame
+		await get_tree().process_frame
+		_check(not dialog.visible and trigger.has_focus() and is_same(ui.stored_items.get_selected_metadata(), stored), "Escape closes tool and restores invoking focus and item")
+	var farm: View.Farm = ui.farm
+	var seed_key: String = ui._inventory_key(farm.selected_seed())
+	_drag(viewport, _cell(grid, seed_key), view.slots["seed"].get_global_rect().get_center())
+	_click(viewport, view.slots["chassis"].get_global_rect().get_center())
+	_check(ui.equipment_dialog.visible and ui.actions["switch_machine"].disabled and ui.actions["switch_machine"].tooltip_text.contains("Stop the machine") and ui.equipment_readout.text.contains("Stop the machine"), "running equipment gives an explicit disabled reason")
+	ui.equipment_dialog.hide()
+	await get_tree().process_frame
+	_check(ui.game_state.current_day == day and view.reduced_motion, "navigation leaves time and motion preference unchanged")
+	view.machine_close.grab_focus()
+	_key(viewport, KEY_ESCAPE, true)
+	_check(not view.machine_panel.visible and view.machine.has_focus(), "closing the chamber returns focus to its opener")
+	next.grab_focus()
+	_key(viewport, KEY_ENTER, true)
+	_key(viewport, KEY_ENTER, false)
+	_check(ui.game_state.current_day == day + 1, "deliberate keyboard activation advances one night")
+	viewport.free()
+
+func _key(target: Viewport, code: Key, down: bool, repeat := false) -> void:
+	var event := InputEventKey.new()
+	event.keycode = code
+	event.pressed = down
+	event.echo = repeat
+	target.push_input(event, true)
 
 func _check_battery_recovery(dimensions: Vector2i) -> void:
 	var viewport := SubViewport.new()

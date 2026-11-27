@@ -37,9 +37,14 @@ func setup(icon: Texture2D) -> void:
 	Workstation.bind_escape(self, hide)
 
 func _page(tabs: TabContainer, heading: String) -> VBoxContainer:
+	var margin := MarginContainer.new()
+	for side in ["left", "top", "right", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, 10)
+	tabs.add_child(margin)
+	tabs.set_tab_title(tabs.get_tab_count() - 1, heading)
 	var page := VBoxContainer.new()
-	tabs.add_child(page)
-	tabs.set_tab_title(page.get_index(), heading)
+	page.add_theme_constant_override("separation", 10)
+	margin.add_child(page)
 	return page
 
 func _shortcut(parent: Container, caption: String, tool: String) -> void:

@@ -60,6 +60,8 @@ var drop_targets: Array[Slot] = []
 var night_feedback: NightFeedback
 var reduced_motion := false
 var motion_button: Button
+var machine_info: Button
+var machine_close: Button
 var growth_pulse: Tween
 var before_crop_texture: Texture2D
 var blocker_slot := ""
@@ -113,6 +115,8 @@ func setup(ui: Control) -> void:
 	night_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(night_fade)
 	night_fade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	machine_panel.visibility_changed.connect(_update_focus_order)
+	_update_focus_order()
 
 func _place(control: Control, start: Vector2, end: Vector2) -> void:
 	control.set_anchor(SIDE_LEFT, start.x)
@@ -214,6 +218,9 @@ func _build_inventory() -> void:
 	supply_tray.external_can_drop = _can_return_to_inventory
 	supply_tray.external_drop = _return_to_inventory
 	tray_column.add_child(supply_tray)
+	supply_tray.item_selected.connect(func(index: int) -> void:
+		supply_tray.selected_key = supply_tray.slots[index]
+	)
 
 func _build_machine() -> void:
 	empty_slot_style = StyleBoxFlat.new()
@@ -234,11 +241,11 @@ func _build_machine() -> void:
 	var header := HBoxContainer.new()
 	header.alignment = BoxContainer.ALIGNMENT_END
 	column.add_child(header)
-	var info := Button.new()
-	info.text = "ⓘ"
-	info.tooltip_text = "液体与污染 / Liquid and pollution"
-	info.pressed.connect(dashboard._show_analysis)
-	header.add_child(info)
+	machine_info = Button.new()
+	machine_info.text = "ⓘ"
+	machine_info.tooltip_text = "液体与污染 / Liquid and pollution"
+	machine_info.pressed.connect(dashboard._show_analysis)
+	header.add_child(machine_info)
 	motion_button = Button.new()
 	motion_button.toggle_mode = true
 	motion_button.button_pressed = reduced_motion
@@ -246,17 +253,19 @@ func _build_machine() -> void:
 	motion_button.toggled.connect(_save_motion_preference)
 	header.add_child(motion_button)
 	_update_motion_hint()
-	var close := Button.new()
-	close.text = "×"
-	close.tooltip_text = "关闭 / Close"
-	close.pressed.connect(machine_panel.hide)
-	header.add_child(close)
+	machine_close = Button.new()
+	machine_close.text = "×"
+	machine_close.tooltip_text = "关闭 / Close"
+	machine_close.pressed.connect(_close_machine)
+	header.add_child(machine_close)
 	var inputs := HBoxContainer.new()
 	column.add_child(inputs)
 	for kind: String in ["power", "water", "seed", "modules", "chassis"]:
-		_make_slot(inputs, kind)
+		var slot := _make_slot(inputs, kind)
+		if kind != "chassis":
+			slot.focus_mode = Control.FOCUS_NONE
 	slots["modules"].produce = _begin_module_drag
-	slots["chassis"].pressed.connect(func() -> void: dashboard._present(dashboard.equipment_dialog))
+	slots["chassis"].pressed.connect(_open_equipment)
 	var level_row := HBoxContainer.new()
 	column.add_child(level_row)
 	power_level = _level(level_row, Color("#ffd062"))
@@ -265,6 +274,19 @@ func _build_machine() -> void:
 	output_grid.columns = OUTPUT_COLUMNS
 	column.add_child(output_grid)
 	machine_panel.hide()
+
+func _update_focus_order() -> void:
+	var order: Array[Control] = [machine]
+	if machine_panel.visible:
+		order.append_array([machine_info, motion_button, machine_close, slots["chassis"]])
+		for slot in output_slots:
+			if slot.visible and not slot.disabled:
+				order.append(slot)
+	order.append_array([dashboard.inventory_tiles, supply_tray, tools[GENETICS], tools[DNA], tools[ANALYSER], manual_button, dashboard.next_night_button])
+	for index in order.size():
+		var control := order[index]
+		control.focus_next = control.get_path_to(order[(index + 1) % order.size()])
+		control.focus_previous = control.get_path_to(order[posmod(index - 1, order.size())])
 
 func _make_slot(parent: Container, kind: String) -> Slot:
 	var slot := Slot.new()
@@ -304,10 +326,21 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if machine_panel.visible and event.is_action_pressed("ui_cancel"):
-		machine_panel.hide()
+		_close_machine()
 		get_viewport().set_input_as_handled()
 
+func _close_machine() -> void:
+	var focus := get_viewport().gui_get_focus_owner()
+	var restore := focus != null and machine_panel.is_ancestor_of(focus)
+	machine_panel.hide()
+	if restore:
+		machine.grab_focus()
+
 func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.echo and event.is_action_pressed("ui_accept", true):
+		if dashboard.next_night_button.has_focus():
+			get_viewport().set_input_as_handled()
+		return
 	if not event is InputEventMouseButton or event.button_index != MOUSE_BUTTON_LEFT:
 		return
 	var viewport := get_viewport()
@@ -386,7 +419,8 @@ func _refresh_supply_tray() -> void:
 			if item != null:
 				_row(entries, MACHINE + str(id), "machine", "%s · Machine\n%d growth/night · %d kJ/night" % [
 					item.label, item.growth, item.energy_kj])
-	supply_tray.sync(entries, entries.size(), "", farm.can_act())
+	var selection := supply_tray.selected_key if entries.has(supply_tray.selected_key) else ""
+	supply_tray.sync(entries, entries.size(), selection, farm.can_act())
 
 func _row(entries: Dictionary, key: String, icon_key: String, tooltip: String) -> void:
 	entries[key] = {"icon": art.texture(icon_key, "module"), "tooltip": tooltip}
@@ -417,6 +451,9 @@ func _build_tool_dock() -> void:
 	row.add_child(manual_button)
 	manual = Manual.new()
 	dashboard.add_child(manual)
+	manual.theme = dashboard.theme
+	manual.transient = true
+	manual.exclusive = true
 	manual.setup(art.texture("seed"))
 	manual.tool_requested.connect(_open_manual_tool)
 	dashboard.workstation_dialogs.append(manual)
@@ -430,10 +467,14 @@ func _open_manual_tool(tool: String) -> void:
 	var previous_focus: Control = dashboard.return_focus
 	manual.hide()
 	match tool:
-		"equipment": dashboard._present(dashboard.equipment_dialog)
+		"equipment": _open_equipment()
 		"liquid": _open_tool(ANALYSER)
 		"dna": _open_tool(DNA)
 	dashboard.return_focus = previous_focus
+
+func _open_equipment() -> void:
+	dashboard._refresh_equipment()
+	dashboard._present(dashboard.equipment_dialog)
 
 func _make_tool(row: HBoxContainer, tool_id: String, icon_key: String, hint: String) -> void:
 	var tool := Slot.new()
@@ -648,7 +689,10 @@ func refresh() -> void:
 	if not chips.is_empty():
 		slots["modules"].tooltip_text += "\n拖回库存 / Drag to return: " + chips[-1]
 	_slot_view("chassis", "machine", machine.tooltip_text + "\n点击查看设备 / Click for equipment controls")
+	var previous_output_count := visible_output_keys.size()
 	_refresh_output(crop_key)
+	if machine_panel.visible and previous_output_count != visible_output_keys.size():
+		_update_focus_order()
 	_refresh_machine_status()
 	power_level.max_value = charge_reference
 	power_level.value = farm.energy_kj

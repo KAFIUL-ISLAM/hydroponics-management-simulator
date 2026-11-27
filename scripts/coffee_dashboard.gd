@@ -252,7 +252,11 @@ func _restore_workstation_focus() -> void:
 		if dialog.visible:
 			return
 	if is_instance_valid(return_focus) and return_focus.is_visible_in_tree():
-		return_focus.grab_focus()
+		if return_focus is BaseButton and return_focus.disabled:
+			if workshop != null:
+				workshop.machine.grab_focus()
+		else:
+			return_focus.grab_focus()
 	return_focus = null
 
 func _sync_workstation_layer() -> void:
@@ -504,6 +508,13 @@ func _update_inventory_icon() -> void:
 func _on_status_changed(status: GameState.SimulationStatus) -> void:
 	super._on_status_changed(status)
 	status_label.text = "全局 / System · " + status_label.text
+	match status:
+		GameState.SimulationStatus.PROCESSING:
+			next_night_button.tooltip_text = "正在结算 / Night settlement in progress"
+		GameState.SimulationStatus.PAUSED:
+			next_night_button.tooltip_text = "模拟已暂停 / Simulation paused"
+		_:
+			next_night_button.tooltip_text = "推进一天 / Advance one day"
 
 func _build_dna() -> void:
 	var open := genetics_dialog.add_button("DNA 编辑 / DNA edit", true)
@@ -559,8 +570,12 @@ func _open_dna(requested_seed: Farm.Seed = null) -> void:
 func _refresh_dna() -> void:
 	var editor := farm.dna_editor
 	dna_start.disabled = true
+	dna_start.tooltip_text = "选择可用种子与性状 / Select an available seed and trait"
 	dna_seed.disabled = editor.stage == DNA.Stage.RUNNING
 	dna_trait.disabled = dna_seed.disabled
+	var locked_hint := "DNA 编辑进行中 / An edit is in progress" if dna_seed.disabled else ""
+	dna_seed.tooltip_text = locked_hint
+	dna_trait.tooltip_text = locked_hint
 	dna_progress.max_value = editor.operation.required_points if editor.operation != null else 1
 	dna_progress.value = editor.progress
 	dna_readout.text = "演示数据盘 / Demo trait discs · 提取未开放 / Extraction unavailable\n"
@@ -573,12 +588,14 @@ func _refresh_dna() -> void:
 		dna_readout.text += "#%d · %s · %d/%d · %s\n" % [editor.operation.target_id, editor.operation.trait_id,
 			editor.progress, editor.operation.required_points, state_text]
 		if editor.stage == DNA.Stage.RUNNING:
+			dna_start.tooltip_text = locked_hint
 			dna_readout.text += "关闭窗口并结算下一晚 / Close the dialog and settle the next night"
 			return
 		var final_traits: Dictionary[String, int] = editor.operation.after.traits if editor.stage == DNA.Stage.SUCCEEDED else editor.operation.before.traits
 		dna_readout.text += "结果 / Result: 等级 / Rank %d · 热度 / Heat %d\n" % [
 			final_traits.get(editor.operation.trait_id, 0), editor.operation.after.heat]
 	if dna_seed.selected < 0:
+		dna_start.tooltip_text = "无可用种子 / No available seed"
 		dna_readout.text += "无可用种子 / No available seed"
 		return
 	var id: String = DNA.SUPPORTED[dna_trait.selected]
@@ -596,9 +613,11 @@ func _refresh_dna() -> void:
 	for index: int in range(0, names.size(), 3):
 		dna_readout.text += ", ".join(names.slice(index, index + 3)) + "\n"
 	if not plan.valid():
+		dna_start.tooltip_text = plan.error
 		dna_readout.text += "\n不可用 / Unavailable · " + plan.error
 		return
 	dna_start.disabled = false
+	dna_start.tooltip_text = "预览确认 / Review and confirm the application"
 	dna_readout.text += "\n应用预览 / Proposed application\n"
 	dna_readout.text += "等级 / Rank: %d → %d · 可用次数 / Disc uses: %d\n" % [
 		plan.before.traits.get(id, 0), plan.after.traits[id], farm.disc_uses[id]]
@@ -697,6 +716,14 @@ func _refresh_equipment() -> void:
 			selected_module.performance, selected_module.efficiency, selected_module.quality, selected_module.description]
 	if not farm.equipment_error.is_empty():
 		equipment_readout.text += "\n未应用 / Rejected · " + farm.equipment_error
+	var locked := farm.running or not farm.can_act()
+	var locked_hint := ""
+	if locked:
+		locked_hint = "设备运行中 / Stop the machine to change equipment" if farm.running else "暂不可操作 / Equipment is currently unavailable"
+		equipment_readout.text += "\n" + locked_hint
+	for key in ["switch_machine", "switch_vessel", "install_module", "remove_module"]:
+		actions[key].disabled = locked
+		actions[key].tooltip_text = locked_hint
 
 func _build_analysis() -> void:
 	liquid_dialog = AcceptDialog.new()

@@ -1,5 +1,17 @@
 # 测试报告
 
+## M11 · 2026-11-27
+
+**Codex automated evidence:** The supplied M11 handover reports 19 suites passed, 1,480 explicit checks including 264 workshop GUI checks, and four original crop assertion groups. Default launch, legacy Lettuce, and the deterministic Kotton comparison passed; renderer captures were checked at 1280 × 720 and 1920 × 1080. Kotton remained at 52% versus 100% health and 12 versus 13 fiber. The M11 GUI change adds 40 checks across the two viewports. These results are attributed to Codex and were not rerun by Copilot during release documentation.
+
+Automated coverage should not be overstated: the Enter-echo test injects an echo without first simulating an initial press and repeats; the suite does not independently prove the full held-key sequence. Nor does it establish Reduced Motion collection coverage or keyboard-focus styling on manual tabs.
+
+**Developer manual acceptance:** On 2026-11-27, the developer reported passing all 30 checks: visual and interaction states (5/5), keyboard navigation (5/5), manual and analysis tools (9/9), gameplay regression (6/6), and resolution/Reduced Motion (5/5). Manual acceptance explicitly covered holding Enter on Next Night, collection with Reduced Motion, and visible keyboard focus while navigating. These checks are separate from the automated totals.
+
+**Performance evidence:** The Codex handover reports graphical Godot 4.7.2 debug profiling on Windows build 26340, Ryzen 5 5500U, integrated Radeon, 7.88 GB RAM, OpenGL 3.3 Compatibility. It reports 314 rendered-frame samples per resolution across roughly 10 seconds after warm-up, but does not state whether those samples are per scenario or shared across interactions. The Next Night synchronous median uses three samples per resolution. Full numbers, limitations, and temporary capture paths are recorded in [M11_FINAL_REPORT.md](M11_FINAL_REPORT.md#performance-observations). No repeatable speedup or bottleneck was established.
+
+Protected simulation and crop data, numerical expectations, scenes, and artwork were unchanged. The five M11 implementation/test files are [`orbital_theme.tres`](../resources/orbital_theme.tres), [`coffee_dashboard.gd`](../scripts/coffee_dashboard.gd), [`workshop_manual.gd`](../scripts/workshop_manual.gd), [`workshop_view.gd`](../scripts/workshop_view.gd), and [`test_workshop_ui.gd`](../tests/test_workshop_ui.gd). [M11 milestone report](M11_FINAL_REPORT.md)
+
 ## M10 · 2026-11-27
 
 **Evidence source:** Codex's M10 handover reports 19 regression suites passed, with 1,440 explicit automated checks including 224 workshop GUI checks, plus the four original crop assertion groups. The default launch and legacy Lettuce baseline passed. Renderer captures were checked at 1280 × 720 and 1920 × 1080. The suite count includes the M10 nutrient-comparison fixture; workshop GUI checks exercise the immediate post-depletion battery drag, exact one-refill transfer, water/seed/module drags, bilingual persistent status, temporary-message expiry, pointer transparency, manual access/navigation, inventory selection retention, and Coffee collection/replanting. These results were executed by Codex; Copilot did not independently rerun the regression suite for this documentation task.

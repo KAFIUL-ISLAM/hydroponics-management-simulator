@@ -1,6 +1,6 @@
 # v0.6.0 — Orbital Hydroponics: Guided Cultivation
 
-**Milestone:** M10 complete; developer-accepted on 2026-11-27; intended release v0.6.0
+**Milestone:** M10 complete; developer-accepted on 2026-11-27; released as v0.6.0
 
 **Date:** 2026-11-27
 
@@ -109,7 +109,7 @@ The developer reports all **19 manual acceptance checklist items passed**. This 
 18. Layout at 1280 × 720.
 19. Layout at 1920 × 1080.
 
-The supplied Codex handover's closing sentence says desktop acceptance is pending. This dated developer acceptance record supersedes that stale sentence. M10 is complete and developer-accepted; v0.6.0 is its intended release version.
+The supplied Codex handover's closing sentence says desktop acceptance is pending. This dated developer acceptance record supersedes that stale sentence. M10 is complete, developer-accepted, and was released as v0.6.0.
 
 ## M10 files and remaining work
 
