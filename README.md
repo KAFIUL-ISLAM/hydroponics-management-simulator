@@ -115,7 +115,7 @@ powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\tests\run-tests.
 
 ## 7. 开发计划
 
-M01–M07 实现了可玩的三作物种植循环和进阶系统。M08 扩展将默认界面改为图标式交互工作间。M09 动画、过渡与反馈尚未开始。 [验收与剩余范围](docs/M08_EXTENSION_FINAL_REPORT.md)
+M01–M07 实现了可玩的三作物种植循环和进阶系统。M08 扩展将默认界面改为图标式交互工作间。M09 夜间反馈与减少动态效果已获开发者验收并发布到 `main`；当前发布标签仍为 v0.5.0。M10 是当前待办阶段。 [项目状态](docs/PROJECT_STATUS.md) · [M10 计划](docs/VISUAL_DEVELOPMENT_PLAN.md)
 
 ## 8. 研究与参考资料
 
@@ -252,7 +252,7 @@ Use **Liquid Analysis** or the machine’s information icon to inspect concentra
 
 ## 7. Development Roadmap
 
-M01–M07 delivered the three-crop farming loop and advanced mechanics. The M08 extension ships the interactive workshop in v0.5.0. M09 remains pending and covers transitions and outcome feedback. [Current project status](docs/PROJECT_STATUS.md) · [Visual plan](docs/VISUAL_DEVELOPMENT_PLAN.md)
+M01–M07 delivered the three-crop farming loop and advanced mechanics. The M08 extension ships the interactive workshop in v0.5.0. M09 night feedback and Reduced Motion were subsequently accepted and published on `main`; v0.5.0 remains the latest release tag. M10 is the current pending milestone. [Current project status](docs/PROJECT_STATUS.md) · [Visual plan](docs/VISUAL_DEVELOPMENT_PLAN.md)
 
 ## 8. Research References
 

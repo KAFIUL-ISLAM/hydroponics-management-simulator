@@ -2,11 +2,13 @@
 
 ## 2026-11-27 · M09 accepted
 
-The developer accepted M09 after manual gameplay testing and identified two issues to address within M10. “Harvest pending” and similar machine messages are hard to read against the chamber. After the machine runs out of energy, a replacement battery can fail to start dragging until the player drags another inventory item. The battery failure is developer-reported and its cause remains unverified. M10 includes both corrections and focused regression coverage. [M10 plan](VISUAL_DEVELOPMENT_PLAN.md#m10-implementation-plan)
+The developer accepted M09 after manual gameplay testing and identified two issues to address within M10. “Harvest pending” and similar machine messages are hard to read against the chamber. After the machine runs out of energy, a replacement battery can fail to start dragging until the player drags another inventory item. The battery failure is developer-reported and its cause remains unverified. M09 was published on `main` at `6ff68084beb6449060db3a1c6fdd0eb613bc62f9`; v0.5.0 remains the latest release tag at `a73ed34d3c6aeda495e3c8cf46cd826d0420e24f`. M10 includes both corrections and focused regression coverage. [M10 plan](VISUAL_DEVELOPMENT_PLAN.md#m10-implementation-plan)
 
 ## 2026-11-27 · M09 night and machine feedback
 
 The workshop reuses its existing night and collection transitions. A transient strip shows actual night resource, growth, health and output changes, and the affected compartment exposes the existing shortage or configuration message. Reduced Motion is a saved local option in the machine header. Both modes use the same simulation signals and transactions. M10 remains pending.
+
+Older M08 checkpoint entries below retain the status recorded at those milestones; their “M09 pending/paused” wording predates M09 acceptance above.
 
 ## 2026-11-27 · v0.5.0 Interactive Hydroponics Workshop
 

@@ -2,7 +2,7 @@
 
 ## M09 · 2026-11-27
 
-Godot 4.7.2 passed all 18 suites, 1,362 explicit checks including 184 workshop checks, and four original crop assertion groups after a fresh isolated import. The default workshop launched successfully. The rendered workshop tests covered both supported viewport sizes, matched actual night deltas in both motion modes, and verified reentrant input, blocker recovery, transient feedback, production and collection. After removal of a presentation-script type warning, the focused 184-check suite passed again. Finalization matched the tested sources and reused those results.
+These are historical M09 results for published commit `6ff68084beb6449060db3a1c6fdd0eb613bc62f9`, not a new test execution for this documentation update. Godot 4.7.2 passed all 18 suites, 1,362 explicit checks including 184 workshop checks, and four original crop assertion groups after a fresh isolated import. The default workshop launched successfully. The rendered workshop tests covered both supported viewport sizes, matched actual night deltas in both motion modes, and verified reentrant input, blocker recovery, transient feedback, production and collection. After removal of a presentation-script type warning, the focused 184-check suite passed again. Finalization matched the tested sources and reused those results.
 
 The developer separately reported manual acceptance with two pending M10 corrections. Status contrast on the chamber artwork and the first battery drag after depletion without an intervening drag still need coverage. [M10 plan](VISUAL_DEVELOPMENT_PLAN.md#m10-implementation-plan)
 

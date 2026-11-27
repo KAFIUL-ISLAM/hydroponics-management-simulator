@@ -2,7 +2,7 @@
 
 ## M09 accepted · M10 pending
 
-The developer completed manual M09 testing and accepted the implementation with two corrections scheduled for M10. The isolated automated run passed all 18 suites, 1,362 explicit checks including 184 workshop checks, and four original crop assertion groups. Default launch passed. Simulation formulas and crop balance are unchanged.
+The developer completed manual M09 testing and accepted the implementation with two corrections scheduled for M10. M09 was published on `main` at `6ff68084beb6449060db3a1c6fdd0eb613bc62f9`; the v0.5.0 release tag remains at `a73ed34d3c6aeda495e3c8cf46cd826d0420e24f`. Historical M09 verification passed 18 suites, 1,362 explicit checks (including 184 workshop checks), four original crop assertion groups, and default launch. Manual acceptance was recorded separately. These are historical results, not a new test run. Simulation formulas and crop balance are unchanged.
 
 - **Machine status readability.** Messages such as “Harvest pending” are difficult to read over the bright chamber. M10 will add a compact bilingual status background with improved contrast and padding. Persistent blockers will stay visible until resolved. Temporary resource feedback will expire, and the overlay will ignore pointer input.
 - **Replacement battery drag after depletion.** The developer reports that dragging a replacement from the supplies tray can fail after an insufficient-energy warning. Dragging another inventory item first restores it. The cause remains unverified. M10 will reproduce the sequence, fix the verified cause, and check water, seeds and modules for related failures.
@@ -15,7 +15,7 @@ The developer approved M08-A through M08-C.4. The workshop is the default launch
 
 ## M08 complete · v0.4.0 Visual Transformation
 
-The owner accepted M08-A through M08-D and authorized publication of v0.4.0. The final fresh regression passed 17 suites, 1,142 explicit checks and four original assertion groups. Default launch and the legacy Lettuce probe passed. The simulation remains frozen at v0.3.0. M09 remains pending. The owner reports 59% weekly Codex allowance remaining, and the delivery target remains December 1, 2026. [M08 final report](M08_FINAL_REPORT.md)
+The owner accepted M08-A through M08-D and authorized publication of v0.4.0. The final fresh regression passed 17 suites, 1,142 explicit checks and four original assertion groups. Default launch and the legacy Lettuce probe passed. The simulation remains frozen at v0.3.0. At the time of this M08 report, M09 was pending; it was subsequently accepted and published as recorded above. The owner reported 59% weekly Codex allowance remaining at that checkpoint, and the delivery target was December 1, 2026. [M08 final report](M08_FINAL_REPORT.md)
 
 ## M08 Package D · Specialized workstations
 
@@ -79,13 +79,17 @@ M03 Package B provides the complete Coffee Beans loop as the normal launch. Nutr
 
 - M01 was published on `main` as `2c56490855d0da94eadce5f1c6bc093f5c797eae`, tagged `v0.1.0`. M02 checked the local commit and tag against that published checkpoint.
 - The audit describes the earlier, clean audit snapshot. Package B started with the prior uncommitted main-scene, resource validation, and documentation changes, plus untracked tests, reports, and screenshots.
-- The [project audit](PROJECT_AUDIT.md) is the implementation baseline. **Implemented** below means the behavior is present in source. M01-T02 verified the explicit scene and one night. The user independently verified rendering and the physical button click at 1280 × 720. M01-T03 added the dashboard as the default scene and verified it from a freshly imported temporary project. The existing one-night probe and four crop-resource test groups still pass. [M01-T02 results](M01_T02_REPORT.md) · [Manual evidence](TESTING_REPORT.md#8-2026-11-26--user-manual-verification-of-the-m01-t02-baseline) · [M01-T03 results](M01_T03_REPORT.md)
+- The [project audit](PROJECT_AUDIT.md) records the M01 implementation baseline, not the current architecture. M01-T02 verified the explicit scene and one night. The user independently verified rendering and the physical button click at 1280 × 720. M01-T03 added the dashboard as the default scene and verified it from a freshly imported temporary project. The existing one-night probe and four crop-resource test groups passed at that checkpoint. [M01-T02 results](M01_T02_REPORT.md) · [Manual evidence](TESTING_REPORT.md#8-2026-11-26--user-manual-verification-of-the-m01-t02-baseline) · [M01-T03 results](M01_T03_REPORT.md)
 
-## Architecture
+## Architecture · M01 checkpoint
 
-The project declares Godot 4.7 and GL Compatibility. M01-T02 verified `4.7.2.stable.official.ed1daf0bf` from the installed Windows executable. The existing dashboard is a native `Control` scene targeting 1280 × 720. There are no autoloads. The scene owns `GameState` for day/status and crop selection, `ResourceManager` for water and mineral reserves in ml and electricity in kWh, and `HydroponicsSimulator` for the nightly crop update. The dashboard controller sends the night action and renders signals. `CropData` is a shared crop resource definition. `lettuce_prototype.tres` is the only crop resource and its production values are provisional. [Project config](../project.godot#L11) · [Scene wiring](../scenes/main.tscn#L419) · [Dashboard controller](../scripts/main.gd#L15) · [Crop resource](../resources/lettuce_prototype.tres#L5)
+This section preserves the early dashboard architecture. The current normal gameplay entry point is [scenes/workshop.tscn](../scenes/workshop.tscn); see the [README](../README.md) and [M08 extension report](M08_EXTENSION_FINAL_REPORT.md) for the workshop architecture.
 
-## Feature status
+The project declares Godot 4.7 and GL Compatibility. M01-T02 verified `4.7.2.stable.official.ed1daf0bf` from the installed Windows executable. The M01 dashboard was a native `Control` scene targeting 1280 × 720. There were no autoloads. The scene owned `GameState` for day/status and crop selection, `ResourceManager` for water and mineral reserves in ml and electricity in kWh, and `HydroponicsSimulator` for the nightly crop update. The dashboard controller sent the night action and rendered signals. `CropData` was a shared crop resource definition. `lettuce_prototype.tres` was the only crop resource and its production values were provisional at that checkpoint. [Project config](../project.godot#L11) · [Scene wiring](../scenes/main.tscn#L419) · [Dashboard controller](../scripts/main.gd#L15) · [Crop resource](../resources/lettuce_prototype.tres#L5)
+
+## Feature status · historical M01–M04 checkpoints
+
+The rows below preserve feature and verification states recorded during those earlier checkpoints; they are not a current inventory.
 
 | Status | Current scope |
 |---|---|

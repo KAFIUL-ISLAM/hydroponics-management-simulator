@@ -1,3 +1,5 @@
+> **Historical design — initial dashboard.** This document describes the original `scenes/main.tscn` interface and planned architecture. The current normal gameplay entry point is `scenes/workshop.tscn`; see [PROJECT_STATUS.md](PROJECT_STATUS.md) and the [README](../README.md).
+
 ## 1. 主界面技术设计 | Main Interface Architecture
 
 ### 1.1 技术环境

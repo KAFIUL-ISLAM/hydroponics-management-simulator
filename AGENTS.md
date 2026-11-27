@@ -1,13 +1,13 @@
 # Hydroponics Management Simulator
 
-Continue this Godot 4 / GDScript project in place. Start with [the project audit](docs/PROJECT_AUDIT.md) for the development baseline and [the project status](docs/PROJECT_STATUS.md) for the latest scope and verification state. Use the [GDD](docs/GDD.md) for requirements, [FORMULAS.md](docs/FORMULAS.md) and [RESEARCH_NOTES.md](docs/RESEARCH_NOTES.md) for source context, and the [foundation plan](docs/FOUNDATION_STABILIZATION_PLAN.md) for proposed work. Inspect the current files and Git status before changing anything.
+Continue this Godot 4 / GDScript project in place. Read [the project status](docs/PROJECT_STATUS.md) and relevant current project documents for the latest scope and verification state; [the project audit](docs/PROJECT_AUDIT.md) records an earlier baseline. Use the [GDD](docs/GDD.md) for requirements, [FORMULAS.md](docs/FORMULAS.md) and [RESEARCH_NOTES.md](docs/RESEARCH_NOTES.md) for source context, and the [foundation plan](docs/FOUNDATION_STABILIZATION_PLAN.md) for its historical proposed work. Inspect the current files and Git status before changing anything.
 
 ## Development rules
 
-1. Continue the existing project. Build on `scenes/main.tscn`, the dashboard, and the scene-local gameplay nodes.
+1. Continue the existing project. Build on `scenes/workshop.tscn` and its active workshop components as the normal gameplay entry point. Preserve `scenes/main.tscn` and `scenes/coffee_dashboard.tscn` as legacy dashboard and compatibility entry points.
 2. Preserve working functionality. Obtain approval for a justified change to existing behavior and document its impact.
 3. Use typed GDScript where appropriate, especially for public APIs, state, signals, and calculation inputs and outputs.
-4. Keep simulation rules independent of UI presentation. The dashboard sends player actions and renders state or outcomes. Keep UI labels and node paths out of simulation logic.
+4. Keep simulation rules independent of UI presentation. The workshop and legacy dashboard send player actions and render state or outcomes. Keep UI labels and node paths out of simulation logic.
 5. Keep crop definitions data-driven. Put crop-specific parameters in typed Godot resources and keep reusable calculations in the simulation.
 6. Treat static crop definitions as shared configuration. Keep mutable plant and seed instance state separate so growth, health, and inherited or edited traits can vary independently.
 7. Never invent reference-game formulas or undocumented constants. Cite the source and applicable conditions for every reference-derived rule.

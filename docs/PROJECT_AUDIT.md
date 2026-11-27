@@ -1,6 +1,6 @@
 ## A. Project summary
 
-The workspace contains a **single-crop, button-driven hydroponics prototype**. The dashboard, scene-local game state, resource ledger, crop definition, and nightly simulation are wired together. The shipped lettuce has zero water and mineral requirements, and the simulator never checks maturity. On the current code path, the first night advances Day 1 to Day 2 and growth 0 to 1 while leaving reserves at **1000 ml water, 50 ml minerals, and 100 kWh**. This is a static trace of the current checkout. [Main scene](../scenes/main.tscn#L419) · [Lettuce resource](../resources/lettuce_prototype.tres#L5) · [Night calculation](../scripts/hydroponics_simulator.gd#L29)
+At the M01 checkpoint, the workspace contained a **single-crop, button-driven hydroponics prototype**. The dashboard, scene-local game state, resource ledger, crop definition, and nightly simulation were wired together. The shipped lettuce had zero water and mineral requirements, and the simulator did not check maturity. At that checkpoint, the first night advanced Day 1 to Day 2 and growth 0 to 1 while leaving reserves at **1000 ml water, 50 ml minerals, and 100 kWh**. This is a static trace of that earlier checkout. [Main scene](../scenes/main.tscn#L419) · [Lettuce resource](../resources/lettuce_prototype.tres#L5) · [Night calculation](../scripts/hydroponics_simulator.gd#L29)
 
 | Area | Finding |
 |---|---|

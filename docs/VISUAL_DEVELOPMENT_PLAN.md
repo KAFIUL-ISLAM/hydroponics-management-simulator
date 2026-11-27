@@ -13,9 +13,11 @@ M11 covers interaction polish, performance checks, and optional approved audio. 
 
 ## Historical checkpoints and roadmap
 
-**v0.5.0 checkpoint.** The developer accepted the M08 extension. The default interface is the icon-based workshop. M09 will use the existing night-completion and transaction results to show one concise outcome, highlight crop and resource changes using the workshop icons, and support reduced motion with equivalent data. Verify rapid input, stale feedback replacement, and unchanged settlement at both resolutions. Implementation remains pending. [Workshop release report](M08_EXTENSION_FINAL_REPORT.md)
+Checkpoint statements below preserve what was proposed or pending at each historical review. M09 was subsequently accepted; its current status and verification record are in [PROJECT_STATUS.md](PROJECT_STATUS.md) and [TESTING_REPORT.md](TESTING_REPORT.md).
 
-**M08 final checkpoint.** Packages A–D are complete and accepted. The v0.4.0 release passed the automated gate and the owner authorized publication. M09 remains pending. The December 1, 2026 delivery target remains active. The latest owner-reported weekly Codex allowance is 59%. [M08 final report](M08_FINAL_REPORT.md)
+**v0.5.0 checkpoint.** The developer accepted the M08 extension. The default interface is the icon-based workshop. M09 was planned to use the existing night-completion and transaction results to show one concise outcome, highlight crop and resource changes using the workshop icons, and support reduced motion with equivalent data. That work was subsequently completed and accepted. [M09 verification](TESTING_REPORT.md) · [Workshop release report](M08_EXTENSION_FINAL_REPORT.md)
+
+**M08 final checkpoint.** Packages A–D are complete and accepted. The v0.4.0 release passed the automated gate and the owner authorized publication. At that checkpoint, M09 remained pending; it was subsequently accepted as recorded above. The December 1, 2026 delivery target and 59% weekly Codex allowance were checkpoint context. [M08 final report](M08_FINAL_REPORT.md)
 
 **M08-D checkpoint.** Specialized workstation redesign is implemented. The owner reported all 11 M08-C desktop items passed. Review the M08-D desktop checklist before confirming the complete M08 milestone or authorizing publication of v0.4.0. The previously reported allowance remains the last known value. [M08-D report](M08_PACKAGE_D_REPORT.md)
 
