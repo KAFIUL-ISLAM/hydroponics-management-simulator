@@ -23,11 +23,11 @@ func _check_view(dimensions: Vector2i) -> void:
 	var bounds := Rect2(Vector2.ZERO, Vector2(dimensions))
 	var scene_rect: Rect2 = ui.cultivation_art.scene.get_global_rect()
 	var expected := {"cultivation": Vector2(0.505, 0.1275), "analysis": Vector2(0.20, 0.6075), "equipment": Vector2(0.89, 0.6775)}
-	for name: String in expected:
-		var hotspot: Button = ui.hotspots[name]
+	for hotspot_name: String in expected:
+		var hotspot: Button = ui.hotspots[hotspot_name]
 		var rectangle := hotspot.get_global_rect()
 		var center := (rectangle.get_center() - scene_rect.position) / scene_rect.size
-		_check(scene_rect.encloses(rectangle) and center.distance_to(expected[name]) < 0.015, "hotspot alignment")
+		_check(scene_rect.encloses(rectangle) and center.distance_to(expected[hotspot_name]) < 0.015, "hotspot alignment")
 		_check(hotspot.focus_mode == Control.FOCUS_ALL and not hotspot.tooltip_text.is_empty(), "hotspot focus and tooltip")
 	var farm = ui.farm
 	ui.hotspots["analysis"].pressed.emit()
@@ -55,8 +55,9 @@ func _check_view(dimensions: Vector2i) -> void:
 	farm.supply_modified_coffee()
 	var modified_seed = farm.beans.back()
 	ui._render()
-	_check(ui.inventory_tiles.item_count == ui.stored_items.item_count and ui.inventory_tiles.get_item_text(0) != ui.inventory_tiles.get_item_text(3), "distinct genetic seed tiles")
-	ui.inventory_tiles.item_selected.emit(3)
+	var modified_slot: int = ui.inventory_tiles.slots.find(ui._inventory_key(modified_seed))
+	_check(ui.inventory_tiles.rows.size() == ui.stored_items.item_count and ui.inventory_tiles.get_item_tooltip(0) != ui.inventory_tiles.get_item_tooltip(modified_slot), "distinct genetic seed tiles")
+	ui.inventory_tiles.item_selected.emit(modified_slot)
 	_check(is_same(farm.selected_seed(), modified_seed), "tile selects actual modified seed")
 	ui.actions["genetics"].pressed.emit()
 	_check(ui.genetics_dialog.dialog_text.contains("Fast Growth 2") and ui.genetics_dialog.dialog_text.contains(str(modified_seed.get_instance_id())), "Genes inspects exact tile identity")
@@ -66,7 +67,7 @@ func _check_view(dimensions: Vector2i) -> void:
 	ui.dna_dialog.hide()
 	ui.inventory_tiles.item_selected.emit(0)
 	ui.actions["discard"].pressed.emit()
-	ui.inventory_tiles.item_selected.emit(3)
+	ui.inventory_tiles.item_selected.emit(modified_slot)
 	ui.confirm_action.confirmed.emit()
 	ui.confirm_action.hide()
 	_check(not farm.beans.has(native_seed) and farm.beans.has(modified_seed), "refresh preserves confirmation target")
@@ -91,7 +92,96 @@ func _check_view(dimensions: Vector2i) -> void:
 	await get_tree().process_frame
 	for control: Control in [ui.inventory_tiles, ui.health_meter, ui.solution_meter, ui.contextual_action, ui.next_night_button]:
 		_check(bounds.encloses(control.get_global_rect()), "essential control remains in view")
+	await _check_inventory(viewport, ui)
 	viewport.free()
+
+func _check_inventory(viewport: SubViewport, ui) -> void:
+	var grid = ui.inventory_tiles
+	var farm = ui.farm
+	var seed_item = farm.beans.front()
+	var seed_key: String = ui._inventory_key(seed_item)
+	var product_key: String = farm.crop.product_name + " · Test grade"
+	farm.products[product_key] = 2
+	ui._render()
+	await get_tree().process_frame
+	var source: int = grid.slots.find(seed_key)
+	var product_slot: int = grid.slots.find(ui._inventory_key(product_key))
+	var empty: int = grid.slots.find("")
+	_check(not ui.stored_items.visible and grid.get_item_text(source).is_empty() and grid.get_item_icon(source) != null, "icon-only inventory")
+	_check(grid.get_item_tooltip(source).contains("Growth target") and grid.get_item_tooltip(source).contains("Seed"), "seed hover uses effective values")
+	_check(grid.get_item_tooltip(product_slot).contains(product_key) and grid.get_item_tooltip(product_slot).ends_with("2"), "product hover uses live stack count")
+	var origin: Vector2 = grid.get_global_rect().position
+	var from: Vector2 = origin + _slot_point(grid, source)
+	var target: Vector2 = origin + _slot_point(grid, empty)
+	var original_count: int = farm.occupied_slots()
+	_start_drag(viewport, from)
+	_check(viewport.gui_is_dragging(), "mouse starts an actual inventory drag")
+	_move_mouse(viewport, target, MOUSE_BUTTON_MASK_LEFT)
+	_check(viewport.gui_is_dragging() and grid._highlight == empty and grid.get_item_custom_bg_color(empty) == grid.VALID_COLOR, "empty slot shows valid drop feedback")
+	_mouse_button(viewport, target, false)
+	_check(grid.slots[empty] == seed_key and grid.slots[source].is_empty(), "GUI drop moves tile into empty cell")
+	_check(farm.beans.has(seed_item) and farm.products[product_key] == 2 and farm.occupied_slots() == original_count, "drop preserves original inventory and quantity")
+	ui._render()
+	await get_tree().process_frame
+	_check(grid.slots[empty] == seed_key, "placement survives dashboard refresh")
+	var swap_target: Vector2 = origin + _slot_point(grid, product_slot)
+	_start_drag(viewport, target)
+	_move_mouse(viewport, swap_target, MOUSE_BUTTON_MASK_LEFT)
+	_mouse_button(viewport, swap_target, false)
+	_check(grid.slots[product_slot] == seed_key and grid.slots[empty] == ui._inventory_key(product_key), "occupied slots swap by identity")
+	_mouse_button(viewport, swap_target, true)
+	_mouse_button(viewport, swap_target, false)
+	_check(is_same(ui.stored_items.get_selected_metadata(), seed_item), "moved icon still selects its exact seed")
+	await get_tree().process_frame
+	_start_drag(viewport, target)
+	_move_mouse(viewport, swap_target, MOUSE_BUTTON_MASK_LEFT)
+	_move_mouse(viewport, target, MOUSE_BUTTON_MASK_LEFT)
+	_check(grid._highlight == empty and grid.get_item_custom_bg_color(empty) == grid.INVALID_COLOR, "same-cell drop shows invalid feedback")
+	var outside := Vector2(3, 3)
+	_move_mouse(viewport, outside, MOUSE_BUTTON_MASK_LEFT)
+	_mouse_button(viewport, outside, false)
+	_check(grid.slots[product_slot] == seed_key and grid._highlight == -1 and farm.occupied_slots() == original_count, "outside drop leaves original ownership and placement")
+	_check(not grid._can_drop_data(_slot_point(grid, source), {"key": seed_key}), "foreign or expired drag rejected")
+	_start_drag(viewport, swap_target)
+	_check(viewport.gui_is_dragging(), "seed drag starts before removal")
+	_check(farm.discard_seed_instance(seed_item), "remove original seed during active drag")
+	ui._render()
+	await get_tree().process_frame
+	var vacant: Vector2 = origin + _slot_point(grid, source)
+	_move_mouse(viewport, vacant, MOUSE_BUTTON_MASK_LEFT)
+	_mouse_button(viewport, vacant, false)
+	_check(not grid.slots.has(seed_key) and not farm.beans.has(seed_item) and farm.occupied_slots() == original_count - 1, "stale drag cannot restore a removed seed")
+	farm.discard_product(product_key)
+	ui._render()
+	_check(grid.get_item_tooltip(empty).ends_with("1"), "product tooltip refreshes after stock changes")
+	farm.discard_product(product_key)
+	for definition in farm.catalog:
+		for owned_seed in farm.seed_stock(definition).duplicate():
+			farm.discard_seed_instance(owned_seed)
+	ui._render()
+	_check(grid.rows.is_empty() and grid.get_selected_items().is_empty() and ui.actions["discard"].disabled, "empty inventory clears selection and disables discard")
+
+func _slot_point(grid: ItemList, slot: int) -> Vector2:
+	return grid.get_item_rect(slot).get_center()
+
+func _start_drag(viewport: SubViewport, position: Vector2) -> void:
+	_move_mouse(viewport, position, 0)
+	_mouse_button(viewport, position, true)
+	_move_mouse(viewport, position + Vector2(12, 0), MOUSE_BUTTON_MASK_LEFT)
+
+func _move_mouse(viewport: SubViewport, position: Vector2, mask: int) -> void:
+	var event := InputEventMouseMotion.new()
+	event.position = position
+	event.relative = Vector2(12, 0)
+	event.button_mask = mask
+	viewport.push_input(event, true)
+
+func _mouse_button(viewport: SubViewport, position: Vector2, pressed: bool) -> void:
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.position = position
+	event.pressed = pressed
+	viewport.push_input(event, true)
 
 func _check(ok: bool, message: String) -> void:
 	checks += 1

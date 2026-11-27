@@ -68,6 +68,9 @@ try {
         @{ Name = 'Workstations'; Scene = 'test_workstations'; Markers = @(
             '(?m)^WORKSTATIONS_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
         ) },
+        @{ Name = 'Workshop interface'; Scene = 'test_workshop_ui'; FrameBudget = '420'; Markers = @(
+            '(?m)^WORKSHOP_UI_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
+        ) },
         @{ Name = 'Environment interface'; Scene = 'test_environment_ui'; Markers = @(
             '(?m)^ENVIRONMENT_UI_TEST_RESULT checks=[1-9]\d* failures=0\s*$'
         ) },
@@ -113,7 +116,8 @@ try {
             Write-Host "FAIL  $($suite.Name) (scene missing)"
             continue
         }
-        $run = Invoke-Godot $scene @('--debug', '--quit-after', '120', "res://tests/$scene.tscn")
+        $frameBudget = if ($suite.FrameBudget) { $suite.FrameBudget } else { '120' }
+        $run = Invoke-Godot $scene @('--debug', '--quit-after', $frameBudget, "res://tests/$scene.tscn")
         $outputText = $run.Lines -join "`n"
         $missing = @($suite.Markers | Where-Object { $outputText -notmatch $_ })
         $errors = @(Get-UnexpectedErrors $run)

@@ -8,6 +8,8 @@ const Equipment = preload("res://scripts/hydroponic_equipment.gd")
 const Editor = preload("res://scripts/dna_editor.gd")
 const W = Liquid.Component.WATER
 const M = Liquid.Component.MINERALS
+const OUTPUT_SEED := "seed"
+const OUTPUT_OFFSPRING := "offspring"
 
 class Seed extends RefCounted:
 	var definition: ReferenceCrop
@@ -368,6 +370,46 @@ func collect() -> bool:
 	seed_stock(plant.seed_item.definition).append_array(plant.offspring)
 	plant = null
 	return true
+
+func pending_output() -> Dictionary[String, int]:
+	var result: Dictionary[String, int] = {}
+	if plant == null or plant.stage != Plant.Stage.MATURE:
+		return result
+	if plant.pending > 0:
+		var definition := plant.genetics.crop
+		if definition.output_is_seed:
+			result[OUTPUT_SEED] = plant.pending
+		elif not plant.replacement_product.is_empty():
+			result[plant.replacement_product] = plant.pending
+		else:
+			for grade: String in plant.sizes:
+				if plant.sizes[grade] > 0:
+					result["%s · %s" % [definition.product_name, grade]] = plant.sizes[grade]
+	if not plant.offspring.is_empty():
+		result[OUTPUT_OFFSPRING] = plant.offspring.size()
+	return result
+
+## Sellable produce stays a product. Seed output follows the crop's existing contract.
+func collect_one(output_key: String) -> Variant:
+	if not can_act() or occupied_slots() >= inventory_capacity or not pending_output().has(output_key):
+		return null
+	var item: Variant = output_key
+	if output_key == OUTPUT_OFFSPRING:
+		item = plant.offspring.pop_back()
+		seed_stock(plant.seed_item.definition).append(item)
+	else:
+		plant.pending -= 1
+		if output_key == OUTPUT_SEED:
+			item = _offspring()
+			seed_stock(plant.seed_item.definition).append(item)
+		else:
+			products[output_key] = int(products.get(output_key, 0)) + 1
+			if plant.replacement_product.is_empty():
+				var grade := output_key.trim_prefix(plant.genetics.crop.product_name + " · ")
+				plant.sizes[grade] -= 1
+	if plant.pending == 0 and plant.offspring.is_empty():
+		plant = null
+	return item
 
 func preview_edit(item: Seed, trait_id: String) -> Editor.Preview:
 	if not can_act() or item == null or not seed_stock(item.definition).has(item) or dna_editor.stage == Editor.Stage.RUNNING:

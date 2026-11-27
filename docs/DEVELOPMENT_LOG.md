@@ -1,5 +1,43 @@
 # 开发日志 | Development Log
 
+## 2026-11-27 · v0.5.0 Interactive Hydroponics Workshop
+
+The developer approved the M08 extension after manual gameplay testing. The release adds the default icon workshop, direct machine interaction, individual output collection, capacity-aware inventory, dedicated tools, the painted dustbin and crop alignment. M09 remains pending. [Release notes and verification](M08_EXTENSION_FINAL_REPORT.md)
+
+## M08-C.4 · Chamber crop alignment
+
+The workshop masks the platforms painted into the existing crop textures and aligns each stem to the chamber floor in background-image coordinates. The existing lower rim is drawn in front of the plant. [Before](../screenshots/m08c4-kotton-before.png) · [After](../screenshots/m08c4-kotton-after.png) · [Growth stages and resized views](../screenshots/m08c4-chamber-stages.png)
+
+Visually checked empty, seedling, growing, mature Coffee, Fruit and Kotton, and live viewport changes to 1280 × 960 and 1720 × 720. All 18 Godot regression suites passed.
+
+## M08-C.3 · Inventory capacity and machine compartments
+
+The counted grid now renders the farm's seed and produce capacity. Refills, tablets, modules and spare chassis use their own tray because they are backed by separate farm stores. Empty compartments use the same muted style. The machine shows up to five individual output icons and reports the remaining quantity by output type in the overflow tooltip.
+
+## M08-C.2 · Individual output collection
+
+The workshop uses the existing farm yield, grade and offspring state to expose individual outputs. A click reserves a grid slot and `CoffeeFarm.collect_one()` commits one unit. The 0.25-second arrival animation controls presentation only. Fruit and Kotton use distinct seed packet variants and produce icons. The empty seed slot has no packet. The approved starting water and energy remain loaded, and the energy meter uses stored charge against its session full-charge reference.
+
+## 2026-11-27 · M08-C.1 workshop drag sources, dustbin and tools
+
+The scaled default window reproduced failed drops when Godot reconstructed the drag origin outside the pressed tile. The inventory now captures the pressed item key and checks that it still belongs to the live grid when drag starts. Preview and dustbin highlight controls ignore input. The painted dustbin accepts disposable seeds and products, and the three analysers/editor tools use a separate dock.
+
+Empty resource compartments remain pending. The farm initializes with 5,000 ml pure water plus 150 ml minerals in its vessel and 100 kJ in its machine balance. The separate refill stores hold another 5,000 ml of pure water and 100 kJ. Refills merge into those machine balances, and no existing method can return a loaded battery or preserve a removed container's remaining mixture. The smallest compatible change is an explicit farm-level attach/detach contract for a vessel and battery, with exclusive ownership of the starter quantities and the existing settlement calculations operating on the installed contents.
+
+## 2026-11-27 · M08-C workshop interaction stabilization
+
+The owner accepted the workshop layout and reported that drops were failing. A quick release without a final pointer-motion event reproduced the failure at both resolutions. The workshop now hit-tests the actual release position for authenticated transfers, validates the source and recipient, and delegates to the existing farm operations. The seed slot clears visually at maturity. The farm still owns the pending result until atomic collection. Installed modules can be returned while stopped when allowed by equipment validation. Refilled power and liquid remain shared machine pools under the existing farm contract.
+
+## 2026-11-27 · M08-B icon-based workshop
+
+The default scene now opens the full-screen workshop. Double-click the chamber for its slots. The inventory projects the existing supplies and equipment as draggable icons, and compatible drops call the existing farm methods. A seed drop plants the exact selected instance and starts the machine through its existing toggle. Nightly settlement and capacity checks remain in the farm. Harvest results are displayed by output group and collected together as the existing atomic lot. The previous dashboard remains available as a separate scene for regression and developer controls. The three reference crops are playable in the workshop, while Lettuce remains a separate legacy fixture. M09 remains paused.
+
+## 2026-11-27 · M08-A icon inventory redesign review
+
+Branch `redesign/icon-inventory` starts from published v0.4.0. Inventory uses existing item art, live bilingual tooltips, and one-cell drag placement for individual seeds and product stacks. Grid positions are session-local UI state. Item ownership, stack sizes and capacity remain in `CoffeeFarm`. The renderer captured the 1280 × 720 inventory. M09 remains paused. [Inventory capture](../screenshots/m08a-icon-inventory-1280.png)
+
+Machine slots, automatic planting and start, tablet drops and output collection remain outside this package. The current lifecycle plants and starts separately, and `CoffeeFarm.collect()` transfers the entire pending yield and offspring atomically before clearing the plant. Dragging individual outputs will require an explicit decision about that collection contract. Current items use one cell, so rotation is deferred until multi-cell footprints serve a gameplay purpose.
+
 ## 2026-11-26 · v0.4.0 Visual Transformation
 
 The owner authorized publication of the accepted M08 visual milestone. The release includes the orbital laboratory, state-driven artwork, environment hotspots, individual inventory tiles and specialized workstations. M09 remains pending. [Release report](M08_FINAL_REPORT.md)

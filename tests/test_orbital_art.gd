@@ -53,7 +53,7 @@ func _fixture(dimensions: Vector2i) -> void:
 	_check(pane.encloses(art.crop_sprite.get_global_rect()), "crop placement inside artwork")
 	_check(art.scene.mouse_filter == Control.MOUSE_FILTER_IGNORE and art.crop_sprite.mouse_filter == Control.MOUSE_FILTER_IGNORE, "decorative textures ignore input")
 	_check(ui.actions["analysis"].icon != null and ui.actions["equipment"].icon != null and ui.actions["install_module"].icon != null, "equipment icons present")
-	_check(ui.inventory_icon_key("unknown") == "" and ui.inventory_icon_key(ui.farm.beans.front()) == "seed", "inventory icon fallback")
+	_check(ui.inventory_icon_key("unknown") == "" and ui.inventory_icon_key(ui.farm.beans.front()) == "coffee", "unknown fallback and crop-specific seed icon")
 	viewport.free()
 
 func _check(ok: bool, label: String) -> void:

@@ -111,7 +111,7 @@ func _inventory_discard() -> void:
 	_check(farm.occupied_slots() == 0 and ui.stored_items.item_count == 0 and ui.stored_items.selected == -1, "all items removed and selection cleared")
 	_check(ui.actions["discard"].disabled and ui.actions["discard"].icon == null and ui.actions["plant"].disabled, "empty inventory clears icon and actions")
 	ui.actions["seed_supply"].pressed.emit()
-	_check(ui.stored_items.selected == 0 and not ui.actions["discard"].disabled and ui.actions["discard"].icon == ui.art.texture("seed"), "replenished inventory selects seed and restores actions")
+	_check(ui.stored_items.selected == 0 and not ui.actions["discard"].disabled and ui.actions["discard"].icon == ui.art.texture("nutrition_seed"), "replenished inventory selects Nutrition Fruit seed and restores actions")
 	ui.free()
 
 func _confirm_discard(ui: Control) -> void:

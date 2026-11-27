@@ -1,5 +1,9 @@
 # Project status
 
+## v0.5.0 · Interactive Hydroponics Workshop
+
+The developer approved M08-A through M08-C.4. The workshop is the default launch, and the legacy Lettuce scene remains available. The redesign preserves crop balance and numerical formulas. M09 is pending and covers optional transitions and outcome feedback for the icon-based workflow. [Release report](M08_EXTENSION_FINAL_REPORT.md)
+
 ## M08 complete · v0.4.0 Visual Transformation
 
 The owner accepted M08-A through M08-D and authorized publication of v0.4.0. The final fresh regression passed 17 suites, 1,142 explicit checks and four original assertion groups. Default launch and the legacy Lettuce probe passed. The simulation remains frozen at v0.3.0. M09 remains pending. The owner reports 59% weekly Codex allowance remaining, and the delivery target remains December 1, 2026. [M08 final report](M08_FINAL_REPORT.md)

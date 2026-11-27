@@ -2,7 +2,7 @@
 
 **基于 Godot 4 开发的水培农业管理模拟项目**
 
-**v0.4.0 · M08 视觉改造。** 支持 1280 × 720 和 1920 × 1080。使用 Godot 4.7.2 打开 `project.godot`，按 **F5** 启动。 [里程碑报告](docs/M08_FINAL_REPORT.md)
+**v0.5.0 · 交互式水培工作间。** 支持 1280 × 720 和 1920 × 1080。使用 Godot 4.7.2 打开 `project.godot`，按 **F5** 启动。 [发布报告](docs/M08_EXTENSION_FINAL_REPORT.md)
 
 [简体中文](#简体中文) | [English](#english)
 
@@ -32,7 +32,7 @@
 
 ## 3. 核心功能
 
-当前演示可种植营养果、咖啡豆和韧棉。实验室热点、可视库存和专用工作台连接到现有的水培模拟。
+当前演示可种植营养果、咖啡豆和韧棉。双击培养舱打开设备，拖入兼容的种子和补给。播种后自动启动，点「下一夜」推进结算，点产出图标逐件领取。底部补给托盘与计入容量的库存分开，右上角工具栏可打开液体分析、种子档案和 DNA 编辑器。
 
 | 功能模块 | 功能说明 |
 | --- | --- |
@@ -47,9 +47,9 @@
 | 收获系统 | 根据作物状态计算收获结果 |
 | DNA 编辑 | 预览兼容性状、确认应用并通过夜间结算推进 |
 
-![1280 × 720 实验室演示](screenshots/m08c-environment-1280.png)
+![1280 × 720 水培工作间](screenshots/m08c4-kotton-after.png)
 
-[1920 × 1080 实验室](screenshots/m08c-environment-1920.png) · [液体分析](screenshots/m08d-liquid-1280.png) · [DNA 工作台](screenshots/m08d-dna-1280.png) · [素材来源](docs/ASSET_MANIFEST.md)
+[培养舱生长阶段](screenshots/m08c4-chamber-stages.png) · [素材来源](docs/ASSET_MANIFEST.md)
 
 ## 4. 初始作物范围
 
@@ -115,7 +115,7 @@ powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\tests\run-tests.
 
 ## 7. 开发计划
 
-M01–M07 实现了可玩的三作物种植循环和进阶系统。M08 已完成视觉改造，17 组自动化测试通过 1,142 项显式检查及四组原始断言。M09 尚未开始。 [验收与剩余范围](docs/M08_FINAL_REPORT.md)
+M01–M07 实现了可玩的三作物种植循环和进阶系统。M08 扩展将默认界面改为图标式交互工作间。M09 动画、过渡与反馈尚未开始。 [验收与剩余范围](docs/M08_EXTENSION_FINAL_REPORT.md)
 
 ## 8. 研究与参考资料
 
@@ -226,11 +226,11 @@ hydroponics-management-simulator/
 
 ### Play the three-crop farming loop
 
-Open `project.godot` in **Godot 4.7.2** and press **F5** to launch Orbital Hydroponics. The v0.4.0 build supports **1280 × 720** and **1920 × 1080**. Use the workstation buttons or chamber hotspots to inspect cultivation, liquid and equipment. Select individual seeds or stored products from the inventory strip. [M08 release notes](docs/M08_FINAL_REPORT.md) · [Laboratory at 1920 × 1080](screenshots/m08c-environment-1920.png) · [Gear](screenshots/m08d-equipment-1280.png) · [DNA](screenshots/m08d-dna-1920.png)
+Open `project.godot` in **Godot 4.7.2** and press **F5**. The workshop supports **1280 × 720** and **1920 × 1080**. Hover over icons to inspect contents, seed traits, and slot compatibility. [Release report](docs/M08_EXTENSION_FINAL_REPORT.md) · [Workshop screenshot](screenshots/m08c4-kotton-after.png)
 
-Run the project with **F5**. Select Nutrition Fruit, Coffee Beans, or Kotton, plant a seed, start the machine, and use **Next Night** until the harvest is ready. Healthy cycles take two, three, and six running nights respectively. The initial 3% solution is suitable for Coffee Beans and Kotton. For Nutrition Fruit on a fresh run, confirm **Drain solution**, add water ten times, and add four tablets to reach 5,000 mL pure water and 60 mL minerals. Draining discards the solution. Refills use finite supplies.
+Double-click the chamber and drag in a Coffee Beans, Nutrition Fruit, or Kotton seed. The machine starts automatically after planting. Drag water, energy cells, tablets, or compatible modules from the supply tray to their slots. Press **Next Night** to advance. Use the liquid analyser to check the current concentration and the crop’s preferred range.
 
-Collect the harvest before switching crops. Coffee Beans can be replanted directly. **Demo seed** adds one seed of the selected crop as a project testing aid. If collection exceeds capacity, select stored items and confirm **Discard one** until enough room is available. For the legacy Lettuce fixture, open `scenes/main.tscn` and press **F6**. [M04 verification and manual walkthrough](docs/M04_REPORT.md)
+Click a ready output icon to collect one item. A full inventory leaves the rest in the chamber. Drag disposable seeds or produce onto the painted dustbin under the telephone to free space. Coffee Beans output can be replanted. For the legacy Lettuce fixture, open `scenes/main.tscn` and press **F6**.
 
 ### Run the automated tests on Windows
 
@@ -240,19 +240,19 @@ From the repository root, replace `<Godot executable path>` with the path to the
 powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\tests\run-tests.ps1 -GodotPath "<Godot executable path>" -Import
 ```
 
-The runner checks all 17 suites for completion markers, exit codes and unexpected errors. Use `-Import` on the first run or after moving project files. A missing Godot cache triggers import automatically. [Current testing evidence](docs/M08_FINAL_REPORT.md#verification)
+The runner checks all 18 suites for completion markers, exit codes and unexpected errors. Use `-Import` on the first run or after moving project files. A missing Godot cache triggers import automatically. [Current testing evidence](docs/M08_EXTENSION_FINAL_REPORT.md#verification)
 
-Open **DNA edit** from **Genes** to preview a trait application for an available seed. Confirm the application, close the dialog and settle nights to advance it. Applications use shared power and finite project demo disc charges. Reopen the dialog to inspect progress or the result.
+Use the upper-right **DNA Editor** to preview a trait application. Drop a seed onto it to select that exact instance. Confirm the application, close the dialog and settle nights to advance it. Applications use shared power and finite demo disc charges.
 
-Open **Gear** while the machine is stopped to inspect demo equipment, switch machines and vessels, or install and remove modules. Running-night growth and power costs update with the configuration. The default machine and vessel remain available.
+Use the machine’s chassis slot to inspect equipment and vessels. Make equipment changes while the machine is stopped. A compatible installed module can be dragged back to the tray.
 
-Open **Genes** to inspect the selected seed or the planted crop. Use **Next seed** to cycle the selected crop’s stock. **Demo Coffee** supplies a validated modified seed when Coffee Beans is selected and inventory has room. For Nutrition Fruit and Kotton, the Genes dialog shows pending offspring at maturity. **Collect** transfers the harvest and offspring together when inventory has room.
+Use **Seed Profile** to inspect a selected seed or the planted crop. Drop a seed onto the profile icon to inspect that specific seed. Offspring and produce are offered as separate output items at maturity.
 
-Open **Liquid** or click the tank to inspect raw pollutant indices, crop exposure, predicted damage and actual prior-night damage. The demo section offers clean, single-pollutant, mixed, physical-only and high-pollution solutions. Confirming replacement discards the current mixture and uses the separate demo supply.
+Use **Liquid Analysis** or the machine’s information icon to inspect concentration, pollutants, predicted damage, and prior-night damage. Demo solution replacement discards the current mixture and uses the separate demo supply.
 
 ## 7. Development Roadmap
 
-M01–M07 delivered the three-crop farming loop and advanced mechanics. M08 completed the visual transformation in v0.4.0. M09 remains pending. [Current project status](docs/PROJECT_STATUS.md) · [Visual plan](docs/VISUAL_DEVELOPMENT_PLAN.md)
+M01–M07 delivered the three-crop farming loop and advanced mechanics. The M08 extension ships the interactive workshop in v0.5.0. M09 remains pending and covers transitions and outcome feedback. [Current project status](docs/PROJECT_STATUS.md) · [Visual plan](docs/VISUAL_DEVELOPMENT_PLAN.md)
 
 ## 8. Research References
 

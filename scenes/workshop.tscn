@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/coffee_dashboard.tscn" id="1"]
+
+[node name="Workshop" instance=ExtResource("1")]
+workshop_enabled = true

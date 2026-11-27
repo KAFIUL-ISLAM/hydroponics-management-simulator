@@ -9,6 +9,8 @@ const DNA = preload("res://scripts/dna_editor.gd")
 const Art = preload("res://scripts/orbital_art.gd")
 const ChamberArt = preload("res://scripts/cultivation_art.gd")
 const Workstation = preload("res://scripts/workstation_view.gd")
+const InventoryGrid = preload("res://scripts/inventory_grid.gd")
+const Workshop = preload("res://scripts/workshop_view.gd")
 const POLLUTANT_NAMES := ["重金属 / Heavy metals", "化学污染物 / Chemicals", "微生物 / Microbes",
 	"有机废物 / Organic waste", "酸 / Acid", "碱 / Alkali"]
 
@@ -45,7 +47,7 @@ var contextual_action_key: String
 var art: Art
 var cultivation_art: ChamberArt
 var cultivation_dialog: AcceptDialog
-var inventory_tiles: ItemList
+var inventory_tiles: InventoryGrid
 var inventory_caption: Label
 var inventory_seed_choice: Farm.Seed
 var seed_aliases: Dictionary[int, int] = {}
@@ -65,6 +67,8 @@ var equipment_slots: Label
 var genes_readout: Label
 var genes_portrait: TextureRect
 var dna_progress: ProgressBar
+@export var workshop_enabled := false
+var workshop: Workshop
 
 func _enter_tree() -> void:
 	$GameState.starting_crop = null
@@ -81,6 +85,10 @@ func _ready() -> void:
 	art = Art.new()
 	_build_actions()
 	_prepare_workstations()
+	if workshop_enabled:
+		workshop = Workshop.new()
+		add_child(workshop)
+		workshop.setup(self)
 	_render()
 	control_hint.text = "播种后启动机器 / Plant a seed and start the machine"
 
@@ -184,29 +192,28 @@ func _build_actions() -> void:
 	inventory_panel.add_child(inventory_content)
 	inventory_content.add_child(inventory_row)
 	inventory_caption = _section("库存 / Inventory")
+	inventory_caption.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inventory_row.add_child(inventory_caption)
 	stored_items = OptionButton.new()
 	stored_items.fit_to_longest_item = false
 	stored_items.clip_text = true
 	stored_items.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inventory_row.add_child(stored_items)
+	stored_items.hide()
 	var discard := Button.new()
 	discard.text = "丢弃一件 / Discard one"
 	inventory_row.add_child(discard)
 	actions["discard"] = discard
 	discard.pressed.connect(_confirm_discard)
-	inventory_tiles = ItemList.new()
+	inventory_tiles = InventoryGrid.new()
 	inventory_tiles.custom_minimum_size.y = 74
 	inventory_tiles.icon_mode = ItemList.ICON_MODE_TOP
 	inventory_tiles.fixed_icon_size = Vector2i(29, 29)
-	inventory_tiles.fixed_column_width = 101
-	inventory_tiles.max_text_lines = 2
+	inventory_tiles.fixed_column_width = 43
 	inventory_tiles.max_columns = 0
 	inventory_tiles.same_column_width = true
-	inventory_tiles.add_theme_font_size_override("font_size", 12)
-	inventory_tiles.tooltip_text = "滚动查看更多 / Scroll for more items"
 	inventory_content.add_child(inventory_tiles)
-	inventory_tiles.item_selected.connect(_select_inventory_item)
+	inventory_tiles.item_selected.connect(_select_inventory_slot)
 	confirm_action = ConfirmationDialog.new()
 	add_child(confirm_action)
 	confirm_action.canceled.connect(func() -> void: pending_action = Callable())
@@ -256,10 +263,29 @@ func _sync_workstation_layer() -> void:
 	workstation_shade.hide()
 	_restore_workstation_focus.call_deferred()
 
+func _inventory_key(item: Variant) -> String:
+	if item is Farm.Seed:
+		return "seed:%d" % item.get_instance_id()
+	return "product:" + item if item is String else ""
+
+func _select_inventory_slot(slot: int) -> void:
+	var key := inventory_tiles.slots[slot]
+	var entry: Dictionary = inventory_tiles.rows.get(key, {})
+	for index in stored_items.item_count:
+		var item: Variant = stored_items.get_item_metadata(index)
+		if _inventory_key(item) == key or (entry.has("item") and is_same(entry.item, item)):
+			_select_inventory_item(index)
+			return
+	# Supply and equipment tiles do not participate in seed/product discard.
+	if workshop != null:
+		stored_items.select(-1)
+		inventory_seed_choice = null
+		_update_inventory_icon()
+
 func _select_inventory_item(index: int) -> void:
 	stored_items.select(index)
 	var item: Variant = stored_items.get_item_metadata(index)
-	inventory_seed_choice = item as Farm.Seed
+	inventory_seed_choice = item if item is Farm.Seed else null
 	if item is Farm.Seed and farm.plant == null and farm.can_act():
 		if farm.crop == item.definition or farm.select_species(farm.catalog.find(item.definition)):
 			farm.select_seed(item.get_instance_id())
@@ -273,6 +299,27 @@ func _inventory_tile_label(item: Variant) -> String:
 		return "%s #%02d\n种子 / Seed" % [item.definition.name_zh, seed_aliases[id]]
 	var product: String = item
 	return "%s ×%d\n收获物 / Harvest" % [product.get_slice(" / ", 0), farm.products[product]]
+
+func _inventory_tooltip(item: Variant, label: String) -> String:
+	if item is String:
+		return "%s\n收获物 / Harvested product · 库存 / In stock: %d" % [item, farm.products[item]]
+	var seed_item := item as Farm.Seed
+	var effective := seed_item.analyze()
+	var info := label + "\n种子 / Seed"
+	if farm.seed_edit_locked(seed_item):
+		info += " · DNA 编辑锁定 / Locked for DNA editing"
+	if not effective.valid():
+		return info + "\n配置无效 / Invalid configuration: " + effective.error
+	var crop := effective.crop
+	info += "\n生长目标 / Growth target: %d · 健康产量 / Healthy output: %d" % [crop.target, crop.healthy_output]
+	info += "\n耗液 / Solution draw: %d µL/night · 复杂度 / Complexity: %d · 热度 / Heat: %d" % [
+		crop.draw_ul, effective.complexity, effective.heat]
+	var traits := PackedStringArray()
+	for id: String in effective.traits:
+		traits.append("%s %d" % [id, effective.traits[id]])
+	if not traits.is_empty():
+		info += "\n性状 / Traits: " + ", ".join(traits)
+	return info
 
 func _section(caption: String) -> Label:
 	var label := Label.new()
@@ -434,12 +481,20 @@ func _add_resource_icon(label: Label, key: String) -> void:
 
 func inventory_icon_key(item: Variant) -> String:
 	if item is Farm.Seed:
-		return "seed"
+		var key := Art.crop_key(item.definition.resource_path.get_file().get_basename())
+		return key + "_seed" if key in ["nutrition", "kotton"] else key
 	if item is String:
 		for definition: ReferenceCrop in farm.catalog:
 			if definition != null and item.begins_with(definition.product_name + " · "):
 				return Art.species_key(definition.species)
+		if item == Equipment.module_definition(Equipment.Module.WEAVING).replacement:
+			return Art.crop_key("kotton")
+		if item.to_lower().contains("lettuce"):
+			return Art.crop_key("lettuce_prototype")
 	return ""
+
+func product_unit_key(product: String, index: int) -> String:
+	return _inventory_key(product) if index == 0 else "unit:%d:%s" % [index, product]
 
 func _update_inventory_icon() -> void:
 	var item: Variant = stored_items.get_selected_metadata() if stored_items.selected >= 0 else null
@@ -484,12 +539,14 @@ func _build_dna() -> void:
 			_refresh_dna()
 	)
 
-func _open_dna() -> void:
+func _open_dna(requested_seed: Farm.Seed = null) -> void:
 	genetics_dialog.hide()
 	dna_seed.clear()
 	var chosen := farm.selected_seed()
 	if inventory_seed_choice != null and is_same(stored_items.get_selected_metadata(), inventory_seed_choice):
 		chosen = inventory_seed_choice
+	if requested_seed != null:
+		chosen = requested_seed
 	for definition: ReferenceCrop in farm.catalog:
 		for item: Farm.Seed in farm.seed_stock(definition):
 			dna_seed.add_item("%s / %s" % [_inventory_tile_label(item).get_slice("\n", 0), definition.name_en])
@@ -727,12 +784,15 @@ func _confirm_drain() -> bool:
 	_present(confirm_action)
 	return true
 
-func _show_genetics() -> void:
+func _show_genetics(requested_seed: Farm.Seed = null) -> void:
 	var inspected_seed: Farm.Seed
 	var result: Genetics.Effective
 	next_seed_button.disabled = farm.plant != null or farm.seed_count(farm.crop) < 2
 	demo_genes_button.disabled = farm.plant != null or farm.crop != farm.catalog[0] or farm.occupied_slots() >= farm.inventory_capacity
-	if farm.plant != null:
+	if requested_seed != null:
+		inspected_seed = requested_seed
+		result = requested_seed.analyze()
+	elif farm.plant != null:
 		inspected_seed = farm.plant.seed_item
 		result = farm.plant.genetics
 	else:
@@ -889,13 +949,25 @@ func _render() -> void:
 			break
 	stored_items.select(restored_index)
 	inventory_caption.text = "库存 / Inventory · %d / %d" % [farm.occupied_slots(), farm.inventory_capacity]
-	inventory_tiles.clear()
+	var entries := {}
 	for index in stored_items.item_count:
 		var item: Variant = stored_items.get_item_metadata(index)
-		inventory_tiles.add_item(_inventory_tile_label(item), art.texture(inventory_icon_key(item)))
-		inventory_tiles.set_item_tooltip(index, stored_items.get_item_text(index))
-	if restored_index >= 0:
-		inventory_tiles.select(restored_index)
+		if workshop != null and item is String:
+			for unit in farm.products[item]:
+				entries[product_unit_key(item, unit)] = {
+					"item": item,
+					"icon": art.texture(inventory_icon_key(item), "seed"),
+					"tooltip": item + "\n收获物 / Produce · 1",
+				}
+			continue
+		entries[_inventory_key(item)] = {
+			"icon": art.texture(inventory_icon_key(item), "seed"),
+			"tooltip": _inventory_tooltip(item, stored_items.get_item_text(index)),
+		}
+	var selected_key := _inventory_key(stored_items.get_selected_metadata()) if restored_index >= 0 else ""
+	inventory_tiles.sync(entries, farm.inventory_capacity, selected_key, farm.can_act())
+	if workshop != null:
+		workshop.refresh()
 	_update_inventory_icon()
 	actions["seed_supply"].disabled = not farm.configured or farm.occupied_slots() >= farm.inventory_capacity
 	actions["drain"].disabled = not farm.configured or farm.vessel.total_ul() == 0
@@ -969,6 +1041,8 @@ func _render() -> void:
 
 func _on_coffee_finished(_day: int, _next_day: int, outcome: GameState.NightOutcome) -> void:
 	_render()
+	if workshop != null:
+		workshop.night_finished(outcome)
 	var completed := outcome as Farm.FarmOutcome
 	if outcome.status != GameState.NightStatus.GROWN or completed == null:
 		control_hint.text = outcome.detail

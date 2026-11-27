@@ -1,5 +1,39 @@
 # 测试报告
 
+## v0.5.0 release gate · 2026-11-27
+
+Fresh isolated Godot 4.7.2 regression passed all 18 suites, 1,327 explicit checks including 149 workshop GUI checks, and four original crop assertion groups. Default workshop launch and the archived one-night Lettuce probe passed. The known Windows certificate-store diagnostic appeared. Separately, the developer reported manual testing and approval of M08-A through M08-C.4. [Release report](M08_EXTENSION_FINAL_REPORT.md)
+
+## M08-C.3 · 2026-11-27
+
+Godot 4.7.2 passed 149 rendered workshop GUI checks and a fresh isolated regression of 18 suites, 1,327 explicit checks and four original assertion groups. Verified 24/24 inventory and discard, supply and module transfers, operation without modules, output counts 0/1/3/5/8/12, mixed-type overflow, and one-item collection. Default launch passed.
+
+## M08-C.2 · 2026-11-27
+
+The rendered Godot 4.7.2 workshop passed 126 GUI checks, including the Coffee, Fruit and Kotton loops, individual output and inventory cells, capacity rejection, mid-animation close and mixed-inventory disposal. On the first operating night, Coffee used 124 → 116 kJ with a refill applied before settlement. Fruit and Kotton each used 100 → 92 kJ. The meter showed the same balances, while solution decreased according to the existing settlement path.
+
+Default launch passed. The isolated regression passed all 18 suites, 1,304 explicit checks, and four original crop assertion groups. Developer desktop retest is pending.
+
+## M08-C.1 workshop interaction fixes · 2026-11-27
+
+The rendered default game window at 1600 × 1000 reproduced eight failures with the old drag-origin lookup. The same input sequence passed after the correction. The final rendered run used Godot mouse events and passed 52 checks, and both supported viewport sizes passed 104 checks combined. The fresh isolated regression passed all 18 suites, 1,282 explicit checks and four original assertion groups. Empty startup and returning attached liquid or batteries remain blocked by the merged-balance model. Developer desktop retest is pending.
+
+## M08-C workshop interactions · 2026-11-27
+
+Before the fix, removing the final pointer motion from the integration test reproduced rejected power, water, tablet, module and seed drops at both supported resolutions. After the fix the workshop passed 74 checks, including rapid release, drop feedback, module return, real nightly power and liquid consumption, double-click protection, Coffee seed discard and cancellation, full-inventory rejection and single collection. Fresh isolated Godot 4.7.2 import, all 18 suites, 1,252 explicit checks, four original crop assertion groups and default launch passed. The Windows certificate-store diagnostic remains. [Loaded machine](../screenshots/m08c-loaded-machine.png) · [Completed production](../screenshots/m08c-completed-output.png)
+
+## M08-B icon-based workshop · 2026-11-27
+
+Godot 4.7.2 passed a fresh isolated import and all 18 suites, with 1,228 explicit checks and four original crop assertion groups. The workshop suite passed 50 checks using viewport mouse input at 1280 × 720 and 1920 × 1080. It covered machine opening, input validation, stock transfers, automatic planting and start, night advancement, output cancellation, capacity rejection and atomic collection. Default launch and the archived Lettuce baseline passed. Existing Windows certificate-store and isolated editor-settings diagnostics remain.
+
+These 1280 × 720 renderer captures show the [default workshop](../screenshots/m08b-01-workshop.png), [loaded machine](../screenshots/m08b-02-loaded-machine.png), [growing crop](../screenshots/m08b-03-growing.png), and [collectible output](../screenshots/m08b-04-output.png). Owner desktop review remains pending.
+
+## M08-A icon inventory redesign · 2026-11-27
+
+Fresh isolated Godot 4.7.2 import and `tests/run-tests.ps1 -GodotPath <Godot executable> -Import` passed 17 suites, 1,178 explicit checks, and all four original crop assertion groups. The environment suite passed 104 checks, including mouse-driven moves, swaps, rejected drops, exact seed selection, stale removal, live counts and empty inventory at both supported resolutions. Default launch and the archived one-night Lettuce probe passed.
+
+Godot reported a Windows certificate-store diagnostic and an editor-settings write failure during isolated import. Existing test warnings covered redundant assertions, missing simulator injection and intentionally invalid resource operations. The 1280 × 720 capture is renderer evidence. Owner desktop review remains pending. [Inventory capture](../screenshots/m08a-icon-inventory-1280.png)
+
 ## M08 final acceptance · 2026-11-26
 
 Fresh isolated Godot 4.7.2 regression passed all 17 suites, 1,142 explicit checks and four original assertion groups, with zero failures. Default launch and the archived Lettuce probe passed. Separately, the owner reported ten M08-D desktop passes at the milestone review. Renderer captures remain a third evidence source. [Final test and desktop records](M08_FINAL_REPORT.md#verification)

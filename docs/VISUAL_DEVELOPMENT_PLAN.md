@@ -1,5 +1,7 @@
 # PRE-M08 proposed visual development plan
 
+**v0.5.0 checkpoint.** The developer accepted the M08 extension. The default interface is the icon-based workshop. M09 will use the existing night-completion and transaction results to show one concise outcome, highlight crop and resource changes using the workshop icons, and support reduced motion with equivalent data. Verify rapid input, stale feedback replacement, and unchanged settlement at both resolutions. Implementation remains pending. [Workshop release report](M08_EXTENSION_FINAL_REPORT.md)
+
 **M08 final checkpoint.** Packages A–D are complete and accepted. The v0.4.0 release passed the automated gate and the owner authorized publication. M09 remains pending. The December 1, 2026 delivery target remains active. The latest owner-reported weekly Codex allowance is 59%. [M08 final report](M08_FINAL_REPORT.md)
 
 **M08-D checkpoint.** Specialized workstation redesign is implemented. The owner reported all 11 M08-C desktop items passed. Review the M08-D desktop checklist before confirming the complete M08 milestone or authorizing publication of v0.4.0. The previously reported allowance remains the last known value. [M08-D report](M08_PACKAGE_D_REPORT.md)
